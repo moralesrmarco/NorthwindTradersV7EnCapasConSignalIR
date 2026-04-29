@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Prueba SignalR</title>
+    <script src="/Scripts/jquery-3.7.0.min.js"></script>
+    <script src="/Scripts/jquery.signalR-2.4.3.min.js"></script>
+    <script src="/signalr/hubs"></script>
+</head>
+<body>
+    <input type="text" id="name" placeholder="Tu nombre" />
+    <input type="text" id="message" placeholder="Mensaje" />
+    <button id="send">Enviar</button>
+    <ul id="messages"></ul>
+
+    <script>
+        $(function () {
+            var chat = $.connection.chatHub;
+
+            chat.client.addMessage = function (name, message) {
+                $('#messages').append('<li>' + name + ': ' + message + '</li>');
+            };
+
+            $.connection.hub.start().done(function () {
+                $('#send').click(function () {
+                    chat.server.send($('#name').val(), $('#message').val());
+                });
+            });
+        });
+    </script>
+</body>
+</html>

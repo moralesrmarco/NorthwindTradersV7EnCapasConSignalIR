@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilities", "Utilities\Util
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NorthwindTradersV7EnCapasConSignalIR", "NorthwindTradersV7EnCapasConSignalIR\NorthwindTradersV7EnCapasConSignalIR.csproj", "{BD14576D-1ED4-4BD1-A58E-65999502A5BB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetServer", "AspNetServer\AspNetServer.csproj", "{7242844D-DA24-4EF6-A2B6-E0DB42876562}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{BD14576D-1ED4-4BD1-A58E-65999502A5BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD14576D-1ED4-4BD1-A58E-65999502A5BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD14576D-1ED4-4BD1-A58E-65999502A5BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7242844D-DA24-4EF6-A2B6-E0DB42876562}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7242844D-DA24-4EF6-A2B6-E0DB42876562}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7242844D-DA24-4EF6-A2B6-E0DB42876562}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7242844D-DA24-4EF6-A2B6-E0DB42876562}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
