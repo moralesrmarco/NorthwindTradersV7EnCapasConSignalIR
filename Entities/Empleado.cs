@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 
+//Empleado completa ya corregida con la técnica de inyección de delegado para evitar la dependencia circular con Utilities.
+
 namespace Entities
 {
     public class Empleado
@@ -76,6 +78,29 @@ namespace Entities
         {
             get { return Jefe != null ? Jefe.NameByFirstName : ""; }
         }
+
+        // Método corregido con inyección de delegado
+        public static void NormalizarFotos(IEnumerable<Empleado> empleados, Func<byte[], int, byte[]> normalizador)
+        {
+            foreach (var empleado in empleados)
+            {
+                if (empleado.Photo != null)
+                {
+                    empleado.Photo = normalizador(empleado.Photo, empleado.EmployeeID);
+                }
+            }
+        }
+
+        //public static void NormalizarFotos(IEnumerable<Empleado> empleados)
+        //{
+        //    foreach (var empleado in empleados)
+        //    {
+        //        if (empleado.Photo != null)
+        //        {
+        //            empleado.Photo = Utilities.Utils.StripOleHeader(empleado.Photo, empleado.EmployeeID);
+        //        }
+        //    }
+        //}
 
         // del diagrama entidad-relación podemos ver que 
         // un empleado puede tener muchos órdenes asociadas
