@@ -89,6 +89,12 @@
             this.toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.TabControlPrincipal = new NorthwindTradersV7EnCapasConSignalIR.ControlCustomTab();
+            this.empleadosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mantenimientoDeEmpleadosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reportesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.cerrarTodasLasPestañasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.cerrarLaPestañaSeleccionadaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.toolStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
@@ -101,13 +107,14 @@
             this.fileMenu,
             this.editMenu,
             this.viewMenu,
+            this.empleadosToolStripMenuItem,
             this.toolsMenu,
             this.windowsMenu,
             this.helpMenu});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.MdiWindowListItem = this.windowsMenu;
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(1725, 38);
+            this.menuStrip.Size = new System.Drawing.Size(1380, 28);
             this.menuStrip.TabIndex = 0;
             this.menuStrip.Text = "MenuStrip";
             // 
@@ -342,7 +349,9 @@
             this.tileVerticalToolStripMenuItem,
             this.tileHorizontalToolStripMenuItem,
             this.closeAllToolStripMenuItem,
-            this.arrangeIconsToolStripMenuItem});
+            this.arrangeIconsToolStripMenuItem,
+            this.cerrarTodasLasPestañasToolStripMenuItem,
+            this.cerrarLaPestañaSeleccionadaToolStripMenuItem});
             this.windowsMenu.Name = "windowsMenu";
             this.windowsMenu.Size = new System.Drawing.Size(82, 24);
             this.windowsMenu.Text = "&Ventanas";
@@ -450,9 +459,9 @@
             this.toolStripSeparator9,
             this.toolStripButton1,
             this.toolStripButton2});
-            this.toolStrip.Location = new System.Drawing.Point(0, 48);
+            this.toolStrip.Location = new System.Drawing.Point(0, 28);
             this.toolStrip.Name = "toolStrip";
-            this.toolStrip.Size = new System.Drawing.Size(1725, 39);
+            this.toolStrip.Size = new System.Drawing.Size(1380, 27);
             this.toolStrip.TabIndex = 1;
             this.toolStrip.Text = "ToolStrip";
             // 
@@ -554,10 +563,10 @@
             this.toolStripStatusLabel3,
             this.toolStripStatusLabel,
             this.toolStripStatus});
-            this.statusStrip.Location = new System.Drawing.Point(0, 676);
+            this.statusStrip.Location = new System.Drawing.Point(0, 541);
             this.statusStrip.Name = "statusStrip";
             this.statusStrip.Padding = new System.Windows.Forms.Padding(1, 0, 19, 0);
-            this.statusStrip.Size = new System.Drawing.Size(1725, 33);
+            this.statusStrip.Size = new System.Drawing.Size(1380, 26);
             this.statusStrip.TabIndex = 2;
             this.statusStrip.Text = "StatusStrip";
             // 
@@ -591,11 +600,62 @@
             this.toolStripStatus.Size = new System.Drawing.Size(91, 20);
             this.toolStripStatus.Text = "Bienvenid@.";
             // 
+            // TabControlPrincipal
+            // 
+            this.TabControlPrincipal.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TabControlPrincipal.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
+            this.TabControlPrincipal.Location = new System.Drawing.Point(0, 55);
+            this.TabControlPrincipal.Margin = new System.Windows.Forms.Padding(4);
+            this.TabControlPrincipal.Multiline = true;
+            this.TabControlPrincipal.Name = "TabControlPrincipal";
+            this.TabControlPrincipal.SelectedIndex = 0;
+            this.TabControlPrincipal.ShowToolTips = true;
+            this.TabControlPrincipal.Size = new System.Drawing.Size(1380, 486);
+            this.TabControlPrincipal.TabIndex = 4;
+            this.TabControlPrincipal.SelectedIndexChanged += new System.EventHandler(this.TabControlPrincipal_SelectedIndexChanged);
+            // 
+            // empleadosToolStripMenuItem
+            // 
+            this.empleadosToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mantenimientoDeEmpleadosToolStripMenuItem,
+            this.reportesToolStripMenuItem});
+            this.empleadosToolStripMenuItem.Name = "empleadosToolStripMenuItem";
+            this.empleadosToolStripMenuItem.Size = new System.Drawing.Size(97, 24);
+            this.empleadosToolStripMenuItem.Text = "Empleados";
+            // 
+            // mantenimientoDeEmpleadosToolStripMenuItem
+            // 
+            this.mantenimientoDeEmpleadosToolStripMenuItem.Name = "mantenimientoDeEmpleadosToolStripMenuItem";
+            this.mantenimientoDeEmpleadosToolStripMenuItem.Size = new System.Drawing.Size(292, 26);
+            this.mantenimientoDeEmpleadosToolStripMenuItem.Text = "Mantenimiento de empleados";
+            this.mantenimientoDeEmpleadosToolStripMenuItem.Click += new System.EventHandler(this.mantenimientoDeEmpleadosToolStripMenuItem_Click);
+            // 
+            // reportesToolStripMenuItem
+            // 
+            this.reportesToolStripMenuItem.Name = "reportesToolStripMenuItem";
+            this.reportesToolStripMenuItem.Size = new System.Drawing.Size(292, 26);
+            this.reportesToolStripMenuItem.Text = "Reportes";
+            // 
+            // cerrarTodasLasPestañasToolStripMenuItem
+            // 
+            this.cerrarTodasLasPestañasToolStripMenuItem.Name = "cerrarTodasLasPestañasToolStripMenuItem";
+            this.cerrarTodasLasPestañasToolStripMenuItem.Size = new System.Drawing.Size(294, 26);
+            this.cerrarTodasLasPestañasToolStripMenuItem.Text = "Cerrar todas las pestañas";
+            this.cerrarTodasLasPestañasToolStripMenuItem.Click += new System.EventHandler(this.cerrarTodasLasPestañasToolStripMenuItem_Click);
+            // 
+            // cerrarLaPestañaSeleccionadaToolStripMenuItem
+            // 
+            this.cerrarLaPestañaSeleccionadaToolStripMenuItem.Name = "cerrarLaPestañaSeleccionadaToolStripMenuItem";
+            this.cerrarLaPestañaSeleccionadaToolStripMenuItem.Size = new System.Drawing.Size(294, 26);
+            this.cerrarLaPestañaSeleccionadaToolStripMenuItem.Text = "Cerrar la pestaña seleccionada";
+            this.cerrarLaPestañaSeleccionadaToolStripMenuItem.Click += new System.EventHandler(this.cerrarLaPestañaSeleccionadaToolStripMenuItem_Click);
+            // 
             // MDIPrincipal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1380, 567);
+            this.Controls.Add(this.TabControlPrincipal);
             this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.toolStrip);
             this.Controls.Add(this.menuStrip);
@@ -679,6 +739,12 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
         private System.Windows.Forms.ToolStripButton toolStripButton1;
         private System.Windows.Forms.ToolStripButton toolStripButton2;
+        private ControlCustomTab TabControlPrincipal;
+        private System.Windows.Forms.ToolStripMenuItem empleadosToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem mantenimientoDeEmpleadosToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem reportesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem cerrarTodasLasPestañasToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem cerrarLaPestañaSeleccionadaToolStripMenuItem;
     }
 }
 

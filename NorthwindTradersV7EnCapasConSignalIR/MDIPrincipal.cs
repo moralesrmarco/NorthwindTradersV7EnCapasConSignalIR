@@ -19,13 +19,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         private int childFormNumber = 0;
         public static MDIPrincipal Instance { get; private set; }
         public Usuario Usuario = null;
-        //public Usuario Usuario { get; set; }
         private HashSet<int> permisosUsuarioAutenticado = new HashSet<int>();
 
         public MDIPrincipal()
         {
             InitializeComponent();
-            //TabControlPrincipal.ConfigurarIconos(Properties.Resources.pestanaOff, Properties.Resources.pestanaOn);
+            TabControlPrincipal.ConfigurarIconos(Properties.Resources.pestanaOff, Properties.Resources.pestanaOn);
             Instance = this;
             this.Text = Utils.nwtr;
             // Suscribirse al evento de Utils
@@ -77,6 +76,18 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             toolStripStatusLabel2.Text = Usuario.User;
             ConfiguracionFiscal.TasaIVA = Convert.ToDecimal(ConfigurationManager.AppSettings["TasaIVA"]);
             ActualizarBarraDeEstado("Sesión iniciada correctamente.     |     Bienvenido " + Usuario.NombreCompleto + " al sistema " + Utils.nwtr.Substring(2, (Utils.nwtr.Length - 4)) + ". Para comenzar, seleccione una opción del menú correspondiente a sus permisos de usuario.");
+        }
+
+        private void TabControlPrincipal_SelectedIndexChanged(object sender, EventArgs e) => MDIPrincipal.ActualizarBarraDeEstado();
+
+        private void cerrarTodasLasPestañasToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Utils.CerrarTodasLasPestañas(TabControlPrincipal);
+        }
+
+        private void cerrarLaPestañaSeleccionadaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Utils.CerrarPestañaSeleccionada(TabControlPrincipal);
         }
 
         private void ShowNewForm(object sender, EventArgs e)
@@ -162,6 +173,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             {
                 childForm.Close();
             }
+        }
+
+        private void mantenimientoDeEmpleadosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmEmpleadosCrud frm = new FrmEmpleadosCrud();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Mantenimiento de empleados «");
         }
 
     }
