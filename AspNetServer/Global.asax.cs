@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using AspNetServer.App_Start;
+using System;
 using System.Web;
-using System.Web.Optimization;
-using System.Web.Routing;
-using System.Web.Security;
-using System.Web.SessionState;
+using System.Web.Http;
 
 namespace AspNetServer
 {
@@ -16,6 +12,7 @@ namespace AspNetServer
             // Código que se ejecuta al iniciar la aplicación
             //RouteConfig.RegisterRoutes(RouteTable.Routes);
             //BundleConfig.RegisterBundles(BundleTable.Bundles);
+            GlobalConfiguration.Configure(WebApiConfig.Register);
         }
     }
 }

@@ -38,6 +38,36 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             Utils.ConfDgv(dgv);
             LlenarDgv(false);
             CargarValoresOriginales();
+
+            // Aquí agregas la conexión SignalR
+            InicializarSignalR();
+        }
+
+        private async void InicializarSignalR()
+        {
+            //connection = new HubConnection("http://localhost:44301/");
+            //empleadosHub = connection.CreateHubProxy("empleadosHub");
+
+            //// Suscribirse al evento que el servidor invoca
+            //empleadosHub.On<string, int>("empleadoActualizado", (accion, empleadoId) =>
+            //{
+            //    Invoke(new Action(() =>
+            //    {
+            //        // Aquí refrescas el DataGridView
+            //        LlenarDgv(false);
+            //        //MessageBox.Show($"Empleado {empleadoId} {accion}");
+            //    }));
+            //});
+
+            //try
+            //{
+            //    await connection.Start();
+            //    //MessageBox.Show("Conectado al servidor SignalR");
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show("Error al conectar: " + ex.Message);
+            //}
         }
 
         private void tabcOperacion_DrawItem(object sender, DrawItemEventArgs e) => Utils.DibujarPestañas(sender as TabControl, e);
@@ -77,7 +107,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             cboPais.Enabled = dtpFNacimiento.Enabled = dtpFContratacion.Enabled = cboReportaA.Enabled = true;
             picFoto.Enabled = true;
             txtNotas.BackColor = SystemColors.Window;
-            //btnCargar.Enabled = true;  // no se debe habilitar este control para los registros 1 al 8
         }
 
         private void LlenarCboPais()

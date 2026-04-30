@@ -10,7 +10,6 @@ namespace BLL
 {
     public class EmpleadoBLL
     {
-
         private readonly EmpleadoDAL _empleadoDAL;
 
         public EmpleadoBLL(string _connectionString)
