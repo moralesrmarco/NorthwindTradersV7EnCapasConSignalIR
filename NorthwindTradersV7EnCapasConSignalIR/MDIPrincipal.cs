@@ -181,5 +181,22 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Mantenimiento de empleados «");
         }
 
+        private void reporteDeEmpleadosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmRptEmpleados frm = new FrmRptEmpleados();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de empleados «");
+        }
+
+        private void reporteDeEmpleadosConFotoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmRptEmpleadosConFoto frm = new FrmRptEmpleadosConFoto();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de empleados con foto «");
+        }
+
+        private void reporteDeEmpleadosConFoto2ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //FrmRptEmpleado2 frm = new FrmRptEmpleado2();
+            //Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de empleados con foto 2 «");
+        }
     }
 }

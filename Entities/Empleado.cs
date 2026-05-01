@@ -79,29 +79,6 @@ namespace Entities
             get { return Jefe != null ? Jefe.NameByFirstName : ""; }
         }
 
-        // Método corregido con inyección de delegado
-        public static void NormalizarFotos(IEnumerable<Empleado> empleados, Func<byte[], int, byte[]> normalizador)
-        {
-            foreach (var empleado in empleados)
-            {
-                if (empleado.Photo != null)
-                {
-                    empleado.Photo = normalizador(empleado.Photo, empleado.EmployeeID);
-                }
-            }
-        }
-
-        //public static void NormalizarFotos(IEnumerable<Empleado> empleados)
-        //{
-        //    foreach (var empleado in empleados)
-        //    {
-        //        if (empleado.Photo != null)
-        //        {
-        //            empleado.Photo = Utilities.Utils.StripOleHeader(empleado.Photo, empleado.EmployeeID);
-        //        }
-        //    }
-        //}
-
         // del diagrama entidad-relación podemos ver que 
         // un empleado puede tener muchos órdenes asociadas
         public List<Venta> Ventas { get; set; } = new List<Venta>();

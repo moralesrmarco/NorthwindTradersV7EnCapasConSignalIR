@@ -41,7 +41,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     this.Close();
                     return;
                 }
-                Empleado.NormalizarFotos(new List<Empleado> { empleado }, Utilities.Utils.StripOleHeader);
                 if (empleado != null) 
                     MDIPrincipal.ActualizarBarraDeEstado($"Se encontró el registro con el Id: {empleado.EmployeeID}");
                 // Crear una lista con un solo empleado

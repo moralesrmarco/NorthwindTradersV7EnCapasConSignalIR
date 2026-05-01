@@ -157,6 +157,18 @@
     <Compile Include="FrmRptEmpleado.Designer.cs">
       <DependentUpon>FrmRptEmpleado.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrmRptEmpleados.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmRptEmpleados.Designer.cs">
+      <DependentUpon>FrmRptEmpleados.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmRptEmpleadosConFoto.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmRptEmpleadosConFoto.Designer.cs">
+      <DependentUpon>FrmRptEmpleadosConFoto.cs</DependentUpon>
+    </Compile>
     <Compile Include="MDIPrincipal.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -179,6 +191,12 @@
     <EmbeddedResource Include="FrmRptEmpleado.resx">
       <DependentUpon>FrmRptEmpleado.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FrmRptEmpleados.resx">
+      <DependentUpon>FrmRptEmpleados.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmRptEmpleadosConFoto.resx">
+      <DependentUpon>FrmRptEmpleadosConFoto.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MDIPrincipal.resx">
       <DependentUpon>MDIPrincipal.cs</DependentUpon>
     </EmbeddedResource>
@@ -193,6 +211,8 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <EmbeddedResource Include="RptEmpleado.rdlc" />
+    <EmbeddedResource Include="RptEmpleados.rdlc" />
+    <EmbeddedResource Include="RptEmpleadosConFoto.rdlc" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

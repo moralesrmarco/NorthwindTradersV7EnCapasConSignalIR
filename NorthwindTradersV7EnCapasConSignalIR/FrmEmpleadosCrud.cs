@@ -437,21 +437,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         if (empleado.Photo != null)
                         {
                             fotoOriginalOle = empleado.Photo;
-
                             if (empleado.EmployeeID <= 9)
-                            {
-                                // Foto con encabezado OLE
-                                using (var ms = new MemoryStream(empleado.Photo, 78, empleado.Photo.Length - 78))
-                                    picFoto.Image = Image.FromStream(ms);
                                 btnCargar.Enabled = false;
-                            }
                             else
-                            {
-                                // Foto limpia
-                                using (var ms = new MemoryStream(empleado.Photo))
-                                    picFoto.Image = Image.FromStream(ms);
                                 btnCargar.Enabled = true;
-                            }
+                            using (var ms = new MemoryStream(empleado.Photo))
+                                picFoto.Image = Image.FromStream(ms);
                         }
                         else
                         {
