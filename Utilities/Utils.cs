@@ -245,8 +245,25 @@ namespace Utilities
                     if (!name.StartsWith("nudB", StringComparison.OrdinalIgnoreCase))
                         valores[name] = nud.Value;
                 }
+                else if (ctrl is PictureBox pb)
+                {
+                    valores[name] = pb.Image != null ? Utils.ImageToByteArray(pb.Image) : null;
+                }
             }
             return valores;
+        }
+
+        private static bool AreEqual(byte[] a, byte[] b)
+        {
+            if (ReferenceEquals(a, b)) return true;
+            if (a == null || b == null) return false;
+            if (a.Length != b.Length) return false;
+
+            for (int i = 0; i < a.Length; i++)
+            {
+                if (a[i] != b[i]) return false;
+            }
+            return true;
         }
 
         // Compara valores actuales contra los originales
@@ -336,6 +353,20 @@ namespace Utilities
                         }
                     }
                 }
+                else if (ctrl is PictureBox pb)
+                {
+                    if (valoresOriginales.TryGetValue(name, out var original))
+                    {
+                        var actualBytes = pb.Image != null ? Utils.ImageToByteArray(pb.Image) : null;
+                        var originalBytes = original as byte[];
+
+                        if (!AreEqual(actualBytes, originalBytes))
+                        {
+                            hayCambios = true;
+                            errorProvider.SetError(pb, ecfm);
+                        }
+                    }
+                }
             }
             return hayCambios;
         }
@@ -404,6 +435,17 @@ namespace Utilities
                     {
                         var actual = nud.Value;
                         if (!Equals(original, actual))
+                            hayCambios = true;
+                    }
+                }
+                else if (ctrl is PictureBox pb)
+                {
+                    if (valoresOriginales.TryGetValue(name, out var original))
+                    {
+                        var actualBytes = pb.Image != null ? Utils.ImageToByteArray(pb.Image) : null;
+                        var originalBytes = original as byte[];
+
+                        if (!AreEqual(actualBytes, originalBytes))
                             hayCambios = true;
                     }
                 }

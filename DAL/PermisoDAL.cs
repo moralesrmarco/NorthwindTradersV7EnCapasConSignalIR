@@ -153,7 +153,7 @@ namespace DAL
                     da.Fill(dt);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw new Exception("Error al llenar el catálogo de permisos concedidos");
             }
