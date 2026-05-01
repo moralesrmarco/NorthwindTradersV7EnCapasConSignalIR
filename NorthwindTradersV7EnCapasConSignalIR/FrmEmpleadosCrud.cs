@@ -1,12 +1,15 @@
 ﻿using BLL;
 using Entities;
 using Entities.DTOs;
+using Microsoft.AspNet.SignalR.Client;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Utilities;
 
@@ -20,6 +23,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         OpenFileDialog openFileDialog;
         internal Dictionary<string, object> valoresOriginales;
         private byte[] fotoOriginalOle = null;
+        private HubConnection _hubConnection;
+        private IHubProxy _hubProxy;
 
         public FrmEmpleadosCrud()
         {
@@ -45,36 +50,90 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private async void InicializarSignalR()
         {
-            //connection = new HubConnection("http://localhost:44301/");
-            //empleadosHub = connection.CreateHubProxy("empleadosHub");
+            _hubConnection = new HubConnection("http://localhost:12345/");
+            _hubProxy = _hubConnection.CreateHubProxy("EmpleadosHub");
 
-            //// Suscribirse al evento que el servidor invoca
-            //empleadosHub.On<string, int>("empleadoActualizado", (accion, empleadoId) =>
-            //{
-            //    Invoke(new Action(() =>
-            //    {
-            //        // Aquí refrescas el DataGridView
-            //        LlenarDgv(false);
-            //        //MessageBox.Show($"Empleado {empleadoId} {accion}");
-            //    }));
-            //});
+            // Suscribirse al evento que el servidor invoca
+            _hubProxy.On<string, int>("empleadoActualizado", (accion, empleadoId) =>
+            {
+                Invoke(new Action(() =>
+                {
+                    // Aquí refrescas el DataGridView
+                    LlenarDgv(false);
+                }));
+            });
+            
+            _hubConnection.Closed += async () =>
+            {
+                await ReconectarSignalR();
+            };
 
-            //try
-            //{
-            //    await connection.Start();
-            //    //MessageBox.Show("Conectado al servidor SignalR");
-            //}
-            //catch (Exception ex)
-            //{
-            //    MessageBox.Show("Error al conectar: " + ex.Message);
-            //}
+            try
+            {
+                await _hubConnection.Start();
+                MDIPrincipal.ActualizarBarraDeEstado("Conectado a SignalR");
+            }
+            catch (Exception ex)
+            {
+                MDIPrincipal.ActualizarBarraDeEstado("Error al conectar: " + ex.Message);
+            }
+        }
+
+        private async Task ReconectarSignalR()
+        {
+            int intentos = 0;
+            bool reconectado = false;
+
+            while (!reconectado && intentos < 5) // máximo 5 intentos
+            {
+                intentos++;
+                int delay = (int)Math.Pow(2, intentos) * 1000; // 2^n segundos
+
+                Invoke(new Action(() =>
+                {
+                    MDIPrincipal.ActualizarBarraDeEstado($"Intentando reconectar... intento {intentos}");
+                }));
+
+                await Task.Delay(delay);
+
+                try
+                {
+                    await _hubConnection.Start();
+                    reconectado = true;
+                    Invoke(new Action(() =>
+                    {
+                        MDIPrincipal.ActualizarBarraDeEstado("Reconectado a SignalR");
+                    }));
+                }
+                catch
+                {
+                    // sigue el bucle hasta agotar intentos
+                }
+            }
+
+            if (!reconectado)
+            {
+                Invoke(new Action(() =>
+                {
+                    MDIPrincipal.ActualizarBarraDeEstado("No se pudo reconectar a SignalR");
+                }));
+            }
         }
 
         private void tabcOperacion_DrawItem(object sender, DrawItemEventArgs e) => Utils.DibujarPestañas(sender as TabControl, e);
 
         private void GrbPaint(object sender, PaintEventArgs e) => Utils.GrbPaint(this, sender, e);
 
-        private void FrmEmpleadosCrud_FormClosed(object sender, FormClosedEventArgs e) => MDIPrincipal.ActualizarBarraDeEstado();
+        private void FrmEmpleadosCrud_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            MDIPrincipal.ActualizarBarraDeEstado();
+            // Libera la conexión SignalR
+            if (_hubConnection != null)
+            {
+                _hubConnection.Stop();
+                _hubConnection.Dispose();
+            }
+        }
 
         internal void FrmEmpleadosCrud_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -539,7 +598,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             LlenarCboReportaA();
         }
 
-        private void btnOperacion_Click(object sender, EventArgs e)
+        private async void btnOperacion_Click(object sender, EventArgs e)
         {
             BorrarMensajesError();
             if (tabcOperacion.SelectedTab == tbpListar)
@@ -577,18 +636,30 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             ReportsTo = cboReportaA.SelectedValue.ToString() == "0" ? (int?)null : Convert.ToInt32(cboReportaA.SelectedValue),
                             Photo = picFoto.Image != null ? Utils.ImageToByteArray(picFoto.Image) : null
                         };
-                        int numRegs = _empleadoBLL.Insertar(empleado);
-                        MDIPrincipal.ActualizarBarraDeEstado($"Se insertaron {numRegs} registros");
-                        string idyNombre = $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
-                        if (numRegs > 0)
+                        using (var client = new HttpClient())
                         {
-                            txtId.Text = empleado.EmployeeID.ToString();
-                            idyNombre = $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
-                            U.NotificacionInformation(idyNombre + Utils.srs);
-                        }
-                        else
-                        {
-                            U.NotificacionError(idyNombre + Utils.nfrs);
+                            client.BaseAddress = new Uri("http://localhost:12345/");
+                            var response = await client.PostAsJsonAsync("api/empleados/insertar", empleado);
+                            if (response.IsSuccessStatusCode)
+                            {
+                                int numRegs = await response.Content.ReadAsAsync<int>();
+                                MDIPrincipal.ActualizarBarraDeEstado($"Se insertaron {numRegs} registros");
+                                string idyNombre = $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
+                                if (numRegs > 0)
+                                {
+                                    txtId.Text = empleado.EmployeeID.ToString();
+                                    idyNombre = $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
+                                    U.NotificacionInformation(idyNombre + Utils.srs);
+                                }
+                                else
+                                {
+                                    U.NotificacionError(idyNombre + Utils.nfrs);
+                                }
+                            }
+                            else
+                            {
+                                U.NotificacionError($"Error al llamar al API.");
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -645,17 +716,29 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         {
                             empleado.Photo = Utils.ImageToByteArray(picFoto.Image);
                         }
-                        int numRegs = _empleadoBLL.Actualizar(empleado);
-                        MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registros");
-                        string idyNombre = $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
-                        if (numRegs > 0)
-                            U.NotificacionInformation(idyNombre + Utils.sms);
-                        else if (numRegs == -1)
-                            U.NotificacionError(idyNombre + Utils.nfmfe);
-                        else if (numRegs == -2)
-                            U.NotificacionError(idyNombre + Utils.nfmfm);
-                        else
-                            U.NotificacionError(idyNombre + Utils.nfmmd);
+                        using (var client = new HttpClient())
+                        {
+                            client.BaseAddress = new Uri("http://localhost:12345/");
+                            var response = await client.PutAsJsonAsync("api/empleados/actualizar", empleado);
+                            if (response.IsSuccessStatusCode)
+                            {
+                                int numRegs = await response.Content.ReadAsAsync<int>();
+                                MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registros");
+                                string idyNombre = $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
+                                if (numRegs > 0)
+                                    U.NotificacionInformation(idyNombre + Utils.sms);
+                                else if (numRegs == -1)
+                                    U.NotificacionError(idyNombre + Utils.nfmfe);
+                                else if (numRegs == -2)
+                                    U.NotificacionError(idyNombre + Utils.nfmfm);
+                                else
+                                    U.NotificacionError(idyNombre + Utils.nfmmd);
+                            }
+                            else
+                            {
+                                U.NotificacionError($"Error al llamar al API.");
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -673,17 +756,29 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     btnOperacion.Enabled = false;
                     try
                     {
-                        int numRegs = _empleadoBLL.Eliminar(Convert.ToInt32(txtId.Text), (byte[])txtId.Tag);
-                        MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registros");
-                        string idyNombre = $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
-                        if (numRegs > 0)
-                            U.NotificacionInformation(idyNombre + Utils.ses);
-                        else if (numRegs == -1)
-                            U.NotificacionError(idyNombre + Utils.nfefe);
-                        else if (numRegs == -2)
-                            U.NotificacionError(idyNombre + Utils.nfefm);
-                        else
-                            U.NotificacionError(idyNombre + Utils.nfemd);
+                        using (var client = new HttpClient())
+                        {
+                            client.BaseAddress = new Uri("http://localhost:12345/");
+                            var response = await client.DeleteAsync($"api/empleados/eliminar/{txtId.Text}");
+                            if (response.IsSuccessStatusCode)
+                            {
+                                int numRegs = await response.Content.ReadAsAsync<int>();
+                                MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registros");
+                                string idyNombre = $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
+                                if (numRegs > 0)
+                                    U.NotificacionInformation(idyNombre + Utils.ses);
+                                else if (numRegs == -1)
+                                    U.NotificacionError(idyNombre + Utils.nfefe);
+                                else if (numRegs == -2)
+                                    U.NotificacionError(idyNombre + Utils.nfefm);
+                                else
+                                    U.NotificacionError(idyNombre + Utils.nfemd);
+                            }
+                            else
+                            {
+                                U.NotificacionError($"Error al llamar al API.");
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {

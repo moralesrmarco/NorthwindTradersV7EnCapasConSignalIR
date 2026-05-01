@@ -21,10 +21,8 @@ namespace AspNetServer.Controllers
             {
                 var context = GlobalHost.ConnectionManager.GetHubContext<EmpleadosHub>();
                 context.Clients.All.empleadoActualizado("Insertado", empleado.EmployeeID);
-                return Ok(numRegs);
             }
-
-            return BadRequest("No se insertó el empleado");
+            return Ok(numRegs);
         }
 
         [HttpPut]
@@ -37,10 +35,8 @@ namespace AspNetServer.Controllers
             {
                 var context = GlobalHost.ConnectionManager.GetHubContext<EmpleadosHub>();
                 context.Clients.All.empleadoActualizado("Actualizado", empleado.EmployeeID);
-                return Ok(numRegs);
             }
-
-            return BadRequest("No se actualizó el empleado");
+            return Ok(numRegs);
         }
 
         [HttpDelete]
@@ -53,25 +49,19 @@ namespace AspNetServer.Controllers
             {
                 var context = GlobalHost.ConnectionManager.GetHubContext<EmpleadosHub>();
                 context.Clients.All.empleadoActualizado("Eliminado", id);
-                return Ok(numRegs);
             }
-
-            return BadRequest("No se eliminó el empleado");
+            return Ok(numRegs);
         }
+
 
         [HttpGet]
         [Route("api/empleados/{id}")]
         public IHttpActionResult Obtener(int id)
         {
-            var empleado = _empleadoBLL.ObtenerEmpleadoPorId(id); 
-
+            var empleado = _empleadoBLL.ObtenerEmpleadoPorId(id);
             if (empleado != null)
-            {
                 return Ok(empleado);
-            }
-
             return NotFound();
         }
-
     }
 }
