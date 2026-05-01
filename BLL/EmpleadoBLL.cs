@@ -57,7 +57,6 @@ namespace BLL
             return vista.ToTable();
         }
 
-
         public (List<DtoEmpleadosDgv> empleados, string mensajeEstado) ObtenerEmpleadosDgv(bool selectorRealizaBusqueda, DtoEmpleadosBuscar criterios)
         {
             criterios.IdIni = string.IsNullOrEmpty(criterios.IdIniTxt) ? 0 : Convert.ToInt32(criterios.IdIniTxt);

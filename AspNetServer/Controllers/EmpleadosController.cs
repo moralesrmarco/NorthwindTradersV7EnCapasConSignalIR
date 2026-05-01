@@ -2,17 +2,19 @@
 using BLL;
 using Entities;
 using Microsoft.AspNet.SignalR;
+using System;
 using System.Configuration;
 using System.Web.Http;
 
 namespace AspNetServer.Controllers
 {
+    [RoutePrefix("api/empleados")]
     public class EmpleadosController : ApiController
     {
         private EmpleadoBLL _empleadoBLL = new EmpleadoBLL(ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString);
 
         [HttpPost]
-        [Route("api/empleados/insertar")]
+        [Route("insertar")]
         public IHttpActionResult Insertar(Empleado empleado)
         {
             int numRegs = _empleadoBLL.Insertar(empleado);
@@ -26,7 +28,7 @@ namespace AspNetServer.Controllers
         }
 
         [HttpPut]
-        [Route("api/empleados/actualizar")]
+        [Route("actualizar")]
         public IHttpActionResult Actualizar(Empleado empleado)
         {
             int numRegs = _empleadoBLL.Actualizar(empleado);
@@ -40,10 +42,11 @@ namespace AspNetServer.Controllers
         }
 
         [HttpDelete]
-        [Route("api/empleados/eliminar/{id}")]
-        public IHttpActionResult Eliminar(int id)
+        [Route("eliminar/{id}")]
+        public IHttpActionResult Eliminar(int id, [FromUri] string rowVersion)
         {
-            int numRegs = _empleadoBLL.Eliminar(id, null); // ajusta RowVersion si lo usas
+            var rowVersionBytes = Convert.FromBase64String(rowVersion);
+            int numRegs = _empleadoBLL.Eliminar(id, rowVersionBytes);
 
             if (numRegs > 0)
             {
@@ -55,7 +58,7 @@ namespace AspNetServer.Controllers
 
 
         [HttpGet]
-        [Route("api/empleados/{id}")]
+        [Route("{id}")]
         public IHttpActionResult Obtener(int id)
         {
             var empleado = _empleadoBLL.ObtenerEmpleadoPorId(id);

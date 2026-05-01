@@ -754,12 +754,19 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 {
                     MDIPrincipal.ActualizarBarraDeEstado(Utils.eliminandoRegistro);
                     btnOperacion.Enabled = false;
+                    var empleado = new Empleado
+                    {
+                        EmployeeID = Convert.ToInt32(txtId.Text),
+                        RowVersion = txtId.Tag as byte[]
+                    };
                     try
                     {
                         using (var client = new HttpClient())
                         {
                             client.BaseAddress = new Uri("http://localhost:12345/");
-                            var response = await client.DeleteAsync($"api/empleados/eliminar/{txtId.Text}");
+                            var rowVersionBase64 = Convert.ToBase64String(txtId.Tag as byte[]);
+                            var response = await client.DeleteAsync(
+                                $"api/empleados/eliminar/{txtId.Text}?rowVersion={rowVersionBase64}");
                             if (response.IsSuccessStatusCode)
                             {
                                 int numRegs = await response.Content.ReadAsAsync<int>();
