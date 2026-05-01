@@ -34,6 +34,13 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
                 var empleado = _empleadoBLL.ObtenerEmpleadoPorId(Id);
+                if (empleado == null)
+                {
+                    MDIPrincipal.ActualizarBarraDeEstado($"No se encontró el registro con el Id: {Id}");
+                    U.NotificacionWarning($"[orange]No se encontró el empleado con el Id: {Id}, el registro fue eliminado previamente por otro usuario de la red.\n[black]Intente refrescar los datos.");
+                    this.Close();
+                    return;
+                }
                 Empleado.NormalizarFotos(new List<Empleado> { empleado }, Utilities.Utils.StripOleHeader);
                 if (empleado != null) 
                     MDIPrincipal.ActualizarBarraDeEstado($"Se encontró el registro con el Id: {empleado.EmployeeID}");

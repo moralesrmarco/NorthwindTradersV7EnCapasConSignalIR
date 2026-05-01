@@ -104,16 +104,6 @@ namespace BLL
                 if (empleado.ReportsTo.HasValue)
                     empleado.Jefe = _empleadoDAL.ObtenerEmpleadoPorId(empleado.ReportsTo.Value);
             }
-            else 
-            {
-                // Si no tiene jefe, asignamos un objeto Empleado con LastName = "N/A"
-                empleado.Jefe = new Empleado
-                {
-                    EmployeeID = 0,
-                    LastName = "N/A",
-                    FirstName = string.Empty
-                };
-            }
             return empleado;
         }
 
