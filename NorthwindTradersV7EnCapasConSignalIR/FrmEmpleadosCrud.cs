@@ -2,6 +2,7 @@
 using Entities;
 using Entities.DTOs;
 using Microsoft.AspNet.SignalR.Client;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -25,6 +26,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         private byte[] fotoOriginalOle = null;
         private HubConnection _hubConnection;
         private IHubProxy _hubProxy;
+        private bool realizandoBusqueda = false;
 
         public FrmEmpleadosCrud()
         {
@@ -58,8 +60,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             {
                 Invoke(new Action(() =>
                 {
-                    // Aquí refrescas el DataGridView
-                    LlenarDgv(false);
+                    // Solo refrescar si NO estás realizando búsqueda
+                    if (!realizandoBusqueda)
+                        // Aquí refrescas el DataGridView
+                        LlenarDgv(false);
                 }));
             });
             
@@ -237,6 +241,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     ConfDgv();
                     EjecutarConfDgv = false;
                 }
+                LlenarCombos();
                 MDIPrincipal.ActualizarBarraDeEstado(resultado.mensajeEstado);
             }
             catch (Exception ex)
@@ -287,6 +292,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 DeshabilitarControles();
             LlenarDgv(true);
             CargarValoresOriginales();
+            realizandoBusqueda = true;
         }
 
         private void btnLimpiar_Click(object sender, EventArgs e)
@@ -298,6 +304,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 DeshabilitarControles();
             LlenarDgv(false);
             CargarValoresOriginales();
+            realizandoBusqueda = false;
         }
 
         void BorrarMensajesError() => errorProvider1.Clear();
@@ -642,12 +649,14 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             var response = await client.PostAsJsonAsync("api/empleados/insertar", empleado);
                             if (response.IsSuccessStatusCode)
                             {
-                                int numRegs = await response.Content.ReadAsAsync<int>();
+                                var resultado = await response.Content.ReadAsAsync<dynamic>();
+                                int numRegs = resultado.NumRegs;
+                                var empleadoInsertado = JsonConvert.DeserializeObject<Empleado>(resultado.Empleado.ToString());
                                 MDIPrincipal.ActualizarBarraDeEstado($"Se insertaron {numRegs} registros");
                                 string idyNombre = $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
                                 if (numRegs > 0)
                                 {
-                                    txtId.Text = empleado.EmployeeID.ToString();
+                                    txtId.Text = empleadoInsertado.EmployeeID.ToString();
                                     idyNombre = $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
                                     U.NotificacionInformation(idyNombre + Utils.srs);
                                 }
@@ -669,8 +678,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     HabilitarControles();
                     btnOperacion.Enabled = true;
                     btnCargar.Enabled = true;
-                    LlenarCombos();
-                    ActualizaDgv();
                 }
             }
             else if (tabcOperacion.SelectedTab == tbpModificar)
@@ -744,8 +751,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     {
                         U.MsgCatchOue(ex);
                     }
-                    LlenarCombos();
-                    ActualizaDgv();
                 }
             }
             else if (tabcOperacion.SelectedTab == tbpEliminar)
@@ -791,8 +796,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     {
                         U.MsgCatchOue(ex);
                     }
-                    LlenarCombos();
-                    ActualizaDgv();
                 }
             }
             CargarValoresOriginales();

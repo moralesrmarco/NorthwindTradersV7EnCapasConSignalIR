@@ -24,7 +24,8 @@ namespace AspNetServer.Controllers
                 var context = GlobalHost.ConnectionManager.GetHubContext<EmpleadosHub>();
                 context.Clients.All.empleadoActualizado("Insertado", empleado.EmployeeID);
             }
-            return Ok(numRegs);
+            // Devuelves un objeto anónimo con ambos valores
+            return Ok(new { NumRegs = numRegs, Empleado = empleado });
         }
 
         [HttpPut]
