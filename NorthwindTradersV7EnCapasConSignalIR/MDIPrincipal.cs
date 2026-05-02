@@ -113,41 +113,41 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         {
             empleadosToolStripMenuItem.Enabled = false;
             clientesToolStripMenuItem.Enabled = false;
-            //proveedoresToolStripMenuItem.Enabled = false;
-            //categoríasToolStripMenuItem.Enabled = false;
-            //productosToolStripMenuItem.Enabled = false;
-            //ventasToolStripMenuItem.Enabled = false;
-            //administraciónToolStripMenuItem.Enabled = false;
-            //gráficasToolStripMenuItem.Enabled = false;
-            //tablerosControlToolStripMenuItem.Enabled = false;
-            //tableroDeControlParaLaAltaDirecciónToolStripMenuItem.Enabled = false;
-            //tableroDeControlParaLosVendedoresToolStripMenuItem.Enabled = false;
+            proveedoresToolStripMenuItem.Enabled = false;
+            categoríasToolStripMenuItem.Enabled = false;
+            productosToolStripMenuItem.Enabled = false;
+            ventasToolStripMenuItem.Enabled = false;
+            administraciónToolStripMenuItem.Enabled = false;
+            gráficasToolStripMenuItem.Enabled = false;
+            tablerosDeControlToolStripMenuItem.Enabled = false;
+            tableroDeControlParaLaAltaDirecciónToolStripMenuItem.Enabled = false;
+            tableroDeControlParaLosVendedoresToolStripMenuItem.Enabled = false;
             foreach (int permisoId in permisos)
             {
                 if (permisoId == 1)
                     empleadosToolStripMenuItem.Enabled = true; // Permiso para Empleados
                 else if (permisoId == 2)
                     clientesToolStripMenuItem.Enabled = true; // Permiso para Clientes
-                //else if (permisoId == 3)
-                //    proveedoresToolStripMenuItem.Enabled = true; // Permiso para Proveedores
-                //else if (permisoId == 4)
-                //    categoríasToolStripMenuItem.Enabled = true; // Permiso para Categorías
-                //else if (permisoId == 5)
-                //    productosToolStripMenuItem.Enabled = true; // Permiso para Productos
-                //else if (permisoId == 6)
-                //    ventasToolStripMenuItem.Enabled = true; // Permiso para Pedidos
-                //else if (permisoId == 7)
-                //    administraciónToolStripMenuItem.Enabled = true; // Permiso para Administración
-                //else if (permisoId == 8)
-                //    gráficasToolStripMenuItem.Enabled = true;
-                //else if (permisoId == 10 || permisoId == 12)
-                //{
-                //    tablerosControlToolStripMenuItem.Enabled = true; // Permiso para Tableros de control
-                //    if (permisoId == 10)
-                //        tableroDeControlParaLaAltaDirecciónToolStripMenuItem.Enabled = true; // Permiso para Tablero de control para la alta dirección
-                //    else if (permisoId == 12)
-                //        tableroDeControlParaLosVendedoresToolStripMenuItem.Enabled = true; // Permiso para Tablero de control para los vendedores
-                //}
+                else if (permisoId == 3)
+                    proveedoresToolStripMenuItem.Enabled = true; // Permiso para Proveedores
+                else if (permisoId == 4)
+                    categoríasToolStripMenuItem.Enabled = true; // Permiso para Categorías
+                else if (permisoId == 5)
+                    productosToolStripMenuItem.Enabled = true; // Permiso para Productos
+                else if (permisoId == 6)
+                    ventasToolStripMenuItem.Enabled = true; // Permiso para Pedidos
+                else if (permisoId == 7)
+                    administraciónToolStripMenuItem.Enabled = true; // Permiso para Administración
+                else if (permisoId == 8)
+                    gráficasToolStripMenuItem.Enabled = true;
+                else if (permisoId == 10 || permisoId == 12)
+                {
+                    tablerosDeControlToolStripMenuItem.Enabled = true; // Permiso para Tableros de control
+                    if (permisoId == 10)
+                        tableroDeControlParaLaAltaDirecciónToolStripMenuItem.Enabled = true; // Permiso para Tablero de control para la alta dirección
+                    else if (permisoId == 12)
+                        tableroDeControlParaLosVendedoresToolStripMenuItem.Enabled = true; // Permiso para Tablero de control para los vendedores
+                }
             }
         }
 
@@ -248,11 +248,11 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void cambiarContraseñaToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            //using (FrmCambiarContrasena frm = new FrmCambiarContrasena())
-            //{
-            //    frm.UsuarioLogueado = toolStripStatusLabel2.Text;
-            //    frm.ShowDialog();
-            //}
+            using (FrmCambiarContrasena frm = new FrmCambiarContrasena())
+            {
+                frm.UsuarioLogueado = toolStripStatusLabel2.Text;
+                frm.ShowDialog();
+            }
         }
 
         private void cambiarDeUsuarioLogueadoToolStripMenuItem_Click(object sender, EventArgs e)
