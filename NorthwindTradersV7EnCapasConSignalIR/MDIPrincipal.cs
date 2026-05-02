@@ -462,5 +462,49 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             FrmRptEmpleado2 frm = new FrmRptEmpleado2();
             Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de empleados con foto 2 «");
         }
+
+        private void mantenimientoDeClientesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmClientesCrud frm = new FrmClientesCrud();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Mantenimiento de clientes «");
+        }
+
+        private void directorioDeClientesYProveedoresToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmClientesyProveedoresDirectorio frm = new FrmClientesyProveedoresDirectorio();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Directorio de clientes y proveedores «");
+        }
+
+        private void directorioDeClientesYProveedoresPorCiudadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmClientesyProveedoresDirectorioxCiudad frm = new FrmClientesyProveedoresDirectorioxCiudad();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Directorio de clientes y proveedores por ciudad «");
+        }
+
+        private void directorioDeClientesYProveedoresPorPaísToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmClientesyProveedoresDirectorioxPais frm = new FrmClientesyProveedoresDirectorioxPais();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Directorio de clientes y proveedores por país «");
+        }
+
+        private void directorioDeClientesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void directorioDeClientesYProveedoresToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void directorioDeClientesYProveedoresPorCiudadToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void directorioDeClientesYProveedoresPorPaísToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
