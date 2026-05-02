@@ -1,5 +1,7 @@
-﻿using Entities;
+﻿using BLL;
+using Entities;
 using System;
+using System.Configuration;
 using System.Windows.Forms;
 using Utilities;
 
@@ -7,15 +9,18 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 {
     public partial class FrmLogin : Form
     {
-        //public Usuario Usuario { get; private set; }
+        public Usuario UsuarioLogueado { get; private set; }
         bool _imagenMostrada = true;
         byte numeroIntentos = 0;
+
+        string _connectionString = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
+        private readonly UsuarioBLL _usuarioBLL;
 
         public FrmLogin()
         {
             InitializeComponent();
             this.Text = Utils.nwtr;
-
+            _usuarioBLL = new UsuarioBLL(_connectionString);
             // Al presionar Enter se ejecuta btnEntrar_Click
             this.AcceptButton = btnEntrar;
         }
@@ -24,25 +29,25 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         {
             try
             {
-                //Usuario = new Usuario
-                //{
-                //    User = txtUsuario.Text.Trim(),
-                //    Password = Utils.ComputeSha256Hash(txtPwd.Text.Trim())
-                //};
-                //Usuario = UsuarioBLL.ValidarUsuario(Usuario);
-                //if (Usuario.Id > 0)
-                //{
-                //    this.Close();
-                //    return;
-                //}
+                UsuarioLogueado = new Usuario
+                {
+                    User = txtUsuario.Text.Trim(),
+                    Password = Utils.ComputeSha256Hash(txtPwd.Text.Trim())
+                };
+                UsuarioLogueado = _usuarioBLL.ValidarUsuario(UsuarioLogueado);
+                if (UsuarioLogueado.Id > 0)
+                {
+                    this.Close();
+                    return;
+                }
                 numeroIntentos++;
                 if (numeroIntentos >= 3)
                 {
-                    U.NotificacionError("Demasiados intentos fallidos. La aplicación se cerrará.");
+                    U.NotificacionError("Demasiados intentos fallidos.\n\nLa aplicación se cerrará.");
                     Application.Exit();
                     return;
                 }
-                U.NotificacionError("Error de autenticación.\nUsuario o contraseña incorrectos.");
+                U.NotificacionError("Error de autenticación.\n\nUsuario o contraseña incorrectos.");
                 txtPwd.Clear();
                 txtPwd.Focus();
             }

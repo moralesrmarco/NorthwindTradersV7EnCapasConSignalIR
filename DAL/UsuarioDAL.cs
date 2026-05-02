@@ -192,29 +192,25 @@ namespace DAL
             return numRegs;
         }
 
-        public int ValidarUsuario(string usuario, string password, out string nombreUsuarioAutenticado)
+        public Usuario ValidarUsuario(Usuario usuario)
         {
-            int idUsuario = 0;
-            nombreUsuarioAutenticado = string.Empty;
             try
             {
                 using (var cn = new SqlConnection(_connectionString))
                 using (var cmd = new SqlCommand("SpUsuarioValidarLogin", cn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@Usuario", usuario);
-                    cmd.Parameters.AddWithValue("@Password", password);
+                    cmd.Parameters.AddWithValue("@Usuario", usuario.User);
+                    cmd.Parameters.AddWithValue("@Password", usuario.Password);
                     cn.Open();
                     using (var reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
                         {
-                            idUsuario = Convert.ToInt32(reader["Id"]);
-                            string paterno = reader["Paterno"].ToString();
-                            string materno = reader["Materno"].ToString();
-                            string nombres = reader["Nombres"].ToString();
-
-                            nombreUsuarioAutenticado = $"{nombres} {paterno} {materno}";
+                            usuario.Id = Convert.ToInt32(reader["Id"]);
+                            usuario.Paterno = reader["Paterno"].ToString();
+                            usuario.Materno = reader["Materno"].ToString();
+                            usuario.Nombres = reader["Nombres"].ToString();
                         }
                     }
                 }
@@ -223,7 +219,7 @@ namespace DAL
             {
                 throw new Exception("Error al obtener el usuario: " + ex.Message);
             }
-            return idUsuario;
+            return usuario;
         }
 
         public DataTable ObtenerUsuarios(DtoUsuariosBuscar dtoUsuariosBuscar)

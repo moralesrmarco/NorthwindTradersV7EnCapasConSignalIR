@@ -41,9 +41,9 @@ namespace BLL
             return _usuarioDAL.ValidarContraseñaActual(usuario, contrasenaActual);
         }
 
-        public int ValidarUsuario(string usuario, string password, out string nombreUsuarioAutenticado)
+        public Usuario ValidarUsuario(Usuario usuario)
         {
-            return _usuarioDAL.ValidarUsuario(usuario, password, out nombreUsuarioAutenticado);
+            return _usuarioDAL.ValidarUsuario(usuario);
         }
 
         public DataTable ObtenerUsuarios(DtoUsuariosBuscar dtoUsuariosBuscar)
