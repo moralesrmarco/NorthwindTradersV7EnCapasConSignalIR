@@ -195,8 +195,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void reporteDeEmpleadosConFoto2ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            //FrmRptEmpleado2 frm = new FrmRptEmpleado2();
-            //Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de empleados con foto 2 «");
+            FrmRptEmpleado2 frm = new FrmRptEmpleado2();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de empleados con foto 2 «");
         }
     }
 }

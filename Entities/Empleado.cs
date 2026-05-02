@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 
-//Empleado completa ya corregida con la técnica de inyección de delegado para evitar la dependencia circular con Utilities.
-
 namespace Entities
 {
     public class Empleado

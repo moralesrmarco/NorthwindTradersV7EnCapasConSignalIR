@@ -1,5 +1,4 @@
-﻿using BLL.EF;
-using DAL.EF;
+﻿using BLL;
 using Microsoft.Reporting.WinForms;
 using System;
 using System.Configuration;
@@ -7,14 +6,19 @@ using System.Drawing;
 using System.Windows.Forms;
 using Utilities;
 
-namespace NorthwindTradersV6EF
+namespace NorthwindTradersV7EnCapasConSignalIR
 {
     public partial class FrmRptEmpleado2 : Form
     {
+
+        string _connectionString = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
+        private EmpleadoBLL _empleadoBLL;
+
         public FrmRptEmpleado2()
         {
             InitializeComponent();
             reportViewer1.BackColor = SystemColors.GradientInactiveCaption;
+            _empleadoBLL = new EmpleadoBLL(_connectionString);
         }
 
         private void GrbPaint(object sender, PaintEventArgs e) => Utils.GrbPaint2(this, sender, e);
@@ -26,8 +30,7 @@ namespace NorthwindTradersV6EF
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-                var empleados = EmployeeBLL.ObtenerTodosLosEmpleados();
-                Employee.NormalizarFotos(empleados);
+                var empleados = _empleadoBLL.ObtenerTodosLosEmpleados();
                 MDIPrincipal.ActualizarBarraDeEstado($"Se encontraron {empleados.Count} registro(s)");
                 var rds = new ReportDataSource("DataSet1", empleados);
                 reportViewer1.LocalReport.DataSources.Clear();

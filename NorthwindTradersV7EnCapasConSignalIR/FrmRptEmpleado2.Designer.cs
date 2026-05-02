@@ -1,4 +1,4 @@
-﻿namespace NorthwindTradersV6EF
+﻿namespace NorthwindTradersV7EnCapasConSignalIR
 {
     partial class FrmRptEmpleado2
     {
@@ -38,10 +38,11 @@
             this.groupBox1.Controls.Add(this.reportViewer1);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox1.Location = new System.Drawing.Point(30, 30);
+            this.groupBox1.Location = new System.Drawing.Point(22, 24);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(30);
-            this.groupBox1.Size = new System.Drawing.Size(740, 390);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(22, 24, 22, 24);
+            this.groupBox1.Size = new System.Drawing.Size(556, 318);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "» Reporte de empleados «";
@@ -50,22 +51,24 @@
             // reportViewer1
             // 
             this.reportViewer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.reportViewer1.LocalReport.ReportEmbeddedResource = "NorthwindTradersV6EF.RptEmpleado.rdlc";
-            this.reportViewer1.Location = new System.Drawing.Point(30, 49);
+            this.reportViewer1.LocalReport.ReportEmbeddedResource = "NorthwindTradersV7EnCapasConSignalIR.RptEmpleado.rdlc";
+            this.reportViewer1.Location = new System.Drawing.Point(22, 39);
+            this.reportViewer1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.reportViewer1.Name = "reportViewer1";
             this.reportViewer1.ServerReport.BearerToken = null;
-            this.reportViewer1.Size = new System.Drawing.Size(680, 311);
+            this.reportViewer1.Size = new System.Drawing.Size(512, 255);
             this.reportViewer1.TabIndex = 0;
             // 
             // FrmRptEmpleado2
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(600, 366);
             this.ControlBox = false;
             this.Controls.Add(this.groupBox1);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "FrmRptEmpleado2";
-            this.Padding = new System.Windows.Forms.Padding(30);
+            this.Padding = new System.Windows.Forms.Padding(22, 24, 22, 24);
             this.Text = "» Reporte de empleados «";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FrmRptEmpleado2_FormClosed);
