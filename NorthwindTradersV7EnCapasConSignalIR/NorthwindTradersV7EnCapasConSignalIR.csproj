@@ -199,6 +199,24 @@
     <Compile Include="FrmNotificacion.Designer.cs">
       <DependentUpon>FrmNotificacion.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrmProductosConsultaAlfabetica.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmProductosConsultaAlfabetica.Designer.cs">
+      <DependentUpon>FrmProductosConsultaAlfabetica.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmProductosListado.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmProductosListado.Designer.cs">
+      <DependentUpon>FrmProductosListado.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmProductosPorEncimaPrecioPromedio.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmProductosPorEncimaPrecioPromedio.Designer.cs">
+      <DependentUpon>FrmProductosPorEncimaPrecioPromedio.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmProveedoresCrud.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -289,6 +307,7 @@
     <Compile Include="FrmRptProveedores.Designer.cs">
       <DependentUpon>FrmRptProveedores.cs</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\ComboBoxHelper.cs" />
     <Compile Include="MDIPrincipal.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -331,6 +350,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FrmNotificacion.resx">
       <DependentUpon>FrmNotificacion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmProductosConsultaAlfabetica.resx">
+      <DependentUpon>FrmProductosConsultaAlfabetica.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmProductosListado.resx">
+      <DependentUpon>FrmProductosListado.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmProductosPorEncimaPrecioPromedio.resx">
+      <DependentUpon>FrmProductosPorEncimaPrecioPromedio.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FrmProveedoresCrud.resx">
       <DependentUpon>FrmProveedoresCrud.cs</DependentUpon>
@@ -418,7 +446,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controles\" />
-    <Folder Include="Helpers\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BLL\BLL.csproj">

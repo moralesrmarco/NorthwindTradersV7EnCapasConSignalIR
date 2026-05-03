@@ -570,5 +570,48 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             FrmRptCategoriasConProductos frm = new FrmRptCategoriasConProductos();
             Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de categorías con productos «");
         }
+
+        private void mantenimientoDeProductosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void listadoDeProductosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmProductosListado frm = new FrmProductosListado();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Listado de productos «");
+        }
+
+        private void consultaAlfabéticaDeProductosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmProductosConsultaAlfabetica frm = new FrmProductosConsultaAlfabetica();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Consulta alfabética de productos «");
+        }
+
+        private void productosPorEncimaDelPrecioPromedioToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmProductosPorEncimaPrecioPromedio frm = new FrmProductosPorEncimaPrecioPromedio();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Productos por encima del precio promedio «");
+        }
+
+        private void reporteDeProductosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void reporteDeProductosEnOrdenAlfabéticoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void reporteDeProductosPorProveedorToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void reporteDeProductosPorProveedorConDetalleDelProveedorToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
