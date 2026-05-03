@@ -513,27 +513,32 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void mantenimientoDeProveedoresToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            FrmProveedoresCrud frm = new FrmProveedoresCrud();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Mantenimiento de proveedores «");
         }
 
         private void consultaDeProductosPorProveedorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            FrmProveedoresProductos frm = new FrmProveedoresProductos();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Consulta de productos por proveedor «");
         }
 
         private void directorioDeProveedoresToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            FrmRptProveedores frm = new FrmRptProveedores();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte directorio de proveedores «");
         }
 
         private void reporteDeProductosPorProveedorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            FrmRptProductosPorProveedor frm = new FrmRptProductosPorProveedor();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de productos por proveedor «");
         }
 
         private void reporteDeProductosPorProveedorConDetalleDelProveedorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            FrmRptProdPorProvConDetProv frm = new FrmRptProdPorProvConDetProv();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de productos por proveedor con detalle del proveedor «");
         }
     }
 }
