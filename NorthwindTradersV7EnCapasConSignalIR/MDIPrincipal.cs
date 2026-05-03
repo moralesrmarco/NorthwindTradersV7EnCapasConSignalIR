@@ -489,20 +489,49 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void directorioDeClientesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            FrmRptClientes frm = new FrmRptClientes();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte directorio de clientes «");
         }
 
         private void directorioDeClientesYProveedoresToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-
+            FrmRptClientesyProveedoresDirectorio frm = new FrmRptClientesyProveedoresDirectorio();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte directorio de clientes y proveedores «");
         }
 
         private void directorioDeClientesYProveedoresPorCiudadToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-
+            FrmRptClientesyProveedoresDirectorioxCiudad frm = new FrmRptClientesyProveedoresDirectorioxCiudad();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte directorio de clientes y proveedores por ciudad «");
         }
 
         private void directorioDeClientesYProveedoresPorPaísToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            FrmRptClientesyProveedoresDirectorioxPais frm = new FrmRptClientesyProveedoresDirectorioxPais();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte directorio de clientes y proveedores por país «");
+        }
+
+        private void mantenimientoDeProveedoresToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void consultaDeProductosPorProveedorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void directorioDeProveedoresToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void reporteDeProductosPorProveedorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void reporteDeProductosPorProveedorConDetalleDelProveedorToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
         }

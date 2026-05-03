@@ -181,6 +181,30 @@
     <Compile Include="FrmNotificacion.Designer.cs">
       <DependentUpon>FrmNotificacion.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrmRptClientes.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmRptClientes.Designer.cs">
+      <DependentUpon>FrmRptClientes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmRptClientesyProveedoresDirectorio.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmRptClientesyProveedoresDirectorio.Designer.cs">
+      <DependentUpon>FrmRptClientesyProveedoresDirectorio.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmRptClientesyProveedoresDirectorioxCiudad.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmRptClientesyProveedoresDirectorioxCiudad.Designer.cs">
+      <DependentUpon>FrmRptClientesyProveedoresDirectorioxCiudad.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmRptClientesyProveedoresDirectorioxPais.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmRptClientesyProveedoresDirectorioxPais.Designer.cs">
+      <DependentUpon>FrmRptClientesyProveedoresDirectorioxPais.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmRptEmpleado.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -239,6 +263,18 @@
     <EmbeddedResource Include="FrmNotificacion.resx">
       <DependentUpon>FrmNotificacion.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FrmRptClientes.resx">
+      <DependentUpon>FrmRptClientes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmRptClientesyProveedoresDirectorio.resx">
+      <DependentUpon>FrmRptClientesyProveedoresDirectorio.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmRptClientesyProveedoresDirectorioxCiudad.resx">
+      <DependentUpon>FrmRptClientesyProveedoresDirectorioxCiudad.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmRptClientesyProveedoresDirectorioxPais.resx">
+      <DependentUpon>FrmRptClientesyProveedoresDirectorioxPais.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FrmRptEmpleado.resx">
       <DependentUpon>FrmRptEmpleado.cs</DependentUpon>
     </EmbeddedResource>
@@ -264,6 +300,10 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="RptClientes.rdlc" />
+    <EmbeddedResource Include="RptClientesyProveedoresDirectorio.rdlc" />
+    <EmbeddedResource Include="RptClientesyProveedoresDirectorioxCiudad.rdlc" />
+    <EmbeddedResource Include="RptClientesyProveedoresDirectorioxPais.rdlc" />
     <EmbeddedResource Include="RptEmpleado.rdlc" />
     <EmbeddedResource Include="RptEmpleados.rdlc" />
     <EmbeddedResource Include="RptEmpleadosConFoto.rdlc" />
