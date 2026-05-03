@@ -139,6 +139,24 @@
     <Compile Include="FrmCambiarContrasena.Designer.cs">
       <DependentUpon>FrmCambiarContrasena.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrmCategoriasConProductosListado.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmCategoriasConProductosListado.Designer.cs">
+      <DependentUpon>FrmCategoriasConProductosListado.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmCategoriasCrud.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmCategoriasCrud.Designer.cs">
+      <DependentUpon>FrmCategoriasCrud.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmCategoriasProductos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmCategoriasProductos.Designer.cs">
+      <DependentUpon>FrmCategoriasProductos.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmClientesCrud.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -192,6 +210,18 @@
     </Compile>
     <Compile Include="FrmProveedoresProductos.Designer.cs">
       <DependentUpon>FrmProveedoresProductos.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmRptCategorias.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmRptCategorias.Designer.cs">
+      <DependentUpon>FrmRptCategorias.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmRptCategoriasConProductos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmRptCategoriasConProductos.Designer.cs">
+      <DependentUpon>FrmRptCategoriasConProductos.cs</DependentUpon>
     </Compile>
     <Compile Include="FrmRptClientes.cs">
       <SubType>Form</SubType>
@@ -272,6 +302,15 @@
     <EmbeddedResource Include="FrmCambiarContrasena.resx">
       <DependentUpon>FrmCambiarContrasena.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FrmCategoriasConProductosListado.resx">
+      <DependentUpon>FrmCategoriasConProductosListado.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmCategoriasCrud.resx">
+      <DependentUpon>FrmCategoriasCrud.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmCategoriasProductos.resx">
+      <DependentUpon>FrmCategoriasProductos.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FrmClientesCrud.resx">
       <DependentUpon>FrmClientesCrud.cs</DependentUpon>
     </EmbeddedResource>
@@ -298,6 +337,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FrmProveedoresProductos.resx">
       <DependentUpon>FrmProveedoresProductos.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmRptCategorias.resx">
+      <DependentUpon>FrmRptCategorias.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmRptCategoriasConProductos.resx">
+      <DependentUpon>FrmRptCategoriasConProductos.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FrmRptClientes.resx">
       <DependentUpon>FrmRptClientes.cs</DependentUpon>
@@ -345,6 +390,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="RptCategorias.rdlc" />
+    <EmbeddedResource Include="RptCategoriasConProductos.rdlc" />
     <EmbeddedResource Include="RptClientes.rdlc" />
     <EmbeddedResource Include="RptClientesyProveedoresDirectorio.rdlc" />
     <EmbeddedResource Include="RptClientesyProveedoresDirectorioxCiudad.rdlc" />

@@ -540,5 +540,35 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             FrmRptProdPorProvConDetProv frm = new FrmRptProdPorProvConDetProv();
             Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de productos por proveedor con detalle del proveedor «");
         }
+
+        private void mantenimientoDeCategoríasToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmCategoriasCrud frm = new FrmCategoriasCrud();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Mantenimiento de categorías «");
+        }
+
+        private void consultaDeProductosPorCategoríaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmCategoriasProductos frm = new FrmCategoriasProductos();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Consulta de productos por categoría «");
+        }
+
+        private void listadoDeCategoríasConProductosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmCategoriasConProductosListado frm = new FrmCategoriasConProductosListado();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Listado de categorías con productos «");
+        }
+
+        private void reporteDeCategoríasToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmRptCategorias frm = new FrmRptCategorias();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de categorías «");
+        }
+
+        private void reporteDeCategoríasConProductosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmRptCategoriasConProductos frm = new FrmRptCategoriasConProductos();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de categorías con productos «");
+        }
     }
 }
