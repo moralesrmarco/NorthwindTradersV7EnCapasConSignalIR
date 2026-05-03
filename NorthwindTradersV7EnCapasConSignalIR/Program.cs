@@ -7,7 +7,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 {
     internal static class Program
     {
-        private static readonly bool MostrarLogin = true;
+        private static readonly bool MostrarLogin = false;
         /// <summary>
         /// Punto de entrada principal para la aplicación.
         /// </summary>

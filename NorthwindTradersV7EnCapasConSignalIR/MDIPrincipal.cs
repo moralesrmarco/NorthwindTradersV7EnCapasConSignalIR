@@ -3,13 +3,10 @@ using Entities;
 using Entities.Config;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Utilities;
 
@@ -596,22 +593,14 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void reporteDeProductosToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            FrmRptProductos frm = new FrmRptProductos();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de productos «");
         }
 
         private void reporteDeProductosEnOrdenAlfabéticoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
-        }
-
-        private void reporteDeProductosPorProveedorToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void reporteDeProductosPorProveedorConDetalleDelProveedorToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-
+            FrmRptProductosAlfabetico frm = new FrmRptProductosAlfabetico();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de productos en orden alfabético «");
         }
     }
 }

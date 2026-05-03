@@ -295,6 +295,18 @@
     <Compile Include="FrmRptProdPorProvConDetProv.Designer.cs">
       <DependentUpon>FrmRptProdPorProvConDetProv.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrmRptProductos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmRptProductos.Designer.cs">
+      <DependentUpon>FrmRptProductos.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmRptProductosAlfabetico.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmRptProductosAlfabetico.Designer.cs">
+      <DependentUpon>FrmRptProductosAlfabetico.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmRptProductosPorProveedor.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -399,6 +411,12 @@
     <EmbeddedResource Include="FrmRptProdPorProvConDetProv.resx">
       <DependentUpon>FrmRptProdPorProvConDetProv.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FrmRptProductos.resx">
+      <DependentUpon>FrmRptProductos.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmRptProductosAlfabetico.resx">
+      <DependentUpon>FrmRptProductosAlfabetico.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FrmRptProductosPorProveedor.resx">
       <DependentUpon>FrmRptProductosPorProveedor.cs</DependentUpon>
     </EmbeddedResource>
@@ -428,6 +446,7 @@
     <EmbeddedResource Include="RptEmpleados.rdlc" />
     <EmbeddedResource Include="RptEmpleadosConFoto.rdlc" />
     <EmbeddedResource Include="RptProdPorProvConDetProv.rdlc" />
+    <EmbeddedResource Include="RptProductos.rdlc" />
     <EmbeddedResource Include="RptProductosPorProveedor.rdlc" />
     <EmbeddedResource Include="RptProveedores.rdlc" />
     <None Include="packages.config" />
