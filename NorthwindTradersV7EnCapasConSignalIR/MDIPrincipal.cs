@@ -630,27 +630,32 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void ventasMensualesPorVendedorPorAñoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            FrmGraficaVentasMensualesPorVendedorPorAnio frm = new FrmGraficaVentasMensualesPorVendedorPorAnio();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Gráfica comparativa de ventas mensuales por vendedores por año «");
         }
 
         private void ventasMensualesPorVendedorPorAñobarrasToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            FrmGraficaVentasMensualesPorVendedorPorAnioBarras frm = new FrmGraficaVentasMensualesPorVendedorPorAnioBarras();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Gráfica comparativo de ventas mensuales por vendedores por año (barras) «");
         }
 
         private void ventasMensualesPorVendedorPorAñobarras2ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            FrmGraficaVentasMensualesPorVendedorPorAnioBarras2 frm = new FrmGraficaVentasMensualesPorVendedorPorAnioBarras2();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Gráfica comparativo de ventas mensuales por vendedores por año (barras 2) «");
         }
 
         private void ejemploDeGráficasToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            FrmGraficaEjemploTodas frm = new FrmGraficaEjemploTodas();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Ejemplo de gráficas «");
         }
 
         private void ejemploDeGráficas2ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            FrmGraficaEjemploTodas2 frm = new FrmGraficaEjemploTodas2();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Ejemplo de gráficas 2 «");
         }
 
         private void ventasMensualesToolStripMenuItem1_Click(object sender, EventArgs e)

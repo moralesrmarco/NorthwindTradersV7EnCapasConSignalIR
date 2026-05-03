@@ -1,0 +1,113 @@
+﻿using BLL.Services;
+using Entities.DTOs;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
+using Utilities;
+
+namespace NorthwindTradersV7EnCapasConSignalIR
+{
+    public partial class FrmGraficaEjemploTodas : Form
+    {
+        private readonly string cnStr = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
+        private readonly GraficasService _graficasService;
+
+        // Datos fijos: categorías y valores
+        private readonly string[] categorias =
+            { "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago" };
+        private readonly double[] valores =
+            { 15,    30,    45,    20,    35,    50,    25,    40   };
+
+        private readonly List<DtoVentasMensuales> datos = new List<DtoVentasMensuales>();
+
+        public FrmGraficaEjemploTodas()
+        {
+            InitializeComponent();
+            WindowState = FormWindowState.Maximized;
+            _graficasService = new GraficasService(cnStr);
+            try
+            {
+                MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
+                datos = _graficasService.ObtenerVentasMensuales(1997);
+            }
+            catch (Exception ex)
+            {
+                U.MsgCatchOue(ex);
+                return;
+            }
+            finally
+            {
+                MDIPrincipal.ActualizarBarraDeEstado();
+            }
+            CargarTiposDeGrafica();
+        }
+
+        private void GrbPaint(object sender, PaintEventArgs e) => Utils.GrbPaint(this, sender, e);
+
+        private void FrmGraficaEjemploTodas_Load(object sender, EventArgs e)
+        {
+            // Crea datos de ejemplo y dibuja la primera gráfica
+            DibujarGrafica((SeriesChartType)cmbChartTypes.SelectedItem);
+        }
+
+        private void cmbChartTypes_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            DibujarGrafica((SeriesChartType)cmbChartTypes.SelectedItem);
+        }
+
+        private void CargarTiposDeGrafica()
+        {
+            // Obtiene todos los valores del enum
+            var tipos = Enum.GetValues(typeof(SeriesChartType))
+                            .Cast<SeriesChartType>()
+                            .OrderBy(t => t.ToString());
+
+            // Llena el ComboBox
+            cmbChartTypes.DataSource = tipos.ToList();
+        }
+
+        private void DibujarGrafica(SeriesChartType tipo)
+        {
+            // Limpia configuraciones previas
+            chart1.Series.Clear();
+            chart1.Titles.Clear();
+
+            // Título dinámico
+            chart1.Titles.Add(new Title
+            {
+                Text = $"Tipo de gráfica: {tipo}",
+                Docking = Docking.Top,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold)
+            });
+
+            // Serie con datos fijos
+            var serie = new Series("Ventas")
+            {
+                ChartType = tipo,
+                BorderWidth = 2,
+                MarkerStyle = MarkerStyle.Circle,
+                ToolTip = "#SERIESNAME\nMes: #AXISLABEL\nVentas: #VALY{C2}"
+            };
+
+            // Agrega puntos usando categorías y valores
+            //for (int i = 0; i < categorias.Length; i++)
+            //{
+            //    serie.Points.AddXY(categorias[i], valores[i]);
+            //}
+            foreach (var punto in datos)
+            {
+                serie.Points.AddXY(punto.NombreMes, punto.Total);
+            }
+
+            chart1.Series.Add(serie);
+
+            // Ajusta automáticamente las escalas de ejes
+            chart1.ResetAutoValues();
+        }
+    }
+}
