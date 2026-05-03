@@ -672,12 +672,14 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void topProductosMásVendidosToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-
+            FrmRptTopProductosMasVendidos frm = new FrmRptTopProductosMasVendidos();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte gráfico de top productos más vendidos «");
         }
 
         private void ventasPorVendedoresPorAñoToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-
+            FrmRptGraficaDeVentasDeVendedoresPorAnio frm = new FrmRptGraficaDeVentasDeVendedoresPorAnio();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte gráfico de ventas por vendedores por año «");
         }
 
         private void ventasMensualesPorVendedorPorAñoToolStripMenuItem1_Click(object sender, EventArgs e)
