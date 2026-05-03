@@ -75,9 +75,9 @@ namespace DAL
             {
                 cn.Open();
 
-                string sql = @"
-                                SELECT COUNT(DISTINCT YEAR(OrderDate))
-                                FROM Orders";
+                string sql = @"SELECT COUNT(DISTINCT YEAR(OrderDate))
+                               FROM Orders 
+                               WHERE OrderDate IS NOT NULL";
                 using (SqlCommand cmd = new SqlCommand(sql, cn))
                 {
                     return Convert.ToInt32(cmd.ExecuteScalar());

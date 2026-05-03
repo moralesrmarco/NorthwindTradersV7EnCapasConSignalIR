@@ -570,7 +570,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void mantenimientoDeProductosToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            FrmProductosCrud frm = new FrmProductosCrud();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Mantenimiento de productos «");
         }
 
         private void listadoDeProductosToolStripMenuItem_Click(object sender, EventArgs e)
@@ -601,6 +602,88 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         {
             FrmRptProductosAlfabetico frm = new FrmRptProductosAlfabetico();
             Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de productos en orden alfabético «");
+        }
+
+        private void ventasMensualesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmGraficaVentasMensuales frm = new FrmGraficaVentasMensuales();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Gráfica de ventas mensuales «");
+        }
+
+        private void comparativoDeVentasAnualesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmGraficaVentasAnuales frm = new FrmGraficaVentasAnuales();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Gráfica comparativa de ventas anuales «");
+        }
+
+        private void topProductosMásVendidosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ventasPorVendedoresPorAñoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ventasMensualesPorVendedorPorAñoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ventasMensualesPorVendedorPorAñobarrasToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ventasMensualesPorVendedorPorAñobarras2ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ejemploDeGráficasToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ejemploDeGráficas2ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ventasMensualesToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void comparativoDeVentasAnualesToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void topProductosMásVendidosToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ventasPorVendedoresPorAñoToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ventasMensualesPorVendedorPorAñoToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ventasMensualesPorVendedorPorAñobarrasToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ventasMensualesPorVendedorPorAñobarras2ToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
