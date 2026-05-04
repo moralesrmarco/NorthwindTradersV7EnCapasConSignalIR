@@ -79,16 +79,16 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             ConfiguracionFiscal.TasaIVA = Convert.ToDecimal(ConfigurationManager.AppSettings["TasaIVA"]);
             ActualizarBarraDeEstado("Sesión iniciada correctamente.     |     Bienvenido " + UsuarioLogueado.NombreCompleto + " al sistema " + Utils.nwtr.Substring(2, (Utils.nwtr.Length - 4)) + ". Para comenzar, seleccione una opción del menú correspondiente a sus permisos de usuario.");
             IniciarSesion();
-            //if (permisosUsuarioAutenticado.Contains(10))
-            //{
-            //    FrmTableroControlAltaDireccion frm = new FrmTableroControlAltaDireccion();
-            //    Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Tablero de control para la alta dirección «");
-            //}
-            //else if (permisosUsuarioAutenticado.Contains(12))
-            //{
-            //    FrmTableroControlVendedores frm = new FrmTableroControlVendedores();
-            //    Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Tablero de control para los vendedores «");
-            //}
+            if (permisosUsuarioAutenticado.Contains(10))
+            {
+                FrmTableroControlAltaDireccion frm = new FrmTableroControlAltaDireccion();
+                Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Tablero de control para la alta dirección «");
+            }
+            else if (permisosUsuarioAutenticado.Contains(12))
+            {
+                FrmTableroControlVendedores frm = new FrmTableroControlVendedores();
+                Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Tablero de control para los vendedores «");
+            }
             ActualizarBarraDeEstado("Sesión iniciada correctamente.     |     Bienvenido " + UsuarioLogueado.NombreCompleto + " al sistema " + Utils.nwtr.Substring(2, (Utils.nwtr.Length - 4)) + ". Para comenzar, seleccione una opción del menú correspondiente a sus permisos de usuario."); // Se repite para asegurar que se muestre después de cargar los tableros de control, si el usuario tiene permisos para ellos.
         }
 
@@ -698,6 +698,18 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         {
             FrmRptGraficaVentasMensualesPorVendedorPorAnioBarras2 frm = new FrmRptGraficaVentasMensualesPorVendedorPorAnioBarras2();
             Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte gráfico comparativo de ventas mensuales por vendedores por año (barras 2) «");
+        }
+
+        private void tableroDeControlParaLaAltaDirecciónToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmTableroControlAltaDireccion frm = new FrmTableroControlAltaDireccion();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Tablero de control para la alta dirección «");
+        }
+
+        private void tableroDeControlParaLosVendedoresToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FrmTableroControlVendedores frm = new FrmTableroControlVendedores();
+            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Tablero de control para los vendedores «");
         }
     }
 }
