@@ -7,6 +7,7 @@ using System.Data;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using Utilities;
@@ -26,37 +27,39 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void GrbPaint(object sender, PaintEventArgs e) => Utils.GrbPaint(this, sender, e);
 
-        private void FrmTableroControlAltaDireccion_Load(object sender, EventArgs e)
+        private async void FrmTableroControlAltaDireccion_Load(object sender, EventArgs e)
         {
-            LlenarCmbVentasMensualesAño();
-            LlenarCmbTipoGrafica1();
+            await LlenarCmbVentasMensualesAño();
+            await LlenarCmbTipoGrafica1();
 
-            LlenarCmbUltimosAnios();
-            LLenarCmbTipoGrafica2();
+            await LlenarCmbUltimosAnios();
+            await LLenarCmbTipoGrafica2();
 
             LlenarCmbNumeroProductos();
-            LlenarCmbAñoTopProd();
+            await LlenarCmbAñoTopProd();
             LlenarCmbTipoGrafica3();
 
-            LlenarCmbVentasVendedorAño();
+            await LlenarCmbVentasVendedorAño();
             LlenarCmbTipoGrafica5();
 
-            LlenarCmbVentasMensualesPorVendedorPorAño4();
+            await LlenarCmbVentasMensualesPorVendedorPorAño4();
             LlenarCmbTipoGrafica4();
 
-            LlenarCmbVentasMensualesPorVendedorPorAño();
+            await LlenarCmbVentasMensualesPorVendedorPorAño();
             LlenarCmbTipoGrafica6();
         }
 
         /******************************************************************************************************/
         #region Grafica1
-        private void LlenarCmbVentasMensualesAño()
+        private async Task LlenarCmbVentasMensualesAño()
         {
             cmbVentasMensualesAño.SelectedIndexChanged -= cmbVentasMensualesAño_SelectedIndexChanged;
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-                cmbVentasMensualesAño.DataSource = _graficasService.ObtenerTop10AñosDeVentas();
+                var años = await Task.Run(() => _graficasService.ObtenerTop10AñosDeVentas());
+
+                cmbVentasMensualesAño.DataSource = años;
                 cmbVentasMensualesAño.DisplayMember = "Texto";
                 cmbVentasMensualesAño.ValueMember = "Valor";
                 cmbVentasMensualesAño.SelectedValue = 1997;
@@ -69,7 +72,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             cmbVentasMensualesAño.SelectedIndexChanged += cmbVentasMensualesAño_SelectedIndexChanged;
         }
 
-        private void LlenarCmbTipoGrafica1()
+        private Task LlenarCmbTipoGrafica1()
         {
             CmbTipoGrafica1.SelectedIndexChanged -= CmbTipoGrafica1_SelectedIndexChanged;
             var tipos = Enum.GetValues(typeof(SeriesChartType))
@@ -79,6 +82,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             CmbTipoGrafica1.DataSource = tipos.ToList();
             CmbTipoGrafica1.SelectedIndexChanged += CmbTipoGrafica1_SelectedIndexChanged;
             CmbTipoGrafica1.SelectedItem = SeriesChartType.Range;
+            return Task.CompletedTask;
         }
 
         private void cmbVentasMensualesAño_SelectedIndexChanged(object sender, EventArgs e)
@@ -91,24 +95,24 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             DibujarGraficaChart1();
         }
 
-        private void DibujarGraficaChart1()
+        private async void DibujarGraficaChart1()
         {
             if (cmbVentasMensualesAño.SelectedIndex == 0 )
             {
                 Utils.MsgExclamation("Seleccione un año válido.");
                 return;
             }
-            CargarVentasMensuales(Convert.ToInt32(cmbVentasMensualesAño.SelectedValue), (SeriesChartType)CmbTipoGrafica1.SelectedItem);
+            await CargarVentasMensuales(Convert.ToInt32(cmbVentasMensualesAño.SelectedValue), (SeriesChartType)CmbTipoGrafica1.SelectedItem);
         }
 
-        private void CargarVentasMensuales(int year, SeriesChartType tipoGrafica)
+        private async Task CargarVentasMensuales(int year, SeriesChartType tipoGrafica)
         {
             // 1. Obtiene los datos
             List<DtoVentasMensuales> datos = null;
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-                datos = _graficasService.ObtenerVentasMensuales(year);
+                datos = await Task.Run(() => _graficasService.ObtenerVentasMensuales(year));
                 MDIPrincipal.ActualizarBarraDeEstado();
             }
             catch (Exception ex)
@@ -189,10 +193,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         /******************************************************************************************************/
 
         #region Grafica2
-        private void LlenarCmbUltimosAnios()
+        private async Task LlenarCmbUltimosAnios()
         {
             cmbUltimosAnios.SelectedIndexChanged -= cmbUltimosAnios_SelectedIndexChanged;
-            int totalAñosDisponibles = _graficasService.ObtenerTotalAñosConVentas();
+            int totalAñosDisponibles = await Task.Run(() => _graficasService.ObtenerTotalAñosConVentas());
 
             int limite = Math.Min(totalAñosDisponibles, 10);
 
@@ -210,7 +214,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             cmbUltimosAnios.SelectedIndexChanged += cmbUltimosAnios_SelectedIndexChanged;
         }
 
-        private void LLenarCmbTipoGrafica2()
+        private Task LLenarCmbTipoGrafica2()
         {
             CmbTipoGrafica2.SelectedIndexChanged -= CmbTipoGrafica2_SelectedIndexChanged;
 
@@ -231,19 +235,20 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             CmbTipoGrafica2.DataSource = tipos;
             CmbTipoGrafica2.SelectedIndexChanged += CmbTipoGrafica2_SelectedIndexChanged;
             CmbTipoGrafica2.SelectedItem = SeriesChartType.SplineArea;
+            return Task.CompletedTask;
         }
 
-        private void cmbUltimosAnios_SelectedIndexChanged(object sender, EventArgs e)
+        private async void cmbUltimosAnios_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CargarComparativoVentasMensuales(Convert.ToInt32(cmbUltimosAnios.SelectedValue), (SeriesChartType)CmbTipoGrafica2.SelectedItem);
+            await CargarComparativoVentasMensuales(Convert.ToInt32(cmbUltimosAnios.SelectedValue), (SeriesChartType)CmbTipoGrafica2.SelectedItem);
         }
 
-        private void CmbTipoGrafica2_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CmbTipoGrafica2_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CargarComparativoVentasMensuales(Convert.ToInt32(cmbUltimosAnios.SelectedValue), (SeriesChartType)CmbTipoGrafica2.SelectedItem);
+            await CargarComparativoVentasMensuales(Convert.ToInt32(cmbUltimosAnios.SelectedValue), (SeriesChartType)CmbTipoGrafica2.SelectedItem);
         }
 
-        private void CargarComparativoVentasMensuales(int years, SeriesChartType tipoGrafica)
+        private async Task CargarComparativoVentasMensuales(int years, SeriesChartType tipoGrafica)
         {
             chart2.Series.Clear();
             chart2.Titles.Clear();
@@ -261,7 +266,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-                datos = _graficasService.ObtenerVentasMensualesPorAños(years);
+                datos = await Task.Run(() => _graficasService.ObtenerVentasMensualesPorAños(years));
                 MDIPrincipal.ActualizarBarraDeEstado();
             }
             catch (Exception ex)
@@ -379,13 +384,14 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             cmbNumeroProductos.SelectedIndexChanged += cmbNumeroProductos_SelectedIndexChanged;
         }
 
-        private void LlenarCmbAñoTopProd()
+        private async Task LlenarCmbAñoTopProd()
         {
             CmbAñoTopProd.SelectedIndexChanged -= CmbAñoTopProd_SelectedIndexChanged;
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-                CmbAñoTopProd.DataSource = _graficasService.ObtenerTop10AñosDeVentas();
+                var años = await Task.Run(() => _graficasService.ObtenerTop10AñosDeVentas());
+                CmbAñoTopProd.DataSource = años;
                 CmbAñoTopProd.DisplayMember = "Texto";
                 CmbAñoTopProd.ValueMember = "Valor";
                 CmbAñoTopProd.SelectedValue = 1997;
@@ -410,22 +416,22 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             CmbTipoGrafica3.SelectedItem = SeriesChartType.Column;
         }
 
-        private void cmbNumeroProductos_SelectedIndexChanged(object sender, EventArgs e)
+        private async void cmbNumeroProductos_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CargarTopProductos(Convert.ToInt32(cmbNumeroProductos.SelectedValue), (SeriesChartType)CmbTipoGrafica3.SelectedItem, Convert.ToInt32(CmbAñoTopProd.SelectedValue));
+            await CargarTopProductos(Convert.ToInt32(cmbNumeroProductos.SelectedValue), (SeriesChartType)CmbTipoGrafica3.SelectedItem, Convert.ToInt32(CmbAñoTopProd.SelectedValue));
         }
 
-        private void CmbAñoTopProd_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CmbAñoTopProd_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CargarTopProductos(Convert.ToInt32(cmbNumeroProductos.SelectedValue), (SeriesChartType)CmbTipoGrafica3.SelectedItem, Convert.ToInt32(CmbAñoTopProd.SelectedValue));
+            await CargarTopProductos(Convert.ToInt32(cmbNumeroProductos.SelectedValue), (SeriesChartType)CmbTipoGrafica3.SelectedItem, Convert.ToInt32(CmbAñoTopProd.SelectedValue));
         }
 
-        private void CmbTipoGrafica3_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CmbTipoGrafica3_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CargarTopProductos(Convert.ToInt32(cmbNumeroProductos.SelectedValue), (SeriesChartType)CmbTipoGrafica3.SelectedItem, Convert.ToInt32(CmbAñoTopProd.SelectedValue));
+            await CargarTopProductos(Convert.ToInt32(cmbNumeroProductos.SelectedValue), (SeriesChartType)CmbTipoGrafica3.SelectedItem, Convert.ToInt32(CmbAñoTopProd.SelectedValue));
         }
 
-        private void CargarTopProductos(int cantidad, SeriesChartType tipoGrafica, int año)
+        private async Task CargarTopProductos(int cantidad, SeriesChartType tipoGrafica, int año)
         {
             if (CmbAñoTopProd.SelectedIndex == 0)
             {
@@ -447,7 +453,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
                 // Datos
-                datos = _graficasService.ObtenerTopProductos(cantidad, año);
+                datos = await Task.Run(() => _graficasService.ObtenerTopProductos(cantidad, año));
             }
             catch (Exception ex)
             {
@@ -508,83 +514,15 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         }
         #endregion
         /******************************************************************************************************/
-        //#region Grafica4
-        //private void CargarVentasPorVendedores()
-        //{
-        //    chart4.Series.Clear();
-        //    chart4.Titles.Clear();
-        //    chart4.Titles.Add(new Title
-        //    {
-        //        Text = "» Ventas por vendedores de todos los años «",
-        //        Docking = Docking.Top,
-        //        Font = new Font("Segoe UI", 8, FontStyle.Bold)
-        //    });
-        //    // 1. Configurar ChartArea 3D
-        //    var area = chart4.ChartAreas[0];
-        //    area.Area3DStyle.Enable3D = true;
-        //    area.Area3DStyle.Inclination = 40;
-        //    area.Area3DStyle.Rotation = 60;
-        //    area.Area3DStyle.LightStyle = LightStyle.Realistic;
-        //    area.Area3DStyle.WallWidth = 0;
-        //    // Configuración de la serie
-        //    Series serie = new Series
-        //    {
-        //        Name = "Ventas",
-        //        Color = Color.FromArgb(0, 51, 102),
-        //        IsValueShownAsLabel = false,
-        //        ChartType = SeriesChartType.Doughnut,
-        //        Label = "#VALX, #VALY{c2}",
-        //        ToolTip = "Vendedor: #VALX\nTotal Ventas: #VALY{C2}"
-        //    };
-        //    serie.Points.Clear();
-        //    serie.SmartLabelStyle.Enabled = true;
-        //    serie.SmartLabelStyle.AllowOutsidePlotArea = LabelOutsidePlotAreaStyle.No;
-        //    serie.SmartLabelStyle.CalloutLineColor = Color.Black;
-        //    serie.LabelForeColor = Color.DarkSlateGray;
-        //    serie.LabelBackColor = Color.WhiteSmoke;
-        //    serie["PieLabelStyle"] = "Disabled";
-        //    serie["PieDrawingStyle"] = "Cylinder";
-        //    serie["DoughnutRadius"] = "60";
-        //    chart4.Series.Add(serie);
-        //    List<(string Vendedor, decimal TotalVentas)> ventas = new List<(string Vendedor, decimal TotalVentas)>();
-        //    try
-        //    {
-        //        ventas = __graficasService.ObtenerVentasPorVendedores();
-        //        if (!ventas.Any())
-        //        {
-        //            U.MsgExclamation("No se encontraron datos de ventas por vendedores para mostrar en la gráfica.");
-        //            return;
-        //        }
-        //        int i = 0;
-        //        foreach (var (vendedor, totalVentas) in ventas)
-        //        {
-        //            int puntoIndex = serie.Points.AddXY(vendedor, totalVentas);
-        //            var punto = serie.Points[puntoIndex];
-        //            punto.Color = ChartColors.Paleta[i % ChartColors.Paleta.Length];
-
-        //            // Aquí personalizas la leyenda con salto de línea
-        //            punto.LegendText = $"{vendedor}\n{totalVentas:C2}";
-
-        //            i++;
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        U.MsgCatchOue(ex);
-        //    }
-        //    var legend = chart4.Legends[0];
-        //    legend.Font = new Font("Segoe UI", 7, FontStyle.Regular);
-        //}
-        //#endregion
-        ///******************************************************************************************************/
         #region Grafica5
-        private void LlenarCmbVentasVendedorAño()
+        private async Task LlenarCmbVentasVendedorAño()
         {
             cmbVentasVendedorAño.SelectedIndexChanged -= cmbVentasVendedorAño_SelectedIndexChanged;
             MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
             try
             {
-                cmbVentasVendedorAño.DataSource = _graficasService.ObtenerTop10AñosDeVentas();
+                var años = await Task.Run(() => _graficasService.ObtenerTop10AñosDeVentas());
+                cmbVentasVendedorAño.DataSource = años;
                 cmbVentasVendedorAño.DisplayMember = "Texto";
                 cmbVentasVendedorAño.ValueMember = "Valor";
                 cmbVentasVendedorAño.SelectedValue = 1997;
@@ -609,22 +547,22 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             CmbTipoGrafica5.SelectedItem = SeriesChartType.Doughnut;
         }
 
-        private void cmbVentasVendedorAño_SelectedIndexChanged(object sender, EventArgs e)
+        private async void cmbVentasVendedorAño_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (cmbVentasVendedorAño.SelectedIndex == 0)
             {
                 Utils.MsgExclamation("Seleccione un año válido.");
                 return;
             }
-            CargarVentasPorVendedoresAño(Convert.ToInt32(cmbVentasVendedorAño.SelectedValue), (SeriesChartType)CmbTipoGrafica5.SelectedItem);
+            await CargarVentasPorVendedoresAño(Convert.ToInt32(cmbVentasVendedorAño.SelectedValue), (SeriesChartType)CmbTipoGrafica5.SelectedItem);
         }
 
-        private void CmbTipoGrafica5_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CmbTipoGrafica5_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CargarVentasPorVendedoresAño(Convert.ToInt32(cmbVentasVendedorAño.SelectedValue), (SeriesChartType)CmbTipoGrafica5.SelectedItem);
+            await CargarVentasPorVendedoresAño(Convert.ToInt32(cmbVentasVendedorAño.SelectedValue), (SeriesChartType)CmbTipoGrafica5.SelectedItem);
         }
 
-        private void CargarVentasPorVendedoresAño(int anio, SeriesChartType tipoGrafica)
+        private async Task CargarVentasPorVendedoresAño(int anio, SeriesChartType tipoGrafica)
         {
             chart5.Series.Clear();
             chart5.Titles.Clear();
@@ -684,7 +622,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-                var ventas = _graficasService.ObtenerVentasPorVendedores(anio);
+                var ventas = await Task.Run(() => _graficasService.ObtenerVentasPorVendedores(anio));
                 int i = 0;
                 foreach (var (vendedor, totalVentas) in ventas)
                 {
@@ -708,13 +646,13 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         #endregion
         /******************************************************************************************************/
         #region Grafica6
-        private void LlenarCmbVentasMensualesPorVendedorPorAño()
+        private async Task LlenarCmbVentasMensualesPorVendedorPorAño()
         {
             cmbVentasMensualesPorVendedorPorAño.SelectedIndexChanged -= cmbVentasMensualesPorVendedorPorAño_SelectedIndexChanged;
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-                var dt = _graficasService.ObtenerTop10AñosDeVentas();
+                var dt = await Task.Run(() => _graficasService.ObtenerTop10AñosDeVentas());
                 cmbVentasMensualesPorVendedorPorAño.DisplayMember = "Texto";
                 cmbVentasMensualesPorVendedorPorAño.ValueMember = "Valor";
                 cmbVentasMensualesPorVendedorPorAño.DataSource = dt;
@@ -740,17 +678,17 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             CmbTipoGrafica6.SelectedItem = SeriesChartType.Line;
         }
 
-        private void cmbVentasMensualesPorVendedorPorAño_SelectedIndexChanged(object sender, EventArgs e)
+        private async void cmbVentasMensualesPorVendedorPorAño_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CargarVentasMensualesPorVendedorPorAño(Convert.ToInt32(cmbVentasMensualesPorVendedorPorAño.SelectedValue), (SeriesChartType)CmbTipoGrafica6.SelectedItem);
+            await CargarVentasMensualesPorVendedorPorAño(Convert.ToInt32(cmbVentasMensualesPorVendedorPorAño.SelectedValue), (SeriesChartType)CmbTipoGrafica6.SelectedItem);
         }
 
-        private void CmbTipoGrafica6_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CmbTipoGrafica6_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CargarVentasMensualesPorVendedorPorAño(Convert.ToInt32(cmbVentasMensualesPorVendedorPorAño.SelectedValue), (SeriesChartType)CmbTipoGrafica6.SelectedItem);
+            await CargarVentasMensualesPorVendedorPorAño(Convert.ToInt32(cmbVentasMensualesPorVendedorPorAño.SelectedValue), (SeriesChartType)CmbTipoGrafica6.SelectedItem);
         }
 
-        private void CargarVentasMensualesPorVendedorPorAño(int year, SeriesChartType tipoGrafica)
+        private async Task CargarVentasMensualesPorVendedorPorAño(int year, SeriesChartType tipoGrafica)
         {
             if (cmbVentasMensualesPorVendedorPorAño.SelectedIndex == 0)
             {
@@ -800,7 +738,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-                dt = _graficasService.ObtenerVentasMensualesPorVendedoresPorAño(year);
+                dt = await Task.Run(() => _graficasService.ObtenerVentasMensualesPorVendedoresPorAño(year));
             }
             catch (Exception ex)
             {
@@ -862,13 +800,13 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         #endregion
         /******************************************************************************************************/
         #region Grafica4
-        private void LlenarCmbVentasMensualesPorVendedorPorAño4()
+        private async Task LlenarCmbVentasMensualesPorVendedorPorAño4()
         {
             cmbVentasMensualesPorVendedorPorAño4.SelectedIndexChanged -= cmbVentasMensualesPorVendedorPorAño4_SelectedIndexChanged;
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-                var dt = _graficasService.ObtenerTop10AñosDeVentas();
+                var dt = await Task.Run(() =>_graficasService.ObtenerTop10AñosDeVentas());
                 cmbVentasMensualesPorVendedorPorAño4.DisplayMember = "Texto";
                 cmbVentasMensualesPorVendedorPorAño4.ValueMember = "Valor";
                 cmbVentasMensualesPorVendedorPorAño4.DataSource = dt;
@@ -894,17 +832,17 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             CmbTipoGrafica4.SelectedItem = SeriesChartType.Column;
         }
 
-        private void cmbVentasMensualesPorVendedorPorAño4_SelectedIndexChanged(object sender, EventArgs e)
+        private async void cmbVentasMensualesPorVendedorPorAño4_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CargarVentasMensualesPorVendedorPorAño4(Convert.ToInt32(cmbVentasMensualesPorVendedorPorAño4.SelectedValue), (SeriesChartType)CmbTipoGrafica4.SelectedItem);
+            await CargarVentasMensualesPorVendedorPorAño4(Convert.ToInt32(cmbVentasMensualesPorVendedorPorAño4.SelectedValue), (SeriesChartType)CmbTipoGrafica4.SelectedItem);
         }
 
-        private void CmbTipoGrafica4_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CmbTipoGrafica4_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CargarVentasMensualesPorVendedorPorAño4(Convert.ToInt32(cmbVentasMensualesPorVendedorPorAño4.SelectedValue), (SeriesChartType)CmbTipoGrafica4.SelectedItem);
+            await CargarVentasMensualesPorVendedorPorAño4(Convert.ToInt32(cmbVentasMensualesPorVendedorPorAño4.SelectedValue), (SeriesChartType)CmbTipoGrafica4.SelectedItem);
         }
 
-        private void CargarVentasMensualesPorVendedorPorAño4(int year, SeriesChartType tipoGrafica)
+        private async Task CargarVentasMensualesPorVendedorPorAño4(int year, SeriesChartType tipoGrafica)
         {
             if (cmbVentasMensualesPorVendedorPorAño4.SelectedIndex == 0)
             {
@@ -963,7 +901,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-                dt = _graficasService.ObtenerVentasMensualesPorVendedoresPorAño(year);
+                dt = await Task.Run(() => _graficasService.ObtenerVentasMensualesPorVendedoresPorAño(year));
             }
             catch (Exception ex)
             {
