@@ -77,7 +77,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             WindowState = FormWindowState.Maximized;
             toolStripStatusLabel2.Text = UsuarioLogueado.User;
             ConfiguracionFiscal.TasaIVA = Convert.ToDecimal(ConfigurationManager.AppSettings["TasaIVA"]);
-            ActualizarBarraDeEstado("Sesión iniciada correctamente.     |     Bienvenido " + UsuarioLogueado.NombreCompleto + " al sistema " + Utils.nwtr.Substring(2, (Utils.nwtr.Length - 4)) + ". Para comenzar, seleccione una opción del menú correspondiente a sus permisos de usuario.");
             IniciarSesion();
             if (permisosUsuarioAutenticado.Contains(10))
             {
@@ -89,7 +88,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 FrmTableroControlVendedores frm = new FrmTableroControlVendedores();
                 Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Tablero de control para los vendedores «");
             }
-            ActualizarBarraDeEstado("Sesión iniciada correctamente.     |     Bienvenido " + UsuarioLogueado.NombreCompleto + " al sistema " + Utils.nwtr.Substring(2, (Utils.nwtr.Length - 4)) + ". Para comenzar, seleccione una opción del menú correspondiente a sus permisos de usuario."); // Se repite para asegurar que se muestre después de cargar los tableros de control, si el usuario tiene permisos para ellos.
+            ActualizarBarraDeEstado("Sesión iniciada correctamente.     |     Bienvenido " + UsuarioLogueado.NombreCompleto + " al sistema " + Utils.nwtr.Substring(2, (Utils.nwtr.Length - 4)) + ". Para comenzar, seleccione una opción del menú correspondiente a sus permisos de usuario."); 
         }
 
         private void TabControlPrincipal_SelectedIndexChanged(object sender, EventArgs e) => MDIPrincipal.ActualizarBarraDeEstado();

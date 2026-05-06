@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -24,8 +25,11 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         OpenFileDialog openFileDialog;
         internal Dictionary<string, object> valoresOriginales;
         private byte[] fotoOriginalOle = null;
+
         private HubConnection _hubConnection;
         private IHubProxy _hubProxy;
+        private readonly string UrlBaseSignalR = ConfigurationManager.AppSettings["UrlBaseSignalR"];
+
         private bool realizandoBusqueda = false;
 
         public FrmEmpleadosCrud()
@@ -52,7 +56,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private async void InicializarSignalR()
         {
-            _hubConnection = new HubConnection("http://localhost:12345/");
+            _hubConnection = new HubConnection(UrlBaseSignalR);
             _hubProxy = _hubConnection.CreateHubProxy("EmpleadosHub");
 
             // Suscribirse al evento que el servidor invoca
@@ -177,18 +181,39 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
+
+                int employeeId = 0;
+                bool tieneId = int.TryParse(txtId.Text, out employeeId);
+
                 var paises = _empleadoBLL.ObtenerEmpleadosPaisesCbo();
+
+                // Llenar cboBPais
                 cboBPais.DataSource = paises;
                 cboBPais.ValueMember = "Id";
                 cboBPais.DisplayMember = "Pais";
                 cboBPais.SelectedIndex = 0;
 
-                // Llenar cboPais con el mismo origen
-                cboPais.DataSource = paises.ToList(); // si quieres que sea independiente
+                // Llenar cboPais
+                cboPais.DataSource = paises.ToList();
                 cboPais.ValueMember = "Id";
                 cboPais.DisplayMember = "Pais";
                 cboPais.SelectedIndex = 0;
 
+                // 🔹 Restaurar desde BD
+                if (tieneId)
+                {
+                    var empleadoActual = _empleadoBLL.ObtenerEmpleadoPorId(employeeId);
+                    if (empleadoActual != null &&
+                        paises.Any(p => p.Id == empleadoActual.Country))
+                    {
+                        cboPais.SelectedValue = empleadoActual.Country;
+                    }
+                    else
+                    {
+                        cboPais.SelectedIndex = 0;
+                    }
+                }
+                CargarValoresOriginales();
                 MDIPrincipal.ActualizarBarraDeEstado();
             }
             catch (Exception ex)
@@ -202,11 +227,37 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
+                
+                int employeeId = 0;
+                bool tieneId = int.TryParse(txtId.Text, out employeeId);
+
                 var empleados = _empleadoBLL.ObtenerEmpleadoReportaaCbo();
                 cboReportaA.DataSource = empleados;
                 cboReportaA.ValueMember = "Id";
                 cboReportaA.DisplayMember = "Nombre";
                 cboReportaA.SelectedIndex = 0;
+
+                // 🔹 Restaurar desde BD
+                if (tieneId)
+                {
+                    var empleadoActual = _empleadoBLL.ObtenerEmpleadoPorId(employeeId);
+                    if (empleadoActual != null)
+                    {
+                        // Validar que el jefe exista en el DataTable (comparando como int)
+                        bool existe = empleados.AsEnumerable()
+                            .Any(r => Convert.ToInt32(r["Id"]) == empleadoActual.ReportsTo);
+
+                        if (existe)
+                        {
+                            cboReportaA.SelectedValue = empleadoActual.ReportsTo;
+                        }
+                        else
+                        {
+                            cboReportaA.SelectedIndex = 0;
+                        }
+                    }
+                }
+                CargarValoresOriginales();
                 MDIPrincipal.ActualizarBarraDeEstado();
             }
             catch (Exception ex)
@@ -636,7 +687,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         };
                         using (var client = new HttpClient())
                         {
-                            client.BaseAddress = new Uri("http://localhost:12345/");
+                            client.BaseAddress = new Uri(UrlBaseSignalR);
                             var response = await client.PostAsJsonAsync("api/empleados/insertar", empleado);
                             if (response.IsSuccessStatusCode)
                             {
@@ -669,6 +720,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     HabilitarControles();
                     btnOperacion.Enabled = true;
                     btnCargar.Enabled = true;
+                    BorrarDatosEmpleado();
                 }
             }
             else if (tabcOperacion.SelectedTab == tbpModificar)
@@ -714,9 +766,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         {
                             empleado.Photo = Utils.ImageToByteArray(picFoto.Image);
                         }
+                        var valorPais = cboPais.SelectedValue?.ToString();
                         using (var client = new HttpClient())
                         {
-                            client.BaseAddress = new Uri("http://localhost:12345/");
+                            client.BaseAddress = new Uri(UrlBaseSignalR);
                             var response = await client.PutAsJsonAsync("api/empleados/actualizar", empleado);
                             if (response.IsSuccessStatusCode)
                             {
@@ -742,6 +795,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     {
                         U.MsgCatchOue(ex);
                     }
+                    BorrarDatosEmpleado();
                 }
             }
             else if (tabcOperacion.SelectedTab == tbpEliminar)
@@ -759,7 +813,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     {
                         using (var client = new HttpClient())
                         {
-                            client.BaseAddress = new Uri("http://localhost:12345/");
+                            client.BaseAddress = new Uri(UrlBaseSignalR);
                             var rowVersionBase64 = Convert.ToBase64String(txtId.Tag as byte[]);
                             var response = await client.DeleteAsync(
                                 $"api/empleados/eliminar/{txtId.Text}?rowVersion={rowVersionBase64}");
@@ -787,6 +841,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     {
                         U.MsgCatchOue(ex);
                     }
+                    BorrarDatosEmpleado();
                 }
             }
             CargarValoresOriginales();
