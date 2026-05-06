@@ -1,4 +1,5 @@
 ﻿using BLL;
+using BLL.Services;
 using Entities;
 using Entities.DTOs;
 using Microsoft.AspNet.SignalR.Client;
@@ -21,6 +22,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
     {
         string _connectionString = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
         private EmpleadoBLL _empleadoBLL;
+        private EmpleadoService _empleadoService;
         private bool EjecutarConfDgv = true;
         OpenFileDialog openFileDialog;
         internal Dictionary<string, object> valoresOriginales;
@@ -36,6 +38,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         {
             InitializeComponent();
             _empleadoBLL = new EmpleadoBLL(_connectionString);
+            _empleadoService = new EmpleadoService(_connectionString);
         }
 
         private void FrmEmpleadosCrud_Load(object sender, EventArgs e)
@@ -181,10 +184,13 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-
+                bool tieneId = false;
                 int employeeId = 0;
-                bool tieneId = int.TryParse(txtId.Text, out employeeId);
-
+                if (tabcOperacion.SelectedTab == tbpModificar || tabcOperacion.SelectedTab == tbpEliminar || tabcOperacion.SelectedTab == tbpListar)
+                {
+                    employeeId = 0;
+                    tieneId = int.TryParse(txtId.Text, out employeeId);
+                }
                 var paises = _empleadoBLL.ObtenerEmpleadosPaisesCbo();
 
                 // Llenar cboBPais
@@ -199,18 +205,22 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 cboPais.DisplayMember = "Pais";
                 cboPais.SelectedIndex = 0;
 
-                // 🔹 Restaurar desde BD
-                if (tieneId)
+                if (tabcOperacion.SelectedTab == tbpModificar || tabcOperacion.SelectedTab == tbpEliminar || tabcOperacion.SelectedTab == tbpListar)
                 {
-                    var empleadoActual = _empleadoBLL.ObtenerEmpleadoPorId(employeeId);
-                    if (empleadoActual != null &&
-                        paises.Any(p => p.Id == empleadoActual.Country))
+                    // 🔹 Restaurar desde BD
+                    if (tieneId)
                     {
-                        cboPais.SelectedValue = empleadoActual.Country;
-                    }
-                    else
-                    {
-                        cboPais.SelectedIndex = 0;
+                        var pais = _empleadoService.ObtenerEmpleadoPais(employeeId);
+                        // paises es una colección, pero solo debe haber uno o ninguno, así que buscamos el primero que coincida
+                        if (pais != null &&
+                            paises.Any(p => p.Id == pais.Id))
+                        {
+                            cboPais.SelectedValue = pais.Id;
+                        }
+                        else
+                        {
+                            cboPais.SelectedIndex = 0;
+                        }
                     }
                 }
                 CargarValoresOriginales();
@@ -227,9 +237,13 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-                
+                bool tieneId = false;
                 int employeeId = 0;
-                bool tieneId = int.TryParse(txtId.Text, out employeeId);
+                if (tabcOperacion.SelectedTab == tbpModificar || tabcOperacion.SelectedTab == tbpEliminar || tabcOperacion.SelectedTab == tbpListar)
+                {
+                    employeeId = 0;
+                    tieneId = int.TryParse(txtId.Text, out employeeId);
+                }
 
                 var empleados = _empleadoBLL.ObtenerEmpleadoReportaaCbo();
                 cboReportaA.DataSource = empleados;
@@ -237,19 +251,16 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 cboReportaA.DisplayMember = "Nombre";
                 cboReportaA.SelectedIndex = 0;
 
-                // 🔹 Restaurar desde BD
-                if (tieneId)
+                if (tabcOperacion.SelectedTab == tbpModificar || tabcOperacion.SelectedTab == tbpEliminar || tabcOperacion.SelectedTab == tbpListar)
                 {
-                    var empleadoActual = _empleadoBLL.ObtenerEmpleadoPorId(employeeId);
-                    if (empleadoActual != null)
+                    // 🔹 Restaurar desde BD
+                    if (tieneId)
                     {
-                        // Validar que el jefe exista en el DataTable (comparando como int)
-                        bool existe = empleados.AsEnumerable()
-                            .Any(r => Convert.ToInt32(r["Id"]) == empleadoActual.ReportsTo);
-
-                        if (existe)
+                        var jefe = _empleadoService.ObtenerEmpleadoReportaA(employeeId);
+                        if (jefe != null)
                         {
-                            cboReportaA.SelectedValue = empleadoActual.ReportsTo;
+                            // jefe es un objeto único, no colección
+                            cboReportaA.SelectedValue = jefe.EmployeeId;
                         }
                         else
                         {
@@ -685,10 +696,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             ReportsTo = cboReportaA.SelectedValue.ToString() == "0" ? (int?)null : Convert.ToInt32(cboReportaA.SelectedValue),
                             Photo = picFoto.Image != null ? Utils.ImageToByteArray(picFoto.Image) : null
                         };
+
                         using (var client = new HttpClient())
                         {
                             client.BaseAddress = new Uri(UrlBaseSignalR);
                             var response = await client.PostAsJsonAsync("api/empleados/insertar", empleado);
+                            //txtId.Text = response.
                             if (response.IsSuccessStatusCode)
                             {
                                 var resultado = await response.Content.ReadAsAsync<dynamic>();

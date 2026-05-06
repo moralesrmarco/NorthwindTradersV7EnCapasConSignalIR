@@ -48,6 +48,7 @@
     <Compile Include="DTOs\DtoCategoriasConProductos.cs" />
     <Compile Include="DTOs\DtoCiudadPaisVwClientesProveedores.cs" />
     <Compile Include="DTOs\DtoClienteProveedor.cs" />
+    <Compile Include="DTOs\DtoEmpleadoReportaACbo.cs" />
     <Compile Include="DTOs\DtoEmpleadosBuscar.cs" />
     <Compile Include="DTOs\DtoEmpleadosDgv.cs" />
     <Compile Include="DTOs\DtoEmpleadosDgvRaw.cs" />

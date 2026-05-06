@@ -139,6 +139,65 @@ namespace DAL
             return numRegs;
         }
 
+        public DtoEmpleadosPaisesCbo ObtenerEmpleadoPais(int empleadoId)
+        {
+            try
+            {
+                DtoEmpleadosPaisesCbo pais = null;
+                using (var con = new SqlConnection(_connectionString))
+                using (var cmd = new SqlCommand("SpEmpleadoObtenerPais", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@empleadoId", empleadoId);
+                    con.Open();
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            pais = new DtoEmpleadosPaisesCbo();
+                            pais.Id = reader.GetString(0);
+                            pais.Pais = reader.GetString(0);
+                        }
+                    }
+                }
+                return pais;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener el país del empleado: " + ex.Message, ex);
+            }
+        }
+
+        public DtoEmpleadoReportaACbo ObtenerEmpleadoReportaA(int empleadoId)
+        {
+            try
+            {
+                DtoEmpleadoReportaACbo reportaA = null;
+                using (var con = new SqlConnection(_connectionString))
+                using (var cmd = new SqlCommand("SpEmpleadoObtenerReportaA", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@empleadoId", empleadoId);
+                    con.Open();
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            reportaA = new DtoEmpleadoReportaACbo
+                            {
+                                EmployeeId = reader.GetInt32(0),
+                            };
+                        }
+                    }
+                }
+                return reportaA;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener ReportaA del empleado: " + ex.Message, ex);
+            }
+        }
+
         public DataTable ObtenerEmpleadoReportaaCbo()
         {
             var dt = new DataTable();
