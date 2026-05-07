@@ -7,7 +7,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -700,6 +699,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         using (var client = new HttpClient())
                         {
                             client.BaseAddress = new Uri(UrlBaseSignalR);
+                            client.DefaultRequestHeaders.Authorization =
+                                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", SesionActual.Token);
                             var response = await client.PostAsJsonAsync("api/empleados/insertar", empleado);
                             //txtId.Text = response.
                             if (response.IsSuccessStatusCode)

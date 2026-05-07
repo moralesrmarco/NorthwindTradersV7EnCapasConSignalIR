@@ -8,6 +8,7 @@ using System.Web.Http;
 
 namespace AspNetServer.Controllers
 {
+    [System.Web.Http.Authorize]
     [RoutePrefix("api/empleados")]
     public class EmpleadosController : ApiController
     {

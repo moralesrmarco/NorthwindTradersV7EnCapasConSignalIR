@@ -1,9 +1,10 @@
-﻿using Microsoft.Owin;
+﻿using Microsoft.IdentityModel.Tokens;
+using Microsoft.Owin;
+using Microsoft.Owin.Security;
+using Microsoft.Owin.Security.Jwt;
 using Owin;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using System.Configuration;
+using System.Text;
 
 [assembly: OwinStartup(typeof(AspNetServer.Startup))]
 
@@ -13,7 +14,26 @@ namespace AspNetServer
     {
         public void Configuration(IAppBuilder app)
         {
-            // Registra los hubs de SignalR
+            // 🔹 Configuración de autenticación JWT
+            var key = Encoding.UTF8.GetBytes(ConfigurationManager.AppSettings["JWT_SECRET_KEY"]);
+
+            app.UseJwtBearerAuthentication(new JwtBearerAuthenticationOptions
+            {
+                AuthenticationMode = AuthenticationMode.Active,
+                TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+
+                    ValidateLifetime = true,
+                    ClockSkew = System.TimeSpan.Zero
+                }
+            });
+
+            // 🔹 Registro de hubs de SignalR
             app.MapSignalR();
         }
     }

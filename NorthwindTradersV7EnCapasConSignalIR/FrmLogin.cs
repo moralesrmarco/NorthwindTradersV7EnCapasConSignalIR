@@ -2,6 +2,7 @@
 using Entities;
 using System;
 using System.Configuration;
+using System.Net.Http;
 using System.Windows.Forms;
 using Utilities;
 
@@ -16,6 +17,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         string _connectionString = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
         private readonly UsuarioBLL _usuarioBLL;
 
+        private readonly string UrlBaseSignalR = ConfigurationManager.AppSettings["UrlBaseSignalR"];
+
         public FrmLogin()
         {
             InitializeComponent();
@@ -25,37 +28,90 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             this.AcceptButton = btnEntrar;
         }
 
-        private void btnEntrar_Click(object sender, EventArgs e)
+        private async void btnEntrar_Click(object sender, EventArgs e)
         {
             try
             {
-                UsuarioLogueado = new Usuario
+                using (var client = new HttpClient())
                 {
-                    User = txtUsuario.Text.Trim(),
-                    Password = Utils.ComputeSha256Hash(txtPwd.Text.Trim())
-                };
-                UsuarioLogueado = _usuarioBLL.ValidarUsuario(UsuarioLogueado);
-                if (UsuarioLogueado.Id > 0)
-                {
-                    this.Close();
-                    return;
+                    client.BaseAddress = new Uri(UrlBaseSignalR);
+                    var response = await client.PostAsJsonAsync(
+                        "api/auth/login",
+                        new Usuario() { User = txtUsuario.Text.Trim(), Password = Utils.ComputeSha256Hash(txtPwd.Text.Trim()) });
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var result = await response.Content.ReadAsAsync<dynamic>();
+                        string token = result.Token;
+
+                        // Guardar token en sesión global
+                        SesionActual.Token = token;
+                        SesionActual.Usuario = txtUsuario.Text.Trim();
+
+                        // Asignar datos del usuario autenticado
+                        UsuarioLogueado = new Usuario
+                        {
+                            Id = (int)result.Usuario.Id,
+                            User = (string)result.Usuario.User,
+                            Paterno = (string)result.Usuario.Paterno,
+                            Materno = (string)result.Usuario.Materno,
+                            Nombres = (string)result.Usuario.Nombres
+                        };
+
+                        this.Close();
+                    }
+                    else
+                    {
+                        numeroIntentos++;
+                        if (numeroIntentos >= 3)
+                        {
+                            U.NotificacionError("Demasiados intentos fallidos.\n\nLa aplicación se cerrará.");
+                            Application.Exit();
+                            return;
+                        }
+                        U.NotificacionError("Error de autenticación.\n\nUsuario o contraseña incorrectos.");
+                        txtPwd.Clear();
+                        txtPwd.Focus();
+                    }
                 }
-                numeroIntentos++;
-                if (numeroIntentos >= 3)
-                {
-                    U.NotificacionError("Demasiados intentos fallidos.\n\nLa aplicación se cerrará.");
-                    Application.Exit();
-                    return;
-                }
-                U.NotificacionError("Error de autenticación.\n\nUsuario o contraseña incorrectos.");
-                txtPwd.Clear();
-                txtPwd.Focus();
             }
             catch (Exception ex)
             {
                 U.MsgCatchOue(ex);
             }
         }
+
+        //private void btnEntrar_Click(object sender, EventArgs e)
+        //{
+        //    try
+        //    {
+        //        UsuarioLogueado = new Usuario
+        //        {
+        //            User = txtUsuario.Text.Trim(),
+        //            Password = Utils.ComputeSha256Hash(txtPwd.Text.Trim())
+        //        };
+        //        UsuarioLogueado = _usuarioBLL.ValidarUsuario(UsuarioLogueado);
+        //        if (UsuarioLogueado.Id > 0)
+        //        {
+        //            this.Close();
+        //            return;
+        //        }
+        //        numeroIntentos++;
+        //        if (numeroIntentos >= 3)
+        //        {
+        //            U.NotificacionError("Demasiados intentos fallidos.\n\nLa aplicación se cerrará.");
+        //            Application.Exit();
+        //            return;
+        //        }
+        //        U.NotificacionError("Error de autenticación.\n\nUsuario o contraseña incorrectos.");
+        //        txtPwd.Clear();
+        //        txtPwd.Focus();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        U.MsgCatchOue(ex);
+        //    }
+        //}
 
         private void btnTogglePwd_Click(object sender, EventArgs e)
         {

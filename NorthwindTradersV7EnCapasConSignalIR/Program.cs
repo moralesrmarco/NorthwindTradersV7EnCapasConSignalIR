@@ -36,7 +36,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     );
                     loginForm.ShowDialog();
                     usuario = loginForm.UsuarioLogueado;
-                    if (usuario.Id == 0)
+                    if (usuario == null || usuario.Id == 0)
                     {
                         return;
                     }
