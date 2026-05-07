@@ -57,7 +57,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-                cmbVentasMensualesPorVendedorPorAño.DataSource = _graficasService.ObtenerTop10AñosDeVentas();
+                cmbVentasMensualesPorVendedorPorAño.DataSource = await Task.Run(() => _graficasService.ObtenerTop10AñosDeVentas());
                 cmbVentasMensualesPorVendedorPorAño.DisplayMember = "Texto";
                 cmbVentasMensualesPorVendedorPorAño.ValueMember = "Valor";
                 cmbVentasMensualesPorVendedorPorAño.SelectedValue = 1997;
