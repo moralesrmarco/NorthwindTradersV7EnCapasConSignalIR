@@ -18,7 +18,9 @@ namespace NorthwindTradersV7EnCapasConSignalIR
     {
         private readonly string cnStr = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
         private readonly GraficasService _graficasService;
-        
+
+        private DataTable dtTop10AñosVentas = null;
+
         public FrmTableroControlAltaDireccion()
         {
             InitializeComponent();
@@ -29,6 +31,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private async void FrmTableroControlAltaDireccion_Load(object sender, EventArgs e)
         {
+            await LlenarCombosTop10AñosVentas();
+
             await LlenarCmbVentasMensualesAño();
             await LlenarCmbTipoGrafica1();
 
@@ -48,7 +52,23 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             await LlenarCmbVentasMensualesPorVendedorPorAño();
             LlenarCmbTipoGrafica6();
         }
-
+        /******************************************************************************************************/
+        private async Task LlenarCombosTop10AñosVentas()
+        {
+            try
+            {
+                MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
+                dtTop10AñosVentas = await Task.Run(() => _graficasService.ObtenerTop10AñosDeVentas());
+            }
+            catch (Exception ex)
+            {
+                U.MsgCatchOue(ex);
+            }
+            finally
+            {
+                MDIPrincipal.ActualizarBarraDeEstado();
+            }
+        }
         /******************************************************************************************************/
         #region Grafica1
         private async Task LlenarCmbVentasMensualesAño()
@@ -57,8 +77,16 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-                var años = await Task.Run(() => _graficasService.ObtenerTop10AñosDeVentas());
-
+                // Clonar la estructura de la tabla existente
+                var años = await Task.Run(() =>
+                {
+                    var clone = dtTop10AñosVentas.Clone();
+                    foreach (DataRow row in dtTop10AñosVentas.Rows)
+                    {
+                        clone.ImportRow(row);
+                    }
+                    return clone;
+                });
                 cmbVentasMensualesAño.DataSource = años;
                 cmbVentasMensualesAño.DisplayMember = "Texto";
                 cmbVentasMensualesAño.ValueMember = "Valor";
@@ -390,7 +418,16 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-                var años = await Task.Run(() => _graficasService.ObtenerTop10AñosDeVentas());
+                // Clonar la estructura de la tabla existente
+                var años = await Task.Run(() =>
+                {
+                    var clone = dtTop10AñosVentas.Clone();
+                    foreach (DataRow row in dtTop10AñosVentas.Rows)
+                    {
+                        clone.ImportRow(row);
+                    }
+                    return clone;
+                });
                 CmbAñoTopProd.DataSource = años;
                 CmbAñoTopProd.DisplayMember = "Texto";
                 CmbAñoTopProd.ValueMember = "Valor";
@@ -521,7 +558,16 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
             try
             {
-                var años = await Task.Run(() => _graficasService.ObtenerTop10AñosDeVentas());
+                // Clonar la estructura de la tabla existente
+                var años = await Task.Run(() =>
+                {
+                    var clone = dtTop10AñosVentas.Clone();
+                    foreach (DataRow row in dtTop10AñosVentas.Rows)
+                    {
+                        clone.ImportRow(row);
+                    }
+                    return clone;
+                });
                 cmbVentasVendedorAño.DataSource = años;
                 cmbVentasVendedorAño.DisplayMember = "Texto";
                 cmbVentasVendedorAño.ValueMember = "Valor";
@@ -652,10 +698,19 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-                var dt = await Task.Run(() => _graficasService.ObtenerTop10AñosDeVentas());
+                // Clonar la estructura de la tabla existente
+                var años = await Task.Run(() =>
+                {
+                    var clone = dtTop10AñosVentas.Clone();
+                    foreach (DataRow row in dtTop10AñosVentas.Rows)
+                    {
+                        clone.ImportRow(row);
+                    }
+                    return clone;
+                });
                 cmbVentasMensualesPorVendedorPorAño.DisplayMember = "Texto";
                 cmbVentasMensualesPorVendedorPorAño.ValueMember = "Valor";
-                cmbVentasMensualesPorVendedorPorAño.DataSource = dt;
+                cmbVentasMensualesPorVendedorPorAño.DataSource = años;
                 cmbVentasMensualesPorVendedorPorAño.SelectedValue = 1997;
                 MDIPrincipal.ActualizarBarraDeEstado();
             }
@@ -806,10 +861,19 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-                var dt = await Task.Run(() =>_graficasService.ObtenerTop10AñosDeVentas());
+                // Clonar la estructura de la tabla existente
+                var años = await Task.Run(() =>
+                {
+                    var clone = dtTop10AñosVentas.Clone();
+                    foreach (DataRow row in dtTop10AñosVentas.Rows)
+                    {
+                        clone.ImportRow(row);
+                    }
+                    return clone;
+                });
                 cmbVentasMensualesPorVendedorPorAño4.DisplayMember = "Texto";
                 cmbVentasMensualesPorVendedorPorAño4.ValueMember = "Valor";
-                cmbVentasMensualesPorVendedorPorAño4.DataSource = dt;
+                cmbVentasMensualesPorVendedorPorAño4.DataSource = años;
                 cmbVentasMensualesPorVendedorPorAño4.SelectedValue = 1997;
                 MDIPrincipal.ActualizarBarraDeEstado();
             }
