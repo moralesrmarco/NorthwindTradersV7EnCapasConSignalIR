@@ -32,6 +32,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         {
             try
             {
+                btnTogglePwd.Enabled = false;
+                btnEntrar.Enabled = false;
                 using (var client = new HttpClient())
                 {
                     client.BaseAddress = new Uri(UrlBaseSignalR);
@@ -42,11 +44,15 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     if (response.IsSuccessStatusCode)
                     {
                         var result = await response.Content.ReadAsAsync<dynamic>();
-                        string token = result.Token;
+                        //string token = result.Token;
 
-                        // Guardar token en sesión global
-                        SesionActual.Token = token;
-                        SesionActual.Usuario = txtUsuario.Text.Trim();
+                        //// Guardar token en sesión global
+                        //SesionActual.Token = token;
+                        //SesionActual.Usuario = txtUsuario.Text.Trim();
+
+                        SesionActual.AccessToken = (string)result.AccessToken;
+                        SesionActual.RefreshToken = (string)result.RefreshToken;
+                        SesionActual.Usuario = (string)result.Usuario.User;
 
                         // Asignar datos del usuario autenticado
                         UsuarioLogueado = new Usuario
@@ -72,6 +78,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         U.NotificacionError("Error de autenticación.\n\nUsuario o contraseña incorrectos.");
                         txtPwd.Clear();
                         txtPwd.Focus();
+                        btnTogglePwd.Enabled = true;
+                        btnEntrar.Enabled = true;
                     }
                 }
             }
@@ -80,38 +88,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 U.MsgCatchOue(ex);
             }
         }
-
-        //private void btnEntrar_Click(object sender, EventArgs e)
-        //{
-        //    try
-        //    {
-        //        UsuarioLogueado = new Usuario
-        //        {
-        //            User = txtUsuario.Text.Trim(),
-        //            Password = Utils.ComputeSha256Hash(txtPwd.Text.Trim())
-        //        };
-        //        UsuarioLogueado = _usuarioBLL.ValidarUsuario(UsuarioLogueado);
-        //        if (UsuarioLogueado.Id > 0)
-        //        {
-        //            this.Close();
-        //            return;
-        //        }
-        //        numeroIntentos++;
-        //        if (numeroIntentos >= 3)
-        //        {
-        //            U.NotificacionError("Demasiados intentos fallidos.\n\nLa aplicación se cerrará.");
-        //            Application.Exit();
-        //            return;
-        //        }
-        //        U.NotificacionError("Error de autenticación.\n\nUsuario o contraseña incorrectos.");
-        //        txtPwd.Clear();
-        //        txtPwd.Focus();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        U.MsgCatchOue(ex);
-        //    }
-        //}
 
         private void btnTogglePwd_Click(object sender, EventArgs e)
         {

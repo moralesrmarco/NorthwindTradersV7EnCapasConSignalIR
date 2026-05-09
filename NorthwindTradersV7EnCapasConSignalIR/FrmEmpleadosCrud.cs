@@ -10,6 +10,7 @@ using System.Configuration;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -700,7 +701,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         {
                             client.BaseAddress = new Uri(UrlBaseSignalR);
                             client.DefaultRequestHeaders.Authorization =
-                                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", SesionActual.Token);
+                                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", SesionActual.AccessToken);
                             var response = await client.PostAsJsonAsync("api/empleados/insertar", empleado);
                             //txtId.Text = response.
                             if (response.IsSuccessStatusCode)
@@ -719,6 +720,19 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                                 else
                                 {
                                     U.NotificacionError(idyNombre + Utils.nfrs);
+                                }
+                            }
+                            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.BadRequest)
+                            {
+                                if (await SesionActual.RefreshAccessTokenAsync(UrlBaseSignalR))
+                                {                                     
+                                    btnOperacion.PerformClick(); // Reintentar la operación después de refrescar el token
+                                }
+                                else
+                                {
+                                    U.NotificacionError("Sesión expirada. Por favor, inicie sesión nuevamente.");
+
+                                    // Aquí podrías cerrar la sesión o redirigir al login
                                 }
                             }
                             else
