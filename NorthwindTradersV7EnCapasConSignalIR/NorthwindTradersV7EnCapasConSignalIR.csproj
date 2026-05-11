@@ -440,6 +440,7 @@
     <Compile Include="FrmTableroControlVendedores.Designer.cs">
       <DependentUpon>FrmTableroControlVendedores.cs</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\CerrarAppHelper.cs" />
     <Compile Include="Helpers\ComboBoxHelper.cs" />
     <Compile Include="MDIPrincipal.cs">
       <SubType>Form</SubType>
@@ -449,6 +450,8 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\ApiEmpleadoService.cs" />
+    <Compile Include="Services\ApiService.cs" />
     <Compile Include="SesionActual.cs" />
     <Compile Include="U.cs" />
     <EmbeddedResource Include="FrmCambiarContrasena.resx">

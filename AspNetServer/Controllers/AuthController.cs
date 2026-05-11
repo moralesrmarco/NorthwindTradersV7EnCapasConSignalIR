@@ -24,61 +24,62 @@ namespace AspNetServer.Controllers
         public IHttpActionResult Login(Usuario usuario)
         {
             var usuarioAuth = _usuarioBLL.ValidarUsuario(usuario);
+            if (usuarioAuth == null || usuarioAuth.Id <= 0)
+            {
+                return Unauthorized();
+            }
+            var accessMinutes = int.Parse(ConfigurationManager.AppSettings["JWT_ACCESS_MINUTES"]);
+            var refreshDays = int.Parse(ConfigurationManager.AppSettings["JWT_REFRESH_DAYS"]);
             usuarioAuth.User = usuario.User;
             usuarioAuth.Password = usuario.Password;
-            if (usuarioAuth != null && usuarioAuth.Id >0)
+            var key = Encoding.UTF8.GetBytes(ConfigurationManager.AppSettings["JWT_SECRET_KEY"]);
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            // Access token corto (10 min)
+            var accessDescriptor = new SecurityTokenDescriptor
             {
-                var key = Encoding.UTF8.GetBytes(ConfigurationManager.AppSettings["JWT_SECRET_KEY"]);
-                var tokenHandler = new JwtSecurityTokenHandler();
-
-                // Access token corto (10 min)
-                var accessDescriptor = new SecurityTokenDescriptor
+                Subject = new ClaimsIdentity(new[]
                 {
-                    Subject = new ClaimsIdentity(new[]
-                    {
-                new Claim(ClaimTypes.Name, usuarioAuth.User)
-            }),
-                    Expires = DateTime.UtcNow.AddMinutes(2), // ojo
-                    SigningCredentials = new SigningCredentials(
-                        new SymmetricSecurityKey(key),
-                        SecurityAlgorithms.HmacSha256Signature)
-                };
+                    new Claim(ClaimTypes.Name, usuarioAuth.User)
+                }),
+                Expires = DateTime.UtcNow.AddMinutes(accessMinutes),
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature)
+            };
 
-                var accessToken = tokenHandler.CreateToken(accessDescriptor);
+            var accessToken = tokenHandler.CreateToken(accessDescriptor);
 
-                // Refresh token como JWT largo (7 días)
-                var refreshDescriptor = new SecurityTokenDescriptor
+            // Refresh token como JWT largo (7 días)
+            var refreshDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
                 {
-                    Subject = new ClaimsIdentity(new[]
-                    {
-                        new Claim(ClaimTypes.Name, usuarioAuth.User)
-                    }),
-                    //Expires = DateTime.UtcNow.AddDays(1), // ojo
-                    Expires = DateTime.UtcNow.AddMinutes(10), // ojo
-                    SigningCredentials = new SigningCredentials(
-                        new SymmetricSecurityKey(key),
-                        SecurityAlgorithms.HmacSha256Signature)
-                };
+                    new Claim(ClaimTypes.Name, usuarioAuth.User)
+                }),
+                //Expires = DateTime.UtcNow.AddDays(1), // ojo
+                Expires = DateTime.UtcNow.AddDays(refreshDays), // ojo
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature)
+            };
 
-                var refreshToken = tokenHandler.CreateToken(refreshDescriptor);
+            var refreshToken = tokenHandler.CreateToken(refreshDescriptor);
 
-                return Ok(new
+            return Ok(new
 
+            {
+                AccessToken = tokenHandler.WriteToken(accessToken),
+                RefreshToken = tokenHandler.WriteToken(refreshToken),
+                Usuario = new
                 {
-                    AccessToken = tokenHandler.WriteToken(accessToken),
-                    RefreshToken = tokenHandler.WriteToken(refreshToken),
-                    Usuario = new
-                    {
-                        usuarioAuth.Id,
-                        usuarioAuth.User,
-                        usuarioAuth.Paterno,
-                        usuarioAuth.Materno,
-                        usuarioAuth.Nombres
-                    }
-                });
-            }
-
-            return Unauthorized();
+                    usuarioAuth.Id,
+                    usuarioAuth.User,
+                    usuarioAuth.Paterno,
+                    usuarioAuth.Materno,
+                    usuarioAuth.Nombres
+                }
+            });
         }
 
         [HttpPost]
@@ -87,22 +88,23 @@ namespace AspNetServer.Controllers
         {
 
 
-            string carpeta = System.Web.Hosting.HostingEnvironment.MapPath("~/App_Data");
-            if (!System.IO.Directory.Exists(carpeta))
-            {
-                System.IO.Directory.CreateDirectory(carpeta);
-            }
+            //string carpeta = System.Web.Hosting.HostingEnvironment.MapPath("~/App_Data");
+            //if (!System.IO.Directory.Exists(carpeta))
+            //{
+            //    System.IO.Directory.CreateDirectory(carpeta);
+            //}
 
-            string rutaLog = System.Web.Hosting.HostingEnvironment.MapPath("~/App_Data/log.txt");
+            //string rutaLog = System.Web.Hosting.HostingEnvironment.MapPath("~/App_Data/log.txt");
 
-            if (!System.IO.File.Exists(rutaLog))
-            {
-                using (var fs = System.IO.File.Create(rutaLog)) { }
-            }
-            System.IO.File.AppendAllText(rutaLog, "Log inicial\n");
+            //if (!System.IO.File.Exists(rutaLog))
+            //{
+            //    using (var fs = System.IO.File.Create(rutaLog)) { }
+            //}
+            //System.IO.File.AppendAllText(rutaLog, "Log inicial\n");
 
-            System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] RefreshToken recibido: {request.RefreshToken}\n");
+            //System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] RefreshToken recibido: {request.RefreshToken}\n");
 
+            var accessMinutes = int.Parse(ConfigurationManager.AppSettings["JWT_ACCESS_MINUTES"]);
             var refreshToken = request.RefreshToken;
             var key = Encoding.UTF8.GetBytes(ConfigurationManager.AppSettings["JWT_SECRET_KEY"]);
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -122,28 +124,27 @@ namespace AspNetServer.Controllers
                 // Si no se validó correctamente, devolvemos 401
                 if (validatedToken == null)
                 {
-                    System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] RefreshToken inválido\n");
+                    //System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] RefreshToken inválido\n");
                     return Unauthorized();
                 }
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
-                //var username = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
                 var username = jwtToken.Claims.FirstOrDefault(c =>
                     c.Type == JwtRegisteredClaimNames.UniqueName || c.Type == ClaimTypes.Name
                 )?.Value;
                 if (string.IsNullOrEmpty(username))
                 {
-                    System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] RefreshToken sin usuario\n");
+                    //System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] RefreshToken sin usuario\n");
                     return Unauthorized();
                 }
 
-                System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] RefreshToken válido para usuario: {username}\n");
+                //System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] RefreshToken válido para usuario: {username}\n");
 
                 // Generar nuevo access token
                 var descriptor = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username) }),
-                    Expires = DateTime.UtcNow.AddMinutes(10),
+                    Expires = DateTime.UtcNow.AddMinutes(accessMinutes),
                     SigningCredentials = new SigningCredentials(
                         new SymmetricSecurityKey(key),
                         SecurityAlgorithms.HmacSha256Signature)
@@ -151,14 +152,14 @@ namespace AspNetServer.Controllers
 
                 var newAccessToken = tokenHandler.CreateToken(descriptor);
 
-                System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] Nuevo AccessToken emitido: {tokenHandler.WriteToken(newAccessToken)}\n");
+                //System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] Nuevo AccessToken emitido: {tokenHandler.WriteToken(newAccessToken)}\n");
 
                 return Ok(new { AccessToken = tokenHandler.WriteToken(newAccessToken) });
             }
             catch (Exception ex)
             {
 
-                System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] Error validando RefreshToken: {ex.Message}\n");
+                //System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] Error validando RefreshToken: {ex.Message}\n");
                 
                 return Unauthorized();
             }

@@ -44,12 +44,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     if (response.IsSuccessStatusCode)
                     {
                         var result = await response.Content.ReadAsAsync<dynamic>();
-                        //string token = result.Token;
-
-                        //// Guardar token en sesión global
-                        //SesionActual.Token = token;
-                        //SesionActual.Usuario = txtUsuario.Text.Trim();
-
                         SesionActual.AccessToken = (string)result.AccessToken;
                         SesionActual.RefreshToken = (string)result.RefreshToken;
                         SesionActual.Usuario = (string)result.Usuario.User;
@@ -63,7 +57,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             Materno = (string)result.Usuario.Materno,
                             Nombres = (string)result.Usuario.Nombres
                         };
-
                         this.Close();
                     }
                     else

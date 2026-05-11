@@ -3,15 +3,14 @@ using BLL.Services;
 using Entities;
 using Entities.DTOs;
 using Microsoft.AspNet.SignalR.Client;
-using Newtonsoft.Json;
+using NorthwindTradersV7EnCapasConSignalIR.Helpers;
+using NorthwindTradersV7EnCapasConSignalIR.Services;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Utilities;
@@ -62,18 +61,24 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             _hubConnection = new HubConnection(UrlBaseSignalR);
             _hubProxy = _hubConnection.CreateHubProxy("EmpleadosHub");
 
-            // Suscribirse al evento que el servidor invoca
             _hubProxy.On<string, int>("empleadoActualizado", (accion, empleadoId) =>
             {
                 Invoke(new Action(() =>
                 {
-                    // Solo refrescar si NO estás realizando búsqueda
                     if (!realizandoBusqueda)
-                        // Aquí refrescas el DataGridView
                         LlenarDgv(false);
+                    else
+                        return; // No refrescar si estás realizando búsqueda
+                    if (tabcOperacion.SelectedTab == tbpListar || tabcOperacion.SelectedTab == tbpRegistrar || tabcOperacion.SelectedTab == tbpEliminar)
+                        return;
+                    if (!string.IsNullOrWhiteSpace(txtId.Text))
+                    {
+                        int empleadoActual = Convert.ToInt32(txtId.Text);
+                        if (empleadoActual == empleadoId)
+                            CargarEmpleado(empleadoId);
+                    }
                 }));
             });
-            
             _hubConnection.Closed += async () =>
             {
                 await ReconectarSignalR();
@@ -186,7 +191,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
                 bool tieneId = false;
                 int employeeId = 0;
-                if (tabcOperacion.SelectedTab == tbpModificar || tabcOperacion.SelectedTab == tbpEliminar || tabcOperacion.SelectedTab == tbpListar)
+                string selectedValueCboPais = cboPais.Text;
+                if (tabcOperacion.SelectedTab == tbpModificar)
                 {
                     employeeId = 0;
                     tieneId = int.TryParse(txtId.Text, out employeeId);
@@ -205,7 +211,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 cboPais.DisplayMember = "Pais";
                 cboPais.SelectedIndex = 0;
 
-                if (tabcOperacion.SelectedTab == tbpModificar || tabcOperacion.SelectedTab == tbpEliminar || tabcOperacion.SelectedTab == tbpListar)
+                if (tabcOperacion.SelectedTab == tbpModificar)
                 {
                     // 🔹 Restaurar desde BD
                     if (tieneId)
@@ -219,8 +225,37 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         }
                         else
                         {
-                            cboPais.SelectedIndex = 0;
+                            // esto es para aceptar texto libre 
+                            if (!string.IsNullOrWhiteSpace(selectedValueCboPais))
+                            {
+                                cboPais.Text = selectedValueCboPais;
+                                int idx = cboPais.FindStringExact(selectedValueCboPais);
+                                if (idx >= 0)
+                                    cboPais.SelectedIndex = idx;   // coincide con un ítem
+                                else
+                                {
+                                    cboPais.SelectedIndex = -1;    // texto libre
+                                    cboPais.Text = selectedValueCboPais;
+                                }
+                            }
+                            else
+                            {
+                                cboPais.SelectedIndex = 0;
+                            }
                         }
+                    }
+                }
+                if ((tabcOperacion.SelectedTab == tbpRegistrar || tabcOperacion.SelectedTab == tbpEliminar || tabcOperacion.SelectedTab == tbpListar) && !string.IsNullOrWhiteSpace(selectedValueCboPais))
+                {
+                    // esto es para aceptar texto libre 
+                    cboPais.Text = selectedValueCboPais;
+                    int idx = cboPais.FindStringExact(selectedValueCboPais);
+                    if (idx >= 0)
+                        cboPais.SelectedIndex = idx;   // coincide con un ítem
+                    else
+                    {
+                        cboPais.SelectedIndex = -1;    // texto libre
+                        cboPais.Text = selectedValueCboPais;
                     }
                 }
                 CargarValoresOriginales();
@@ -239,7 +274,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
                 bool tieneId = false;
                 int employeeId = 0;
-                if (tabcOperacion.SelectedTab == tbpModificar || tabcOperacion.SelectedTab == tbpEliminar || tabcOperacion.SelectedTab == tbpListar)
+                string selectedValueCboReportaA = cboReportaA.SelectedValue?.ToString();
+                if (tabcOperacion.SelectedTab == tbpModificar)
                 {
                     employeeId = 0;
                     tieneId = int.TryParse(txtId.Text, out employeeId);
@@ -251,7 +287,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 cboReportaA.DisplayMember = "Nombre";
                 cboReportaA.SelectedIndex = 0;
 
-                if (tabcOperacion.SelectedTab == tbpModificar || tabcOperacion.SelectedTab == tbpEliminar || tabcOperacion.SelectedTab == tbpListar)
+                if (tabcOperacion.SelectedTab == tbpModificar)
                 {
                     // 🔹 Restaurar desde BD
                     if (tieneId)
@@ -264,9 +300,16 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         }
                         else
                         {
-                            cboReportaA.SelectedIndex = 0;
+                            if (selectedValueCboReportaA != null)
+                                cboReportaA.SelectedValue = selectedValueCboReportaA;
+                            else
+                                cboReportaA.SelectedIndex = 0;
                         }
                     }
+                }
+                if ((tabcOperacion.SelectedTab == tbpRegistrar || tabcOperacion.SelectedTab == tbpEliminar || tabcOperacion.SelectedTab == tbpListar) && selectedValueCboReportaA != null)
+                {
+                    cboReportaA.SelectedValue = selectedValueCboReportaA;
                 }
                 CargarValoresOriginales();
                 MDIPrincipal.ActualizarBarraDeEstado();
@@ -385,6 +428,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             txtTitCortesia.Text = txtDomicilio.Text = txtCiudad.Text = string.Empty;
             txtRegion.Text = txtCodigoP.Text = txtTelefono.Text = string.Empty;
             txtExtension.Text = txtNotas.Text = string.Empty;
+            cboPais.Text = null;
             cboPais.SelectedIndex = cboReportaA.SelectedIndex = 0;
             picFoto.Image = Properties.Resources.FotoPerfil;
             dtpFNacimiento.Value = dtpFNacimiento.MinDate;
@@ -439,7 +483,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 valida = false;
                 errorProvider1.SetError(txtCiudad, "Ingrese la ciudad");
             }
-            if (cboPais.Text.Trim() == "" || cboPais.SelectedIndex == 0)
+            //if (cboPais.Text.Trim() == "" || cboPais.SelectedIndex == 0)
+            if (string.IsNullOrWhiteSpace(cboPais.Text) || cboPais.SelectedIndex == 0)
             {
                 valida = false;
                 errorProvider1.SetError(cboPais, "Ingrese o seleccione el país");
@@ -474,64 +519,28 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void dgv_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0 || e.ColumnIndex < 0)
-                return;
+            // 🔹 Cuando viene desde un click real del DataGridView
+            if (e != null)
+            {
+                if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                    return;
+
+                DataGridViewRow dgvr = dgv.Rows[e.RowIndex];
+
+                if (dgvr.Cells["EmployeeID"].Value == null)
+                    return;
+
+                txtId.Text = dgvr.Cells["EmployeeID"].Value.ToString();
+            }
             BorrarMensajesError();
             if (tabcOperacion.SelectedTab != tbpRegistrar)
             {
                 DeshabilitarControles();
-                DataGridViewRow dgvr = dgv.CurrentRow;
-                txtId.Text = dgvr.Cells["EmployeeID"].Value.ToString();
-                Empleado empleado = new Empleado();
                 try
                 {
-                    empleado = _empleadoBLL.ObtenerEmpleadoPorId(Convert.ToInt32(txtId.Text));
-                    if (empleado != null)
+                    int employeeId = Convert.ToInt32(txtId.Text);
+                    if (!CargarEmpleado(employeeId))
                     {
-                        if (empleado.BirthDate != null)
-                            dtpFNacimiento.Value = empleado.BirthDate.Value;
-                        else
-                            dtpFNacimiento.Value = dtpFNacimiento.MinDate;
-                        if (empleado.HireDate != null)
-                            dtpFContratacion.Value = empleado.HireDate.Value;
-                        else
-                            dtpFContratacion.Value = dtpFContratacion.MinDate;
-                        if (empleado.Photo != null)
-                        {
-                            fotoOriginalOle = empleado.Photo;
-                            if (empleado.EmployeeID <= 9)
-                                btnCargar.Enabled = false;
-                            else
-                                btnCargar.Enabled = true;
-                            using (var ms = new MemoryStream(empleado.Photo))
-                                picFoto.Image = Image.FromStream(ms);
-                        }
-                        else
-                        {
-                            picFoto.Image = null;
-                            btnCargar.Enabled = true;
-                        }
-                        if (empleado.ReportsTo != null)
-                            cboReportaA.SelectedValue = empleado.ReportsTo.Value;
-                        else
-                            cboReportaA.SelectedValue = 0; // corresponde a N/A
-                        txtId.Tag = empleado.RowVersion;
-                        txtNombres.Text = empleado.FirstName;
-                        txtApellidos.Text = empleado.LastName;
-                        txtTitulo.Text = empleado.Title;
-                        txtTitCortesia.Text = empleado.TitleOfCourtesy;
-                        txtDomicilio.Text = empleado.Address;
-                        txtCiudad.Text = empleado.City;
-                        txtRegion.Text = empleado.Region;
-                        txtCodigoP.Text = empleado.PostalCode;
-                        cboPais.Text = empleado.Country;
-                        txtTelefono.Text = empleado.HomePhone;
-                        txtExtension.Text = empleado.Extension;
-                        txtNotas.Text = empleado.Notes;
-                    }
-                    else
-                    {
-                        U.NotificacionWarning($"No se encontró el empleado con Id: {txtId.Text}." + Utils.erfep);
                         ActualizaDgv();
                         return;
                     }
@@ -697,53 +706,40 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             Photo = picFoto.Image != null ? Utils.ImageToByteArray(picFoto.Image) : null
                         };
 
-                        using (var client = new HttpClient())
+                        var resultado = await ApiEmpleadoService.InsertarAsync(empleado);
+                        if (resultado.ok)
                         {
-                            client.BaseAddress = new Uri(UrlBaseSignalR);
-                            client.DefaultRequestHeaders.Authorization =
-                                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", SesionActual.AccessToken);
-                            var response = await client.PostAsJsonAsync("api/empleados/insertar", empleado);
-                            //txtId.Text = response.
-                            if (response.IsSuccessStatusCode)
+                            txtId.Text = resultado.empleado.EmployeeID.ToString();
+                            string idyNombre =
+                                $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
+                            U.NotificacionInformation(
+                                idyNombre + Utils.srs);
+                            MDIPrincipal.ActualizarBarraDeEstado(
+                                $"Se insertó 1 registro");
+                        }
+                        else
+                        {
+                            if (resultado.mensaje == "Sesión expirada")
                             {
-                                var resultado = await response.Content.ReadAsAsync<dynamic>();
-                                int numRegs = resultado.NumRegs;
-                                var empleadoInsertado = JsonConvert.DeserializeObject<Empleado>(resultado.Empleado.ToString());
-                                MDIPrincipal.ActualizarBarraDeEstado($"Se insertaron {numRegs} registros");
-                                string idyNombre = $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
-                                if (numRegs > 0)
-                                {
-                                    txtId.Text = empleadoInsertado.EmployeeID.ToString();
-                                    idyNombre = $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
-                                    U.NotificacionInformation(idyNombre + Utils.srs);
-                                }
-                                else
-                                {
-                                    U.NotificacionError(idyNombre + Utils.nfrs);
-                                }
-                            }
-                            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.BadRequest)
-                            {
-                                if (await SesionActual.RefreshAccessTokenAsync(UrlBaseSignalR))
-                                {                                     
-                                    btnOperacion.PerformClick(); // Reintentar la operación después de refrescar el token
-                                }
-                                else
-                                {
-                                    U.NotificacionError("Sesión expirada. Por favor, inicie sesión nuevamente.");
-
-                                    // Aquí podrías cerrar la sesión o redirigir al login
-                                }
+                                U.NotificacionError(
+                                    "El registro no fue dado de alta.\n\n" +
+                                    "Sesión expirada.\n\n" + 
+                                    "La aplicación se Cerrara.");
+                                    CerrarAppHelper.CerrarApp();
                             }
                             else
                             {
-                                U.NotificacionError($"Error al llamar al API.");
+                                U.NotificacionError(resultado.mensaje);
                             }
-                        }
+                        }        
                     }
                     catch (Exception ex)
                     {
-                        U.MsgCatchOue(ex);
+                        U.NotificacionError("Error al insertar el empleado: " + ex.Message);
+                    }
+                    finally
+                    {
+                        MDIPrincipal.ActualizarBarraDeEstado();
                     }
                     HabilitarControles();
                     btnOperacion.Enabled = true;
@@ -795,33 +791,51 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             empleado.Photo = Utils.ImageToByteArray(picFoto.Image);
                         }
                         var valorPais = cboPais.SelectedValue?.ToString();
-                        using (var client = new HttpClient())
+
+                        var resultado = await ApiEmpleadoService.ActualizarAsync(empleado);
+
+                        if (resultado.ok)
                         {
-                            client.BaseAddress = new Uri(UrlBaseSignalR);
-                            var response = await client.PutAsJsonAsync("api/empleados/actualizar", empleado);
-                            if (response.IsSuccessStatusCode)
+                            int numRegs = resultado.numRegs;
+
+                            MDIPrincipal.ActualizarBarraDeEstado(
+                                $"Se actualizó {(numRegs < 0 ? 0 : numRegs)} registro");
+
+                            string idyNombre =
+                                $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
+
+                            if (numRegs > 0)
+                                U.NotificacionInformation(idyNombre + Utils.sms);
+                            else if (numRegs == -1)
+                                U.NotificacionError(idyNombre + Utils.nfmfe);
+                            else if (numRegs == -2)
+                                U.NotificacionError(idyNombre + Utils.nfmfm);
+                            else
+                                U.NotificacionError(idyNombre + Utils.nfmmd);
+                        }
+                        else
+                        {
+                            if (resultado.mensaje == "Sesión expirada")
                             {
-                                int numRegs = await response.Content.ReadAsAsync<int>();
-                                MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registros");
-                                string idyNombre = $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
-                                if (numRegs > 0)
-                                    U.NotificacionInformation(idyNombre + Utils.sms);
-                                else if (numRegs == -1)
-                                    U.NotificacionError(idyNombre + Utils.nfmfe);
-                                else if (numRegs == -2)
-                                    U.NotificacionError(idyNombre + Utils.nfmfm);
-                                else
-                                    U.NotificacionError(idyNombre + Utils.nfmmd);
+                                U.NotificacionError(
+                                    "El registro no fue modificado.\n\n" +
+                                    "Sesión expirada.\n\n" +
+                                    "La aplicación se cerrará.");
+                                CerrarAppHelper.CerrarApp();
                             }
                             else
                             {
-                                U.NotificacionError($"Error al llamar al API.");
+                                U.NotificacionError(resultado.mensaje);
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        U.MsgCatchOue(ex);
+                        U.NotificacionError("Error al modificar el empleado: " + ex.Message);
+                    }
+                    finally
+                    {
+                        MDIPrincipal.ActualizarBarraDeEstado();
                     }
                     BorrarDatosEmpleado();
                 }
@@ -839,35 +853,52 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     };
                     try
                     {
-                        using (var client = new HttpClient())
+                        var resultado = await ApiEmpleadoService.EliminarAsync(
+                            Convert.ToInt32(txtId.Text),
+                            txtId.Tag as byte[]);
+
+                        if (resultado.ok)
                         {
-                            client.BaseAddress = new Uri(UrlBaseSignalR);
-                            var rowVersionBase64 = Convert.ToBase64String(txtId.Tag as byte[]);
-                            var response = await client.DeleteAsync(
-                                $"api/empleados/eliminar/{txtId.Text}?rowVersion={rowVersionBase64}");
-                            if (response.IsSuccessStatusCode)
+                            int numRegs = resultado.numRegs;
+
+                            MDIPrincipal.ActualizarBarraDeEstado(
+                                $"Se eliminó {(numRegs < 0 ? 0 : numRegs)} registro");
+
+                            string idyNombre =
+                                $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
+
+                            if (numRegs > 0)
+                                U.NotificacionInformation(idyNombre + Utils.ses);
+                            else if (numRegs == -1)
+                                U.NotificacionError(idyNombre + Utils.nfefe);
+                            else if (numRegs == -2)
+                                U.NotificacionError(idyNombre + Utils.nfefm);
+                            else
+                                U.NotificacionError(idyNombre + Utils.nfemd);
+                        }
+                        else
+                        {
+                            if (resultado.mensaje == "Sesión expirada")
                             {
-                                int numRegs = await response.Content.ReadAsAsync<int>();
-                                MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registros");
-                                string idyNombre = $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
-                                if (numRegs > 0)
-                                    U.NotificacionInformation(idyNombre + Utils.ses);
-                                else if (numRegs == -1)
-                                    U.NotificacionError(idyNombre + Utils.nfefe);
-                                else if (numRegs == -2)
-                                    U.NotificacionError(idyNombre + Utils.nfefm);
-                                else
-                                    U.NotificacionError(idyNombre + Utils.nfemd);
+                                U.NotificacionError(
+                                    "El registro no fue eliminado.\n\n" +
+                                    "Sesión expirada.\n\n" +
+                                    "La aplicación se cerrará.");
+                                CerrarAppHelper.CerrarApp();
                             }
                             else
                             {
-                                U.NotificacionError($"Error al llamar al API.");
+                                U.NotificacionError(resultado.mensaje);
                             }
                         }
                     }
                     catch (Exception ex)
                     {
                         U.MsgCatchOue(ex);
+                    }
+                    finally
+                    {
+                        MDIPrincipal.ActualizarBarraDeEstado();
                     }
                     BorrarDatosEmpleado();
                 }
@@ -878,6 +909,73 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         private void CargarValoresOriginales()
         {
             valoresOriginales = Utils.CapturarValoresOriginales(this);
+        }
+
+        private bool CargarEmpleado(int employeeId)
+        {
+            try
+            {
+                var empleado =
+                    _empleadoBLL.ObtenerEmpleadoPorId(employeeId);
+                if (empleado == null)
+                {
+                    U.NotificacionWarning(
+                        $"No se encontró el empleado con Id: {employeeId}\n\n" + 
+                        "El registro fue eliminado previamente por otro usuario de la red.");
+                    BorrarDatosEmpleado();
+                    DeshabilitarControles();
+                    btnOperacion.Enabled = false;
+                    CargarValoresOriginales();
+                    return false;
+                }
+                txtId.Text = empleado.EmployeeID.ToString();
+                if (empleado.BirthDate != null)
+                    dtpFNacimiento.Value = empleado.BirthDate.Value;
+                else
+                    dtpFNacimiento.Value = dtpFNacimiento.MinDate;
+                if (empleado.HireDate != null)
+                    dtpFContratacion.Value = empleado.HireDate.Value;
+                else
+                    dtpFContratacion.Value = dtpFContratacion.MinDate;
+                if (empleado.Photo != null)
+                {
+                    fotoOriginalOle = empleado.Photo;
+                    using (var ms = new MemoryStream(empleado.Photo))
+                        picFoto.Image = Image.FromStream(ms);
+                    if (empleado.EmployeeID <= 9)
+                        btnCargar.Enabled = false;
+                    else
+                        btnCargar.Enabled = true;
+                }
+                else
+                {
+                    picFoto.Image = null;
+                    btnCargar.Enabled = true;
+                }
+                if (empleado.ReportsTo != null)
+                    cboReportaA.SelectedValue = empleado.ReportsTo.Value;
+                else
+                    cboReportaA.SelectedValue = 0;
+                txtId.Tag = empleado.RowVersion;
+                txtNombres.Text = empleado.FirstName;
+                txtApellidos.Text = empleado.LastName;
+                txtTitulo.Text = empleado.Title;
+                txtTitCortesia.Text = empleado.TitleOfCourtesy;
+                txtDomicilio.Text = empleado.Address;
+                txtCiudad.Text = empleado.City;
+                txtRegion.Text = empleado.Region;
+                txtCodigoP.Text = empleado.PostalCode;
+                cboPais.Text = empleado.Country;
+                txtTelefono.Text = empleado.HomePhone;
+                txtExtension.Text = empleado.Extension;
+                txtNotas.Text = empleado.Notes;
+                CargarValoresOriginales();
+                return true;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }

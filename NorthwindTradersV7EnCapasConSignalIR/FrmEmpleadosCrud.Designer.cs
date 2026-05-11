@@ -64,6 +64,7 @@
             this.label25 = new System.Windows.Forms.Label();
             this.label23 = new System.Windows.Forms.Label();
             this.grbEmpleado = new System.Windows.Forms.GroupBox();
+            this.cboPais = new System.Windows.Forms.ComboBox();
             this.btnCargar = new System.Windows.Forms.Button();
             this.label31 = new System.Windows.Forms.Label();
             this.txtNotas = new System.Windows.Forms.TextBox();
@@ -103,7 +104,6 @@
             this.tbpEliminar = new System.Windows.Forms.TabPage();
             this.label4 = new System.Windows.Forms.Label();
             this.errorProvider1 = new System.Windows.Forms.ErrorProvider(this.components);
-            this.cboPais = new System.Windows.Forms.ComboBox();
             this.grbBuscar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picFoto)).BeginInit();
             this.grbEmpleado.SuspendLayout();
@@ -141,7 +141,7 @@
             // 
             // grbBuscar
             // 
-            this.grbBuscar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.grbBuscar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.grbBuscar.Controls.Add(this.btnBuscar);
             this.grbBuscar.Controls.Add(this.btnLimpiar);
@@ -504,8 +504,8 @@
             // 
             // grbEmpleado
             // 
-            this.grbEmpleado.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.grbEmpleado.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.grbEmpleado.Controls.Add(this.cboPais);
             this.grbEmpleado.Controls.Add(this.btnCargar);
@@ -553,6 +553,16 @@
             this.grbEmpleado.TabStop = false;
             this.grbEmpleado.Text = "»   Empleado:   «";
             this.grbEmpleado.Paint += new System.Windows.Forms.PaintEventHandler(this.GrbPaint);
+            // 
+            // cboPais
+            // 
+            this.cboPais.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cboPais.FormattingEnabled = true;
+            this.cboPais.Location = new System.Drawing.Point(146, 350);
+            this.cboPais.MaxLength = 15;
+            this.cboPais.Name = "cboPais";
+            this.cboPais.Size = new System.Drawing.Size(184, 25);
+            this.cboPais.TabIndex = 35;
             // 
             // btnCargar
             // 
@@ -849,7 +859,7 @@
             // 
             // grbEmpleados
             // 
-            this.grbEmpleados.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.grbEmpleados.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.grbEmpleados.Controls.Add(this.dgv);
             this.grbEmpleados.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -878,7 +888,7 @@
             // 
             // tabcOperacion
             // 
-            this.tabcOperacion.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.tabcOperacion.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabcOperacion.Controls.Add(this.tbpListar);
             this.tabcOperacion.Controls.Add(this.tbpRegistrar);
@@ -985,15 +995,6 @@
             // errorProvider1
             // 
             this.errorProvider1.ContainerControl = this;
-            // 
-            // cboPais
-            // 
-            this.cboPais.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cboPais.FormattingEnabled = true;
-            this.cboPais.Location = new System.Drawing.Point(146, 350);
-            this.cboPais.Name = "cboPais";
-            this.cboPais.Size = new System.Drawing.Size(184, 25);
-            this.cboPais.TabIndex = 35;
             // 
             // FrmEmpleadosCrud
             // 
