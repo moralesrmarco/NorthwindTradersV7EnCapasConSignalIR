@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Entities
 {
@@ -14,6 +15,8 @@ namespace Entities
         public DateTime FechaModificacion { get; set; }
         public bool Estatus { get; set; }
         public byte[] RowVersion { get; set; }
+
+        public HashSet<int> PermisosIds { get; set; }
 
         public string RowVersionStr
         {

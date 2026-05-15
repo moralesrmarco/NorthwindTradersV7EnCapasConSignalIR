@@ -1,5 +1,6 @@
 ﻿using Entities;
 using Newtonsoft.Json;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -40,13 +41,16 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
                 );
             }
 
-            if (SesionActual.RefreshTokenExpirado)
+            //SesionActual.CerrarSesion();
+
+            //return (
+            //    false,
+            //    $"Error API: {response.StatusCode}",
+            //    null
+            //);
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                return (
-                    false,
-                    "Sesión expirada",
-                    null
-                );
+                SesionActual.CerrarSesion();
             }
 
             return (
@@ -71,13 +75,16 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
                 return (true, "", numRegs);
             }
 
-            if (SesionActual.RefreshTokenExpirado)
+            //SesionActual.CerrarSesion();
+
+            //string mensaje =
+            //    await response.Content.ReadAsStringAsync();
+
+            //return (false, mensaje, 0);
+
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                return (
-                    false,
-                    "Sesión expirada",
-                    0
-                );
+                SesionActual.CerrarSesion();
             }
 
             string mensaje =
@@ -103,13 +110,16 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
                 return (true, "", numRegs);
             }
 
-            if (SesionActual.RefreshTokenExpirado)
+            //SesionActual.CerrarSesion();
+
+            //string mensaje =
+            //    await response.Content.ReadAsStringAsync();
+
+            //return (false, mensaje, 0);
+
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                return (
-                    false,
-                    "Sesión expirada",
-                    0
-                );
+                SesionActual.CerrarSesion();
             }
 
             string mensaje =

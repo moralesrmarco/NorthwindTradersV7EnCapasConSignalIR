@@ -1,4 +1,5 @@
 ﻿using AspNetServer.Hubs;
+using AspNetServer.Seguridad;
 using BLL;
 using Entities;
 using Microsoft.AspNet.SignalR;
@@ -16,6 +17,7 @@ namespace AspNetServer.Controllers
 
         [HttpPost]
         [Route("insertar")]
+        [Permiso(1)]
         public IHttpActionResult Insertar(Empleado empleado)
         {
             int numRegs = _empleadoBLL.Insertar(empleado);
@@ -31,6 +33,7 @@ namespace AspNetServer.Controllers
 
         [HttpPut]
         [Route("actualizar")]
+        [Permiso(1)]
         public IHttpActionResult Actualizar(Empleado empleado)
         {
             int numRegs = _empleadoBLL.Actualizar(empleado);
@@ -45,6 +48,7 @@ namespace AspNetServer.Controllers
 
         [HttpDelete]
         [Route("eliminar/{id}")]
+        [Permiso(1)]
         public IHttpActionResult Eliminar(int id, [FromUri] string rowVersion)
         {
             var rowVersionBytes = Convert.FromBase64String(rowVersion);
@@ -57,7 +61,6 @@ namespace AspNetServer.Controllers
             }
             return Ok(numRegs);
         }
-
 
         [HttpGet]
         [Route("{id}")]

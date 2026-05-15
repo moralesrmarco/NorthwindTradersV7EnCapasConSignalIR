@@ -102,5 +102,10 @@ namespace BLL
         {
             return _usuarioDAL.ValidarExisteUsuario(usuario);
         }
+
+        public Usuario ObtenerPorUsername(string username)
+        {
+            return _usuarioDAL.ObtenerPorUsername(username);
+        }
     }
 }

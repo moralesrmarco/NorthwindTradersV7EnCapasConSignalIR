@@ -2,6 +2,7 @@
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Jwt;
+using Microsoft.Owin.Security.OAuth;
 using Owin;
 using System.Configuration;
 using System.Text;
@@ -30,6 +31,40 @@ namespace AspNetServer
 
                     ValidateLifetime = true,
                     ClockSkew = System.TimeSpan.Zero
+                },
+
+                Provider = new OAuthBearerAuthenticationProvider
+                {
+                    OnValidateIdentity = context =>
+                    {
+                        var identity = context.Ticket.Identity;
+
+                        var tokenType =
+                            identity.FindFirst("TokenType")?.Value;
+
+                        if (tokenType != "access")
+                        {
+                            context.SetError(
+                                "invalid_token",
+                                "Solo access tokens permitidos");
+                            context.Rejected();
+                        }
+
+                        return System.Threading.Tasks.Task.CompletedTask;
+                    },
+
+                    OnRequestToken = context =>
+                    {
+                        var token =
+                            context.Request.Query.Get("access_token");
+
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            context.Token = token;
+                        }
+
+                        return System.Threading.Tasks.Task.CompletedTask;
+                    }
                 }
             });
 

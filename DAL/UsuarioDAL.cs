@@ -1,6 +1,7 @@
 ﻿using Entities;
 using Entities.DTOs;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -276,6 +277,90 @@ namespace DAL
                 throw new Exception("Error al validar el usuario: " + ex.Message);
             }
             return existe;
+        }
+
+        public List<string> ObtenerUsuarioConPermisos(int usuarioId)
+        {
+            List<string> permisos = new List<string>();
+
+            using (SqlConnection cn = new SqlConnection(_connectionString))
+            {
+                cn.Open();
+
+                string query = @"
+                    SELECT cp.Descripción
+                    FROM Permisos p
+                    INNER JOIN CatalogoPermisos cp
+                        ON p.PermisoId = cp.PermisoId
+                    WHERE p.UsuarioId = @UsuarioId
+                    AND cp.Estatus = 1";
+
+                using (SqlCommand cmd = new SqlCommand(query, cn))
+                {
+                    cmd.Parameters.AddWithValue("@UsuarioId", usuarioId);
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            permisos.Add(dr["Descripción"].ToString());
+                        }
+                    }
+                }
+            }
+
+            return permisos;
+        }
+
+        public Usuario ObtenerPorUsername(string username)
+        {
+            Usuario usuario = null;
+
+            try
+            {
+                using (var cn = new SqlConnection(_connectionString))
+                using (var cmd = new SqlCommand(
+                    @"SELECT
+                        Id,
+                        Paterno,
+                        Materno,
+                        Nombres,
+                        Usuario,
+                        Estatus
+                      FROM Usuarios
+                      WHERE Usuario = @Usuario and Estatus = 1",
+                    cn))
+                {
+                    cmd.Parameters.AddWithValue(
+                        "@Usuario",
+                        username);
+
+                    cn.Open();
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            usuario = new Usuario
+                            {
+                                Id = Convert.ToInt32(reader["Id"]),
+                                Paterno = reader["Paterno"].ToString(),
+                                Materno = reader["Materno"].ToString(),
+                                Nombres = reader["Nombres"].ToString(),
+                                User = reader["Usuario"].ToString(),
+                                Estatus = Convert.ToBoolean(reader["Estatus"])
+                            };
+                        }
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new Exception(
+                    "Error al obtener usuario: " + ex.Message);
+            }
+
+            return usuario;
         }
     }
 }

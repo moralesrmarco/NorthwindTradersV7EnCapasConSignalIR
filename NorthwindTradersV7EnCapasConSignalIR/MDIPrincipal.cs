@@ -1,12 +1,14 @@
 ﻿using BLL.Services;
 using Entities;
 using Entities.Config;
+using NorthwindTradersV7EnCapasConSignalIR.Services;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Utilities;
 
@@ -21,10 +23,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private readonly string cnStr = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
         private readonly PermisoService _permisoService;
+        private SignalRService _signalRService;
 
         public MDIPrincipal()
         {
             InitializeComponent();
+            _signalRService = new SignalRService();
             TabControlPrincipal.ConfigurarIconos(Properties.Resources.pestanaOff, Properties.Resources.pestanaOn);
             Instance = this;
             this.Text = Utils.nwtr;
@@ -72,11 +76,19 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             }
         }
 
-        private void MDIPrincipal_Load(object sender, EventArgs e)
+        private async void MDIPrincipal_Load(object sender, EventArgs e)
         {
             WindowState = FormWindowState.Maximized;
             toolStripStatusLabel2.Text = UsuarioLogueado.User;
             ConfiguracionFiscal.TasaIVA = Convert.ToDecimal(ConfigurationManager.AppSettings["TasaIVA"]);
+            try
+            {
+                await _signalRService.ConectarAsync();
+            }
+            catch (Exception ex) 
+            {
+                U.NotificacionError(ex.Message);
+            }
             IniciarSesion();
             if (permisosUsuarioAutenticado.Contains(10))
             {
@@ -89,6 +101,20 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Tablero de control para los vendedores «");
             }
             ActualizarBarraDeEstado("Sesión iniciada correctamente.     |     Bienvenido " + UsuarioLogueado.NombreCompleto + " al sistema " + Utils.nwtr.Substring(2, (Utils.nwtr.Length - 4)) + ". Para comenzar, seleccione una opción del menú correspondiente a sus permisos de usuario."); 
+        }
+
+        public async Task<bool> ReiniciarSignalR()
+        {
+            try
+            {
+                await _signalRService.ReconectarAsync();
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private void TabControlPrincipal_SelectedIndexChanged(object sender, EventArgs e) => MDIPrincipal.ActualizarBarraDeEstado();

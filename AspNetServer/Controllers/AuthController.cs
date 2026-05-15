@@ -1,15 +1,15 @@
 ﻿using AspNetServer.Models;
 using BLL;
+using BLL.Services;
 using Entities;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IdentityModel.Tokens.Jwt;
-using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Web;
 using System.Web.Http;
 
 namespace AspNetServer.Controllers
@@ -17,60 +17,90 @@ namespace AspNetServer.Controllers
     [RoutePrefix("api/auth")]
     public class AuthController : ApiController
     {
-        private UsuarioBLL _usuarioBLL = new UsuarioBLL(ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString);
+        private string _connectionString = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
+        private UsuarioBLL _usuarioBLL;
+        private PermisoService _permisoService;
+
+        public AuthController()
+        {
+            _usuarioBLL = new UsuarioBLL(_connectionString);
+            _permisoService = new PermisoService(_connectionString);
+        }
 
         [HttpPost]
         [Route("login")]
         public IHttpActionResult Login(Usuario usuario)
         {
             var usuarioAuth = _usuarioBLL.ValidarUsuario(usuario);
+
             if (usuarioAuth == null || usuarioAuth.Id <= 0)
             {
                 return Unauthorized();
             }
-            var accessMinutes = int.Parse(ConfigurationManager.AppSettings["JWT_ACCESS_MINUTES"]);
-            var refreshDays = int.Parse(ConfigurationManager.AppSettings["JWT_REFRESH_DAYS"]);
+
+            // CARGAR PERMISOS DEL USUARIO
+            usuarioAuth.PermisosIds =
+                _permisoService.ObtenerPermisosPorUsuarioId(usuarioAuth.Id);
+
+            var accessMinutes =
+                int.Parse(ConfigurationManager.AppSettings["JWT_ACCESS_MINUTES"]);
+
+            var refreshMinutes =
+                int.Parse(ConfigurationManager.AppSettings["JWT_REFRESH_MINUTES"]);
+
             usuarioAuth.User = usuario.User;
-            usuarioAuth.Password = usuario.Password;
-            var key = Encoding.UTF8.GetBytes(ConfigurationManager.AppSettings["JWT_SECRET_KEY"]);
+
+            var key = Encoding.UTF8.GetBytes(
+                ConfigurationManager.AppSettings["JWT_SECRET_KEY"]);
+
             var tokenHandler = new JwtSecurityTokenHandler();
 
-            // Access token corto (10 min)
+            // =========================
+            // ACCESS TOKEN
+            // =========================
             var accessDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.Name, usuarioAuth.User)
-                }),
+                Subject = new ClaimsIdentity(
+                    ObtenerClaims(usuarioAuth, "access")
+                ),
+
                 Expires = DateTime.UtcNow.AddMinutes(accessMinutes),
+
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature)
             };
 
-            var accessToken = tokenHandler.CreateToken(accessDescriptor);
+            var accessToken =
+                tokenHandler.CreateToken(accessDescriptor);
 
-            // Refresh token como JWT largo (7 días)
+            // =========================
+            // REFRESH TOKEN
+            // =========================
             var refreshDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.Name, usuarioAuth.User)
-                }),
-                //Expires = DateTime.UtcNow.AddDays(1), // ojo
-                Expires = DateTime.UtcNow.AddDays(refreshDays), // ojo
+                Subject = new ClaimsIdentity(
+                    ObtenerClaims(usuarioAuth, "refresh")
+                ),
+
+                Expires = DateTime.UtcNow.AddMinutes(refreshMinutes),
+
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature)
             };
 
-            var refreshToken = tokenHandler.CreateToken(refreshDescriptor);
+            var refreshToken =
+                tokenHandler.CreateToken(refreshDescriptor);
 
             return Ok(new
-
             {
-                AccessToken = tokenHandler.WriteToken(accessToken),
-                RefreshToken = tokenHandler.WriteToken(refreshToken),
+                AccessToken =
+                    tokenHandler.WriteToken(accessToken),
+
+                RefreshToken =
+                    tokenHandler.WriteToken(refreshToken),
+
                 Usuario = new
                 {
                     usuarioAuth.Id,
@@ -82,85 +112,163 @@ namespace AspNetServer.Controllers
             });
         }
 
+        private IEnumerable<Claim> ObtenerClaims(
+            Usuario usuario,
+            string tokenType)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(
+                    ClaimTypes.Name,
+                    usuario.User),
+
+                new Claim(
+                    ClaimTypes.NameIdentifier,
+                    usuario.Id.ToString()),
+
+                new Claim(
+                    "TokenType",
+                    tokenType)
+            };
+
+            // SOLO ACCESS TOKEN LLEVA PERMISOS
+            if (tokenType == "access")
+            {
+                foreach (var permisoId in usuario.PermisosIds)
+                {
+                    claims.Add(
+                        new Claim(
+                            "Permiso",
+                            permisoId.ToString()));
+                }
+            }
+
+            return claims;
+        }
+
         [HttpPost]
         [Route("refresh")]
         public IHttpActionResult Refresh([FromBody] RefreshRequest request)
         {
+            var accessMinutes =
+                int.Parse(ConfigurationManager.AppSettings["JWT_ACCESS_MINUTES"]);
 
+            if (request == null ||
+            string.IsNullOrWhiteSpace(request.RefreshToken))
+            {
+                return BadRequest("RefreshToken requerido");
+            }
 
-            //string carpeta = System.Web.Hosting.HostingEnvironment.MapPath("~/App_Data");
-            //if (!System.IO.Directory.Exists(carpeta))
-            //{
-            //    System.IO.Directory.CreateDirectory(carpeta);
-            //}
-
-            //string rutaLog = System.Web.Hosting.HostingEnvironment.MapPath("~/App_Data/log.txt");
-
-            //if (!System.IO.File.Exists(rutaLog))
-            //{
-            //    using (var fs = System.IO.File.Create(rutaLog)) { }
-            //}
-            //System.IO.File.AppendAllText(rutaLog, "Log inicial\n");
-
-            //System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] RefreshToken recibido: {request.RefreshToken}\n");
-
-            var accessMinutes = int.Parse(ConfigurationManager.AppSettings["JWT_ACCESS_MINUTES"]);
             var refreshToken = request.RefreshToken;
-            var key = Encoding.UTF8.GetBytes(ConfigurationManager.AppSettings["JWT_SECRET_KEY"]);
+
+            var key = Encoding.UTF8.GetBytes(
+                ConfigurationManager.AppSettings["JWT_SECRET_KEY"]);
+
             var tokenHandler = new JwtSecurityTokenHandler();
 
             try
             {
-                // Validar firma y expiración del refresh token
-                tokenHandler.ValidateToken(refreshToken, new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ClockSkew = TimeSpan.Zero
-                }, out SecurityToken validatedToken);
+                // VALIDAR REFRESH TOKEN
+                tokenHandler.ValidateToken(
+                    refreshToken,
+                    new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
 
-                // Si no se validó correctamente, devolvemos 401
-                if (validatedToken == null)
+                        IssuerSigningKey =
+                            new SymmetricSecurityKey(key),
+
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+
+                        RequireSignedTokens = true,
+                        RequireExpirationTime = true,
+                        ValidateLifetime = true,
+
+                        ClockSkew = TimeSpan.Zero
+                    },
+                    out SecurityToken validatedToken);
+
+                // VALIDAR QUE SEA JWT
+                if (!(validatedToken is JwtSecurityToken jwtSecurityToken))
                 {
-                    //System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] RefreshToken inválido\n");
                     return Unauthorized();
                 }
 
-                var jwtToken = (JwtSecurityToken)validatedToken;
-                var username = jwtToken.Claims.FirstOrDefault(c =>
-                    c.Type == JwtRegisteredClaimNames.UniqueName || c.Type == ClaimTypes.Name
-                )?.Value;
+                // VALIDAR ALGORITMO
+                if (jwtSecurityToken.Header.Alg !=
+                    SecurityAlgorithms.HmacSha256)
+                {
+                    return Unauthorized();
+                }
+
+                // VALIDAR TOKEN TYPE
+                var tokenType =
+                    jwtSecurityToken.Claims.FirstOrDefault(c =>
+                        c.Type == "TokenType")?.Value;
+
+                if (tokenType != "refresh")
+                {
+                    return Unauthorized();
+                }
+
+                // OBTENER USERNAME
+                var username =
+                    jwtSecurityToken.Claims.FirstOrDefault(c =>
+                        c.Type == JwtRegisteredClaimNames.UniqueName ||
+                        c.Type == ClaimTypes.Name
+                    )?.Value;
+
                 if (string.IsNullOrEmpty(username))
                 {
-                    //System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] RefreshToken sin usuario\n");
                     return Unauthorized();
                 }
 
-                //System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] RefreshToken válido para usuario: {username}\n");
+                // BUSCAR USUARIO EN BD
+                var usuario =
+                    _usuarioBLL.ObtenerPorUsername(username);
 
-                // Generar nuevo access token
-                var descriptor = new SecurityTokenDescriptor
+                if (usuario == null)
                 {
-                    Subject = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username) }),
-                    Expires = DateTime.UtcNow.AddMinutes(accessMinutes),
-                    SigningCredentials = new SigningCredentials(
-                        new SymmetricSecurityKey(key),
-                        SecurityAlgorithms.HmacSha256Signature)
-                };
+                    return Unauthorized();
+                }
 
-                var newAccessToken = tokenHandler.CreateToken(descriptor);
+                // RECARGAR PERMISOS
+                usuario.PermisosIds =
+                    _permisoService.ObtenerPermisosPorUsuarioId(
+                        usuario.Id);
 
-                //System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] Nuevo AccessToken emitido: {tokenHandler.WriteToken(newAccessToken)}\n");
+                // GENERAR NUEVO ACCESS TOKEN
+                var claims =
+                    ObtenerClaims(usuario, "access");
 
-                return Ok(new { AccessToken = tokenHandler.WriteToken(newAccessToken) });
+                var descriptor =
+                    new SecurityTokenDescriptor
+                    {
+                        Subject =
+                            new ClaimsIdentity(claims),
+
+                        Expires =
+                            DateTime.UtcNow.AddMinutes(
+                                accessMinutes),
+
+                        SigningCredentials =
+                            new SigningCredentials(
+                                new SymmetricSecurityKey(key),
+                                SecurityAlgorithms.HmacSha256Signature)
+                    };
+
+                var newAccessToken =
+                    tokenHandler.CreateToken(descriptor);
+
+                return Ok(new
+                {
+                    AccessToken =
+                        tokenHandler.WriteToken(newAccessToken)
+                });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-
-                //System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [SERVIDOR] Error validando RefreshToken: {ex.Message}\n");
-                
                 return Unauthorized();
             }
         }

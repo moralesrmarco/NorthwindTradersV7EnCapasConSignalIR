@@ -32,6 +32,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         private readonly string UrlBaseSignalR = ConfigurationManager.AppSettings["UrlBaseSignalR"];
 
         private bool realizandoBusqueda = false;
+        private bool _reconectando = false;
 
         public FrmEmpleadosCrud()
         {
@@ -58,7 +59,15 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private async void InicializarSignalR()
         {
-            _hubConnection = new HubConnection(UrlBaseSignalR);
+            var query = new Dictionary<string, string>
+            {
+                { "access_token", SesionActual.AccessToken }
+            };
+
+            _hubConnection = new HubConnection(
+                UrlBaseSignalR,
+                query);
+
             _hubProxy = _hubConnection.CreateHubProxy("EmpleadosHub");
 
             _hubProxy.On<string, int>("empleadoActualizado", (accion, empleadoId) =>
@@ -97,23 +106,29 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private async Task ReconectarSignalR()
         {
+            if (_reconectando)
+                return; // Evita múltiples intentos simultáneos
+            _reconectando = true;
+
             int intentos = 0;
             bool reconectado = false;
 
             while (!reconectado && intentos < 5) // máximo 5 intentos
             {
                 intentos++;
-                int delay = (int)Math.Pow(2, intentos) * 1000; // 2^n segundos
+                int delay = (int)Math.Pow(2, intentos) * 1000; // backoff exponencial
 
-                Invoke(new Action(() =>
-                {
-                    MDIPrincipal.ActualizarBarraDeEstado($"Intentando reconectar... intento {intentos}");
-                }));
+                // Actualizar UI sin bloquear (BeginInvoke)
+                if (this.IsHandleCreated && !this.IsDisposed)
+                    this.BeginInvoke(new Action(() => MDIPrincipal.ActualizarBarraDeEstado($"Intentando reconectar... intento {intentos}")));
 
                 await Task.Delay(delay);
 
                 try
                 {
+                    if (_hubConnection.State != ConnectionState.Disconnected)
+                        continue;
+
                     await _hubConnection.Start();
                     reconectado = true;
                     Invoke(new Action(() =>
@@ -126,14 +141,14 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     // sigue el bucle hasta agotar intentos
                 }
             }
-
-            if (!reconectado)
-            {
-                Invoke(new Action(() =>
-                {
-                    MDIPrincipal.ActualizarBarraDeEstado("No se pudo reconectar a SignalR");
-                }));
-            }
+            //if (!reconectado)
+            //{
+            //    Invoke(new Action(() =>
+            //    {
+            //        MDIPrincipal.ActualizarBarraDeEstado("No se pudo reconectar a SignalR");
+            //    }));
+            //}
+            _reconectando = false;
         }
 
         private void tabcOperacion_DrawItem(object sender, DrawItemEventArgs e) => Utils.DibujarPestañas(sender as TabControl, e);
@@ -724,7 +739,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                                 U.NotificacionError(
                                     "El registro no fue dado de alta.\n\n" +
                                     "Sesión expirada.\n\n" + 
-                                    "La aplicación se Cerrara.");
+                                    "La aplicación se cerrará.");
                                     CerrarAppHelper.CerrarApp();
                             }
                             else

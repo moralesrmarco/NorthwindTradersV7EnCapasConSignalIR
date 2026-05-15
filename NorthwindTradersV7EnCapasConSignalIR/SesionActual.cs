@@ -1,7 +1,8 @@
-﻿using NorthwindTradersV7EnCapasConSignalIR.Services;
-using System;
+﻿using Newtonsoft.Json;
+using NorthwindTradersV7EnCapasConSignalIR.Services;
 using System.Configuration;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace NorthwindTradersV7EnCapasConSignalIR
@@ -22,79 +23,49 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         public static async Task<bool> RefreshAccessTokenAsync(string baseUrl)
         {
-            using (var client = new HttpClient())
-            {
-                client.BaseAddress = new Uri(baseUrl);
+            var client =
+                HttpClientProvider.Client;
 
-                var response = await client.PostAsJsonAsync(
-                    "api/auth/refresh",
-                    new { RefreshToken = RefreshToken });
+            var request =
+                new HttpRequestMessage(
+                    HttpMethod.Post,
+                    "api/auth/refresh");
 
-                if (response.IsSuccessStatusCode)
+            var json =
+                JsonConvert.SerializeObject(new
                 {
-                    var result =
-                        await response.Content.ReadAsAsync<dynamic>();
+                    RefreshToken = RefreshToken
+                });
 
-                    AccessToken = (string)result.AccessToken;
+            request.Content =
+                new StringContent(
+                    json,
+                    Encoding.UTF8,
+                    "application/json");
 
-                    return true;
-                }
+            var response =
+                await client.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return false;
             }
 
-            return false;
+            var result =
+                await response.Content.ReadAsAsync<dynamic>();
+
+            AccessToken =
+                (string)result.AccessToken;
+
+            return true;
         }
 
-        //public static async Task<bool> RefreshAccessTokenAsync(string baseUrl)
-        //{
-
-        //    //string carpeta = Path.Combine(Application.StartupPath, "Logs");
-        //    //if (!Directory.Exists(carpeta))
-        //    //{
-        //    //    Directory.CreateDirectory(carpeta);
-        //    //}
-
-        //    //string rutaLog = Path.Combine(carpeta, "log.txt");
-
-        //    //if (!File.Exists(rutaLog))
-        //    //{
-        //    //    using (var fs = File.Create(rutaLog)) { }
-        //    //}
-
-        //    //File.AppendAllText(rutaLog, "Log inicial\n");
-
-
-        //    using (var client = new HttpClient())
-        //    {
-        //        client.BaseAddress = new Uri(baseUrl);
-        //        //try
-        //        //{
-        //        //    // Log de depuración
-        //        //    System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [CLIENTE] RefreshToken actual: {RefreshToken}\n");
-        //        //}
-        //        //catch (Exception ex)
-        //        //{
-        //        //    System.Diagnostics.Debug.WriteLine($"Error al escribir log: {ex.Message}");
-        //        //}
-
-        //        var response = await client.PostAsJsonAsync("api/auth/refresh", new { RefreshToken = RefreshToken });
-
-        //        if (response.IsSuccessStatusCode)
-        //        {
-        //            var result = await response.Content.ReadAsAsync<dynamic>();
-        //            AccessToken = (string)result.AccessToken;
-
-        //            //System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [CLIENTE] Nuevo AccessToken recibido: {AccessToken}\n");
-
-        //            return true;
-        //        }
-        //        //else
-        //        //{
-
-        //        //    System.IO.File.AppendAllText(rutaLog, $"[{DateTime.Now}] [CLIENTE] Error al refrescar token: {response.StatusCode}\n");
-
-        //        //}
-        //    }
-        //    return false;
-        //}
+        public static void CerrarSesion()
+        {
+            AccessToken = null;
+            RefreshToken = null;
+            Usuario = null;
+            RefreshTokenExpirado = false;
+        }
     }
 }

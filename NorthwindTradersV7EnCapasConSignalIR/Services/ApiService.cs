@@ -8,127 +8,123 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
 {
     public static class ApiService
     {
-        public static async Task<HttpResponseMessage> PostAsync<T>(string url, T data)
+        private static async Task<HttpResponseMessage> SendAsync(
+            Func<HttpClient, Task<HttpResponseMessage>> sendRequest,
+            bool retrying = false)
         {
-            using (var client = new HttpClient())
+            var client = HttpClientProvider.Client;
+
+            SesionActual.RefreshTokenExpirado = false;
+
+            client.DefaultRequestHeaders.Authorization = null;
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", SesionActual.AccessToken);
+
+            var response = await sendRequest(client);
+
+            // 401 → intentar refresh
+            if (response.StatusCode == HttpStatusCode.Unauthorized && !retrying)
             {
-                SesionActual.RefreshTokenExpirado = false;
-                client.BaseAddress = new Uri(SesionActual.UrlBaseSignalR);
+                bool refreshed = await SesionActual.RefreshAccessTokenAsync(
+                    SesionActual.UrlBaseSignalR);
 
-                client.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", SesionActual.AccessToken);
-
-                var response = await client.PostAsJsonAsync(url, data);
-
-                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                if (refreshed)
                 {
-                    bool refreshed =
-                        await SesionActual.RefreshAccessTokenAsync(SesionActual.UrlBaseSignalR);
+                    client.DefaultRequestHeaders.Authorization = null;
+                    client.DefaultRequestHeaders.Authorization =
+                        new AuthenticationHeaderValue("Bearer", SesionActual.AccessToken);
 
-                    if (refreshed)
-                    {
-                        client.DefaultRequestHeaders.Authorization =
-                            new AuthenticationHeaderValue("Bearer", SesionActual.AccessToken);
-
-                        response = await client.PostAsJsonAsync(url, data);
-                    }
-                    else
-                    {
-                        SesionActual.RefreshTokenExpirado = true;
-                    }
+                    return await SendAsync(sendRequest, true);
                 }
 
+                // refresh falló → cerrar app
+                SesionActual.RefreshTokenExpirado = true;
+                U.NotificacionInformation("Su sesión ha expirado.\n\nLa aplicación se cerrará.");
+                Helpers.CerrarAppHelper.CerrarApp();
                 return response;
             }
+
+            // 403 → acceso prohibido (no hay recuperación posible)
+            if (response.StatusCode == HttpStatusCode.Forbidden)
+            {
+                U.NotificacionInformation("Su sesión ha expirado.\n\nLa aplicación se cerrará.");
+                Helpers.CerrarAppHelper.CerrarApp();
+            }
+
+            return response;
         }
 
-        public static async Task<HttpResponseMessage> PutAsync(
+        //private static async Task<HttpResponseMessage> SendAsync(
+        //    Func<HttpClient, Task<HttpResponseMessage>> sendRequest)
+        //{
+        //    var client = HttpClientProvider.Client;
+
+        //    SesionActual.RefreshTokenExpirado = false;
+
+        //    // Siempre usar el token actual
+        //    client.DefaultRequestHeaders.Authorization =
+        //        new AuthenticationHeaderValue(
+        //            "Bearer",
+        //            SesionActual.AccessToken);
+
+        //    var response =
+        //        await sendRequest(client);
+
+        //    // Si el access token expiró
+        //    if (response.StatusCode == HttpStatusCode.Unauthorized)
+        //    {
+        //        bool refreshed =
+        //            await SesionActual.RefreshAccessTokenAsync(
+        //                SesionActual.UrlBaseSignalR);
+
+        //        if (refreshed)
+        //        {
+        //            // Actualizar header con nuevo token
+        //            client.DefaultRequestHeaders.Authorization =
+        //                new AuthenticationHeaderValue(
+        //                    "Bearer",
+        //                    SesionActual.AccessToken);
+
+        //            // Reintentar request
+        //            response =
+        //                await sendRequest(client);
+        //        }
+        //        else
+        //        {
+        //            SesionActual.RefreshTokenExpirado = true;
+        //        }
+        //    }
+        //    return response;
+        //}
+
+        public static async Task<HttpResponseMessage> PostAsync<T>(
             string endpoint,
-            object data)
+            T data)
         {
-            using (var client = new HttpClient())
-            {
-                SesionActual.RefreshTokenExpirado = false;
+            return await SendAsync(
+                client => client.PostAsJsonAsync(endpoint, data));
+        }
 
-                client.BaseAddress =
-                    new Uri(SesionActual.UrlBaseSignalR);
-
-                client.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue(
-                        "Bearer",
-                        SesionActual.AccessToken);
-
-                var response =
-                    await client.PutAsJsonAsync(endpoint, data);
-
-                if (response.StatusCode == HttpStatusCode.Unauthorized)
-                {
-                    bool refreshed =
-                        await SesionActual.RefreshAccessTokenAsync(
-                            SesionActual.UrlBaseSignalR);
-
-                    if (refreshed)
-                    {
-                        client.DefaultRequestHeaders.Authorization =
-                            new AuthenticationHeaderValue(
-                                "Bearer",
-                                SesionActual.AccessToken);
-
-                        response =
-                            await client.PutAsJsonAsync(endpoint, data);
-                    }
-                    else
-                    {
-                        SesionActual.RefreshTokenExpirado = true;
-                    }
-                }
-
-                return response;
-            }
+        public static async Task<HttpResponseMessage> PutAsync<T>(
+            string endpoint,
+            T data)
+        {
+            return await SendAsync(
+                client => client.PutAsJsonAsync(endpoint, data));
         }
 
         public static async Task<HttpResponseMessage> DeleteAsync(
             string endpoint)
         {
-            using (var client = new HttpClient())
-            {
-                SesionActual.RefreshTokenExpirado = false;
+            return await SendAsync(
+                client => client.DeleteAsync(endpoint));
+        }
 
-                client.BaseAddress =
-                    new Uri(SesionActual.UrlBaseSignalR);
-
-                client.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue(
-                        "Bearer",
-                        SesionActual.AccessToken);
-
-                var response =
-                    await client.DeleteAsync(endpoint);
-
-                if (response.StatusCode == HttpStatusCode.Unauthorized)
-                {
-                    bool refreshed =
-                        await SesionActual.RefreshAccessTokenAsync(
-                            SesionActual.UrlBaseSignalR);
-
-                    if (refreshed)
-                    {
-                        client.DefaultRequestHeaders.Authorization =
-                            new AuthenticationHeaderValue(
-                                "Bearer",
-                                SesionActual.AccessToken);
-
-                        response =
-                            await client.DeleteAsync(endpoint);
-                    }
-                    else
-                    {
-                        SesionActual.RefreshTokenExpirado = true;
-                    }
-                }
-
-                return response;
-            }
+        public static async Task<HttpResponseMessage> GetAsync(
+            string endpoint)
+        {
+            return await SendAsync(
+                client => client.GetAsync(endpoint));
         }
     }
 }

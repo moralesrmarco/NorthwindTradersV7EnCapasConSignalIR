@@ -1,5 +1,6 @@
 ﻿using BLL;
 using Entities;
+using NorthwindTradersV7EnCapasConSignalIR.Services;
 using System;
 using System.Configuration;
 using System.Net.Http;
@@ -34,46 +35,51 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             {
                 btnTogglePwd.Enabled = false;
                 btnEntrar.Enabled = false;
-                using (var client = new HttpClient())
-                {
-                    client.BaseAddress = new Uri(UrlBaseSignalR);
-                    var response = await client.PostAsJsonAsync(
+
+                var client = HttpClientProvider.Client;
+
+                var response =
+                    await client.PostAsJsonAsync(
                         "api/auth/login",
-                        new Usuario() { User = txtUsuario.Text.Trim(), Password = Utils.ComputeSha256Hash(txtPwd.Text.Trim()) });
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var result = await response.Content.ReadAsAsync<dynamic>();
-                        SesionActual.AccessToken = (string)result.AccessToken;
-                        SesionActual.RefreshToken = (string)result.RefreshToken;
-                        SesionActual.Usuario = (string)result.Usuario.User;
-
-                        // Asignar datos del usuario autenticado
-                        UsuarioLogueado = new Usuario
+                        new Usuario()
                         {
-                            Id = (int)result.Usuario.Id,
-                            User = (string)result.Usuario.User,
-                            Paterno = (string)result.Usuario.Paterno,
-                            Materno = (string)result.Usuario.Materno,
-                            Nombres = (string)result.Usuario.Nombres
-                        };
-                        this.Close();
-                    }
-                    else
+                            User = txtUsuario.Text.Trim(),
+                            Password = Utils.ComputeSha256Hash(
+                                txtPwd.Text.Trim())
+                        });
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadAsAsync<dynamic>();
+                    SesionActual.AccessToken = (string)result.AccessToken;
+                    SesionActual.RefreshToken = (string)result.RefreshToken;
+                    SesionActual.Usuario = (string)result.Usuario.User;
+
+                    // Asignar datos del usuario autenticado
+                    UsuarioLogueado = new Usuario
                     {
-                        numeroIntentos++;
-                        if (numeroIntentos >= 3)
-                        {
-                            U.NotificacionError("Demasiados intentos fallidos.\n\nLa aplicación se cerrará.");
-                            Application.Exit();
-                            return;
-                        }
-                        U.NotificacionError("Error de autenticación.\n\nUsuario o contraseña incorrectos.");
-                        txtPwd.Clear();
-                        txtPwd.Focus();
-                        btnTogglePwd.Enabled = true;
-                        btnEntrar.Enabled = true;
+                        Id = (int)result.Usuario.Id,
+                        User = (string)result.Usuario.User,
+                        Paterno = (string)result.Usuario.Paterno,
+                        Materno = (string)result.Usuario.Materno,
+                        Nombres = (string)result.Usuario.Nombres
+                    };
+                    this.Close();
+                }
+                else
+                {
+                    numeroIntentos++;
+                    if (numeroIntentos >= 3)
+                    {
+                        U.NotificacionError("Demasiados intentos fallidos.\n\nLa aplicación se cerrará.");
+                        Application.Exit();
+                        return;
                     }
+                    U.NotificacionError("Error de autenticación.\n\nUsuario o contraseña incorrectos.");
+                    txtPwd.Clear();
+                    txtPwd.Focus();
+                    btnTogglePwd.Enabled = true;
+                    btnEntrar.Enabled = true;
                 }
             }
             catch (Exception ex)
