@@ -734,18 +734,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         }
                         else
                         {
-                            if (resultado.mensaje == "Sesión expirada")
-                            {
-                                U.NotificacionError(
-                                    "El registro no fue dado de alta.\n\n" +
-                                    "Sesión expirada.\n\n" + 
-                                    "La aplicación se cerrará.");
-                                    CerrarAppHelper.CerrarApp();
-                            }
-                            else
-                            {
-                                U.NotificacionError(resultado.mensaje);
-                            }
+                            U.NotificacionError(resultado.mensaje);
                         }        
                     }
                     catch (Exception ex)
@@ -830,18 +819,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         }
                         else
                         {
-                            if (resultado.mensaje == "Sesión expirada")
-                            {
-                                U.NotificacionError(
-                                    "El registro no fue modificado.\n\n" +
-                                    "Sesión expirada.\n\n" +
-                                    "La aplicación se cerrará.");
-                                CerrarAppHelper.CerrarApp();
-                            }
-                            else
-                            {
-                                U.NotificacionError(resultado.mensaje);
-                            }
+                            U.NotificacionError(resultado.mensaje);
                         }
                     }
                     catch (Exception ex)
@@ -893,18 +871,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         }
                         else
                         {
-                            if (resultado.mensaje == "Sesión expirada")
-                            {
-                                U.NotificacionError(
-                                    "El registro no fue eliminado.\n\n" +
-                                    "Sesión expirada.\n\n" +
-                                    "La aplicación se cerrará.");
-                                CerrarAppHelper.CerrarApp();
-                            }
-                            else
-                            {
-                                U.NotificacionError(resultado.mensaje);
-                            }
+                            U.NotificacionError(resultado.mensaje);
                         }
                     }
                     catch (Exception ex)

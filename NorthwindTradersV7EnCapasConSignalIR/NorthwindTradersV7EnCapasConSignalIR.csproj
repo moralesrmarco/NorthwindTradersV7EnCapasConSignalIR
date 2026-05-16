@@ -452,7 +452,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ApiEmpleadoService.cs" />
     <Compile Include="Services\ApiService.cs" />
+    <Compile Include="Services\AppShutdownService.cs" />
     <Compile Include="Services\HttpClientProvider.cs" />
+    <Compile Include="Services\SessionService.cs" />
     <Compile Include="Services\SignalRService.cs" />
     <Compile Include="SesionActual.cs" />
     <Compile Include="U.cs" />

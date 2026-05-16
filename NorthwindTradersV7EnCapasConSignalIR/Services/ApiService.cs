@@ -36,66 +36,23 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
 
                     return await SendAsync(sendRequest, true);
                 }
-
-                // refresh falló → cerrar app
-                SesionActual.RefreshTokenExpirado = true;
-                U.NotificacionInformation("Su sesión ha expirado.\n\nLa aplicación se cerrará.");
-                Helpers.CerrarAppHelper.CerrarApp();
-                return response;
+                else
+                {
+                    // refresh falló → cerrar app
+                    SesionActual.RefreshTokenExpirado = true;
+                    AppShutdownService.LogoutAndClose();
+                    return response;
+                }
             }
 
             // 403 → acceso prohibido (no hay recuperación posible)
             if (response.StatusCode == HttpStatusCode.Forbidden)
             {
-                U.NotificacionInformation("Su sesión ha expirado.\n\nLa aplicación se cerrará.");
-                Helpers.CerrarAppHelper.CerrarApp();
+                AppShutdownService.LogoutAndClose();
             }
 
             return response;
         }
-
-        //private static async Task<HttpResponseMessage> SendAsync(
-        //    Func<HttpClient, Task<HttpResponseMessage>> sendRequest)
-        //{
-        //    var client = HttpClientProvider.Client;
-
-        //    SesionActual.RefreshTokenExpirado = false;
-
-        //    // Siempre usar el token actual
-        //    client.DefaultRequestHeaders.Authorization =
-        //        new AuthenticationHeaderValue(
-        //            "Bearer",
-        //            SesionActual.AccessToken);
-
-        //    var response =
-        //        await sendRequest(client);
-
-        //    // Si el access token expiró
-        //    if (response.StatusCode == HttpStatusCode.Unauthorized)
-        //    {
-        //        bool refreshed =
-        //            await SesionActual.RefreshAccessTokenAsync(
-        //                SesionActual.UrlBaseSignalR);
-
-        //        if (refreshed)
-        //        {
-        //            // Actualizar header con nuevo token
-        //            client.DefaultRequestHeaders.Authorization =
-        //                new AuthenticationHeaderValue(
-        //                    "Bearer",
-        //                    SesionActual.AccessToken);
-
-        //            // Reintentar request
-        //            response =
-        //                await sendRequest(client);
-        //        }
-        //        else
-        //        {
-        //            SesionActual.RefreshTokenExpirado = true;
-        //        }
-        //    }
-        //    return response;
-        //}
 
         public static async Task<HttpResponseMessage> PostAsync<T>(
             string endpoint,

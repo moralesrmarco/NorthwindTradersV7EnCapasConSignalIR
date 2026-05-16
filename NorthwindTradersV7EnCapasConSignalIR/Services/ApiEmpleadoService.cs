@@ -41,16 +41,9 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
                 );
             }
 
-            //SesionActual.CerrarSesion();
-
-            //return (
-            //    false,
-            //    $"Error API: {response.StatusCode}",
-            //    null
-            //);
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                SesionActual.CerrarSesion();
+                AppShutdownService.LogoutAndClose();
             }
 
             return (
@@ -75,16 +68,9 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
                 return (true, "", numRegs);
             }
 
-            //SesionActual.CerrarSesion();
-
-            //string mensaje =
-            //    await response.Content.ReadAsStringAsync();
-
-            //return (false, mensaje, 0);
-
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                SesionActual.CerrarSesion();
+                AppShutdownService.LogoutAndClose();
             }
 
             string mensaje =
@@ -110,16 +96,9 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
                 return (true, "", numRegs);
             }
 
-            //SesionActual.CerrarSesion();
-
-            //string mensaje =
-            //    await response.Content.ReadAsStringAsync();
-
-            //return (false, mensaje, 0);
-
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                SesionActual.CerrarSesion();
+                AppShutdownService.LogoutAndClose();
             }
 
             string mensaje =

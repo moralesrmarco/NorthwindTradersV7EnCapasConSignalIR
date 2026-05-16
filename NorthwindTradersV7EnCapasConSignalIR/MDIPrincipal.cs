@@ -92,13 +92,11 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             IniciarSesion();
             if (permisosUsuarioAutenticado.Contains(10))
             {
-                FrmTableroControlAltaDireccion frm = new FrmTableroControlAltaDireccion();
-                Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Tablero de control para la alta dirección «");
+                tableroDeControlParaLaAltaDirecciónToolStripMenuItem_Click(null, null);
             }
             else if (permisosUsuarioAutenticado.Contains(12))
             {
-                FrmTableroControlVendedores frm = new FrmTableroControlVendedores();
-                Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Tablero de control para los vendedores «");
+                tableroDeControlParaLosVendedoresToolStripMenuItem_Click(null, null);
             }
             ActualizarBarraDeEstado("Sesión iniciada correctamente.     |     Bienvenido " + UsuarioLogueado.NombreCompleto + " al sistema " + Utils.nwtr.Substring(2, (Utils.nwtr.Length - 4)) + ". Para comenzar, seleccione una opción del menú correspondiente a sus permisos de usuario."); 
         }
@@ -461,280 +459,234 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             Application.Restart();
         }
 
-        private void mantenimientoDeEmpleadosToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void mantenimientoDeEmpleadosToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmEmpleadosCrud frm = new FrmEmpleadosCrud();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Mantenimiento de empleados «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmEmpleadosCrud(), "» Mantenimiento de empleados «");
         }
 
-        private void reporteDeEmpleadosToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void reporteDeEmpleadosToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmRptEmpleados frm = new FrmRptEmpleados();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de empleados «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptEmpleados(), "» Reporte de empleados «");
         }
 
-        private void reporteDeEmpleadosConFotoToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void reporteDeEmpleadosConFotoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmRptEmpleadosConFoto frm = new FrmRptEmpleadosConFoto();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de empleados con foto «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptEmpleadosConFoto(), "» Reporte de empleados con foto «");
         }
 
-        private void reporteDeEmpleadosConFoto2ToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void reporteDeEmpleadosConFoto2ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmRptEmpleado2 frm = new FrmRptEmpleado2();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de empleados con foto 2 «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptEmpleado2(), "» Reporte de empleados con foto 2 «");
         }
 
-        private void mantenimientoDeClientesToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void mantenimientoDeClientesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmClientesCrud frm = new FrmClientesCrud();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Mantenimiento de clientes «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmClientesCrud(), "» Mantenimiento de clientes «");
         }
 
-        private void directorioDeClientesYProveedoresToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void directorioDeClientesYProveedoresToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmClientesyProveedoresDirectorio frm = new FrmClientesyProveedoresDirectorio();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Directorio de clientes y proveedores «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmClientesyProveedoresDirectorio(), "» Directorio de clientes y proveedores «");
         }
 
-        private void directorioDeClientesYProveedoresPorCiudadToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void directorioDeClientesYProveedoresPorCiudadToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmClientesyProveedoresDirectorioxCiudad frm = new FrmClientesyProveedoresDirectorioxCiudad();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Directorio de clientes y proveedores por ciudad «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmClientesyProveedoresDirectorioxCiudad(), "» Directorio de clientes y proveedores por ciudad «");
         }
 
-        private void directorioDeClientesYProveedoresPorPaísToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void directorioDeClientesYProveedoresPorPaísToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmClientesyProveedoresDirectorioxPais frm = new FrmClientesyProveedoresDirectorioxPais();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Directorio de clientes y proveedores por país «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmClientesyProveedoresDirectorioxPais(), "» Directorio de clientes y proveedores por país «");
         }
 
-        private void directorioDeClientesToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void directorioDeClientesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmRptClientes frm = new FrmRptClientes();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte directorio de clientes «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptClientes(), "» Reporte directorio de clientes «");
         }
 
-        private void directorioDeClientesYProveedoresToolStripMenuItem1_Click(object sender, EventArgs e)
+        private async void directorioDeClientesYProveedoresToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            FrmRptClientesyProveedoresDirectorio frm = new FrmRptClientesyProveedoresDirectorio();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte directorio de clientes y proveedores «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptClientesyProveedoresDirectorio(), "» Reporte directorio de clientes y proveedores «");
         }
 
-        private void directorioDeClientesYProveedoresPorCiudadToolStripMenuItem1_Click(object sender, EventArgs e)
+        private async void directorioDeClientesYProveedoresPorCiudadToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            FrmRptClientesyProveedoresDirectorioxCiudad frm = new FrmRptClientesyProveedoresDirectorioxCiudad();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte directorio de clientes y proveedores por ciudad «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptClientesyProveedoresDirectorioxCiudad(), "» Reporte directorio de clientes y proveedores por ciudad «");
         }
 
-        private void directorioDeClientesYProveedoresPorPaísToolStripMenuItem1_Click(object sender, EventArgs e)
+        private async void directorioDeClientesYProveedoresPorPaísToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            FrmRptClientesyProveedoresDirectorioxPais frm = new FrmRptClientesyProveedoresDirectorioxPais();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte directorio de clientes y proveedores por país «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptClientesyProveedoresDirectorioxPais(), "» Reporte directorio de clientes y proveedores por país «");
         }
 
-        private void mantenimientoDeProveedoresToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void mantenimientoDeProveedoresToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmProveedoresCrud frm = new FrmProveedoresCrud();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Mantenimiento de proveedores «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmProveedoresCrud(), "» Mantenimiento de proveedores «");
         }
 
-        private void consultaDeProductosPorProveedorToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void consultaDeProductosPorProveedorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmProveedoresProductos frm = new FrmProveedoresProductos();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Consulta de productos por proveedor «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmProveedoresProductos(), "» Consulta de productos por proveedor «");
         }
 
-        private void directorioDeProveedoresToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void directorioDeProveedoresToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmRptProveedores frm = new FrmRptProveedores();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte directorio de proveedores «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptProveedores(), "» Reporte directorio de proveedores «");
         }
 
-        private void reporteDeProductosPorProveedorToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void reporteDeProductosPorProveedorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmRptProductosPorProveedor frm = new FrmRptProductosPorProveedor();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de productos por proveedor «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptProductosPorProveedor(), "» Reporte de productos por proveedor «");
         }
 
-        private void reporteDeProductosPorProveedorConDetalleDelProveedorToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void reporteDeProductosPorProveedorConDetalleDelProveedorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmRptProdPorProvConDetProv frm = new FrmRptProdPorProvConDetProv();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de productos por proveedor con detalle del proveedor «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptProdPorProvConDetProv(), "» Reporte de productos por proveedor con detalle del proveedor «");
         }
 
-        private void mantenimientoDeCategoríasToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void mantenimientoDeCategoríasToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmCategoriasCrud frm = new FrmCategoriasCrud();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Mantenimiento de categorías «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmCategoriasCrud(), "» Mantenimiento de categorías «");
         }
 
-        private void consultaDeProductosPorCategoríaToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void consultaDeProductosPorCategoríaToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmCategoriasProductos frm = new FrmCategoriasProductos();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Consulta de productos por categoría «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmCategoriasProductos(), "» Consulta de productos por categoría «");
         }
 
-        private void listadoDeCategoríasConProductosToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void listadoDeCategoríasConProductosToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmCategoriasConProductosListado frm = new FrmCategoriasConProductosListado();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Listado de categorías con productos «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmCategoriasConProductosListado(), "» Listado de categorías con productos «");
         }
 
-        private void reporteDeCategoríasToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void reporteDeCategoríasToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmRptCategorias frm = new FrmRptCategorias();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de categorías «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptCategorias(), "» Reporte de categorías «");
         }
 
-        private void reporteDeCategoríasConProductosToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void reporteDeCategoríasConProductosToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmRptCategoriasConProductos frm = new FrmRptCategoriasConProductos();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de categorías con productos «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptCategoriasConProductos(), "» Reporte de categorías con productos «");
         }
 
-        private void mantenimientoDeProductosToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void mantenimientoDeProductosToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmProductosCrud frm = new FrmProductosCrud();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Mantenimiento de productos «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmProductosCrud(), "» Mantenimiento de productos «");
         }
 
-        private void listadoDeProductosToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void listadoDeProductosToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmProductosListado frm = new FrmProductosListado();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Listado de productos «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmProductosListado(), "» Listado de productos «");
         }
 
-        private void consultaAlfabéticaDeProductosToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void consultaAlfabéticaDeProductosToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmProductosConsultaAlfabetica frm = new FrmProductosConsultaAlfabetica();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Consulta alfabética de productos «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmProductosConsultaAlfabetica(), "» Consulta alfabética de productos «");
         }
 
-        private void productosPorEncimaDelPrecioPromedioToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void productosPorEncimaDelPrecioPromedioToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmProductosPorEncimaPrecioPromedio frm = new FrmProductosPorEncimaPrecioPromedio();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Productos por encima del precio promedio «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmProductosPorEncimaPrecioPromedio(), "» Productos por encima del precio promedio «");
         }
 
-        private void reporteDeProductosToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void reporteDeProductosToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmRptProductos frm = new FrmRptProductos();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de productos «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptProductos(), "» Reporte de productos «");
         }
 
-        private void reporteDeProductosEnOrdenAlfabéticoToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void reporteDeProductosEnOrdenAlfabéticoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmRptProductosAlfabetico frm = new FrmRptProductosAlfabetico();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte de productos en orden alfabético «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptProductosAlfabetico(), "» Reporte de productos en orden alfabético «");
         }
 
-        private void ventasMensualesToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void ventasMensualesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmGraficaVentasMensuales frm = new FrmGraficaVentasMensuales();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Gráfica de ventas mensuales «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmGraficaVentasMensuales(), "» Gráfica de ventas mensuales «");
         }
 
-        private void comparativoDeVentasAnualesToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void comparativoDeVentasAnualesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmGraficaVentasAnuales frm = new FrmGraficaVentasAnuales();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Gráfica comparativa de ventas anuales «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmGraficaVentasAnuales(), "» Gráfica comparativa de ventas anuales «");
         }
 
-        private void topProductosMásVendidosToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void topProductosMásVendidosToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmGraficaTopProductosMasVendidos frm = new FrmGraficaTopProductosMasVendidos();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Gráfica de top productos más vendidos «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmGraficaTopProductosMasVendidos(), "» Gráfica de top productos más vendidos «");
         }
 
-        private void ventasPorVendedoresPorAñoToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void ventasPorVendedoresPorAñoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmGraficaDeVentasDeVendedoresPorAnio frm = new FrmGraficaDeVentasDeVendedoresPorAnio();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Gráfica de ventas por vendedores por año «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmGraficaDeVentasDeVendedoresPorAnio(), "» Gráfica de ventas por vendedores por año «");
         }
 
-        private void ventasMensualesPorVendedorPorAñoToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void ventasMensualesPorVendedorPorAñoToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmGraficaVentasMensualesPorVendedorPorAnio frm = new FrmGraficaVentasMensualesPorVendedorPorAnio();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Gráfica comparativa de ventas mensuales por vendedores por año «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmGraficaVentasMensualesPorVendedorPorAnio(), "» Gráfica comparativa de ventas mensuales por vendedores por año «");
         }
 
-        private void ventasMensualesPorVendedorPorAñobarrasToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void ventasMensualesPorVendedorPorAñobarrasToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmGraficaVentasMensualesPorVendedorPorAnioBarras frm = new FrmGraficaVentasMensualesPorVendedorPorAnioBarras();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Gráfica comparativo de ventas mensuales por vendedores por año (barras) «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmGraficaVentasMensualesPorVendedorPorAnioBarras(), "» Gráfica comparativo de ventas mensuales por vendedores por año (barras) «");
         }
 
-        private void ventasMensualesPorVendedorPorAñobarras2ToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void ventasMensualesPorVendedorPorAñobarras2ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmGraficaVentasMensualesPorVendedorPorAnioBarras2 frm = new FrmGraficaVentasMensualesPorVendedorPorAnioBarras2();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Gráfica comparativo de ventas mensuales por vendedores por año (barras 2) «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmGraficaVentasMensualesPorVendedorPorAnioBarras2(), "» Gráfica comparativo de ventas mensuales por vendedores por año (barras 2) «");
         }
 
-        private void ejemploDeGráficasToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void ejemploDeGráficasToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmGraficaEjemploTodas frm = new FrmGraficaEjemploTodas();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Ejemplo de gráficas «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmGraficaEjemploTodas(), "» Ejemplo de gráficas «");
         }
 
-        private void ejemploDeGráficas2ToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void ejemploDeGráficas2ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmGraficaEjemploTodas2 frm = new FrmGraficaEjemploTodas2();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Ejemplo de gráficas 2 «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmGraficaEjemploTodas2(), "» Ejemplo de gráficas 2 «");
         }
 
-        private void ventasMensualesToolStripMenuItem1_Click(object sender, EventArgs e)
+        private async void ventasMensualesToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            FrmRptGraficaVentasMensuales frm = new FrmRptGraficaVentasMensuales();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte gráfico de ventas mensuales «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptGraficaVentasMensuales(), "» Reporte gráfico de ventas mensuales «");
         }
 
-        private void comparativoDeVentasAnualesToolStripMenuItem1_Click(object sender, EventArgs e)
+        private async void comparativoDeVentasAnualesToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            FrmRptGraficaVentasAnuales frm = new FrmRptGraficaVentasAnuales();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte gráfico comparativo de ventas anuales «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptGraficaVentasAnuales(), "» Reporte gráfico comparativo de ventas anuales «");
         }
 
-        private void topProductosMásVendidosToolStripMenuItem1_Click(object sender, EventArgs e)
+        private async void topProductosMásVendidosToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            FrmRptTopProductosMasVendidos frm = new FrmRptTopProductosMasVendidos();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte gráfico de top productos más vendidos «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptTopProductosMasVendidos(), "» Reporte gráfico de top productos más vendidos «");
         }
 
-        private void ventasPorVendedoresPorAñoToolStripMenuItem1_Click(object sender, EventArgs e)
+        private async void ventasPorVendedoresPorAñoToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            FrmRptGraficaDeVentasDeVendedoresPorAnio frm = new FrmRptGraficaDeVentasDeVendedoresPorAnio();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte gráfico de ventas por vendedores por año «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptGraficaDeVentasDeVendedoresPorAnio(), "» Reporte gráfico de ventas por vendedores por año «");
         }
 
-        private void ventasMensualesPorVendedorPorAñoToolStripMenuItem1_Click(object sender, EventArgs e)
+        private async void ventasMensualesPorVendedorPorAñoToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            FrmRptGraficaVentasMensualesPorVendedorPorAnio frm = new FrmRptGraficaVentasMensualesPorVendedorPorAnio();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte gráfico comparativo de ventas mensuales por vendedores por año «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptGraficaVentasMensualesPorVendedorPorAnio(), "» Reporte gráfico comparativo de ventas mensuales por vendedores por año «");
         }
 
-        private void ventasMensualesPorVendedorPorAñobarrasToolStripMenuItem1_Click(object sender, EventArgs e)
+        private async void ventasMensualesPorVendedorPorAñobarrasToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            FrmRptGraficaVentasMensualesPorVendedorPorAnioBarras frm = new FrmRptGraficaVentasMensualesPorVendedorPorAnioBarras();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte gráfico comparativo de ventas mensuales por vendedores por año (barras) «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptGraficaVentasMensualesPorVendedorPorAnioBarras(), "» Reporte gráfico comparativo de ventas mensuales por vendedores por año (barras) «");
         }
 
-        private void ventasMensualesPorVendedorPorAñobarras2ToolStripMenuItem1_Click(object sender, EventArgs e)
+        private async void ventasMensualesPorVendedorPorAñobarras2ToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            FrmRptGraficaVentasMensualesPorVendedorPorAnioBarras2 frm = new FrmRptGraficaVentasMensualesPorVendedorPorAnioBarras2();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Reporte gráfico comparativo de ventas mensuales por vendedores por año (barras 2) «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptGraficaVentasMensualesPorVendedorPorAnioBarras2(), "» Reporte gráfico comparativo de ventas mensuales por vendedores por año (barras 2) «");
         }
 
-        private void tableroDeControlParaLaAltaDirecciónToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void tableroDeControlParaLaAltaDirecciónToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmTableroControlAltaDireccion frm = new FrmTableroControlAltaDireccion();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Tablero de control para la alta dirección «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmTableroControlAltaDireccion(), "» Tablero de control para la alta dirección «");
         }
 
-        private void tableroDeControlParaLosVendedoresToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void tableroDeControlParaLosVendedoresToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FrmTableroControlVendedores frm = new FrmTableroControlVendedores();
-            Utils.AgregarFormularioEnTab(TabControlPrincipal, frm, "» Tablero de control para los vendedores «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmTableroControlVendedores(), "» Tablero de control para los vendedores «");
         }
     }
 }

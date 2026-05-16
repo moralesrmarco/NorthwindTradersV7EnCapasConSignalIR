@@ -272,5 +272,17 @@ namespace AspNetServer.Controllers
                 return Unauthorized();
             }
         }
+
+        [Authorize]
+        [HttpGet]
+        [Route("validarsesion")]
+        public IHttpActionResult ValidarSesion()
+        {
+            return Ok(new
+            {
+                ok = true,
+                usuario = User.Identity.Name
+            });
+        }
     }
 }

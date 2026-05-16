@@ -102,9 +102,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
 
                 if (!refreshed)
                 {
-                    SesionActual.CerrarSesion();
-
-                    Application.Restart();
+                    AppShutdownService.LogoutAndClose();
                     return;
                 }
 

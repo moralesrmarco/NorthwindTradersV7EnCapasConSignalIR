@@ -1,6 +1,8 @@
-﻿using System;
+﻿using NorthwindTradersV7EnCapasConSignalIR.Services;
+using System;
 using System.Drawing;
 using System.Media;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Utilities;
 
@@ -23,6 +25,14 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             Aceptar,
             SiNo
         }
+
+        public async static Task AbrirFormularioAsync(TabControl tabControl, Form formulario, string titulo)
+        {
+            if (!await SessionService.ValidarSesionAsync())
+                return;
+            Utilities.Utils.AgregarFormularioEnTab(tabControl, formulario, titulo);
+        }
+
 
         public static DialogResult NotificacionInformation(string mensaje)
         {
