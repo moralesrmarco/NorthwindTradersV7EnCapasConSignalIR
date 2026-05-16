@@ -1,19 +1,21 @@
-﻿using AspNetServer.Hubs;
-using AspNetServer.Seguridad;
+﻿using AspNetServer.Seguridad;
 using BLL;
 using Entities;
-using Microsoft.AspNet.SignalR;
 using System;
 using System.Configuration;
 using System.Web.Http;
 
 namespace AspNetServer.Controllers
 {
-    [System.Web.Http.Authorize]
+    [Authorize]
     [RoutePrefix("api/empleados")]
     public class EmpleadosController : ApiController
     {
-        private EmpleadoBLL _empleadoBLL = new EmpleadoBLL(ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString);
+        private EmpleadoBLL _empleadoBLL =
+            new EmpleadoBLL(
+                ConfigurationManager
+                .ConnectionStrings["Northwind2ConnectionString"]
+                .ConnectionString);
 
         [HttpPost]
         [Route("insertar")]
@@ -24,11 +26,15 @@ namespace AspNetServer.Controllers
 
             if (numRegs > 0)
             {
-                var context = GlobalHost.ConnectionManager.GetHubContext<EmpleadosHub>();
-                context.Clients.All.empleadoActualizado("Insertado", empleado.EmployeeID);
+                EmpleadoNotifier.Insertado(
+                    empleado.EmployeeID);
             }
-            // Devuelves un objeto anónimo con ambos valores
-            return Ok(new { NumRegs = numRegs, Empleado = empleado });
+
+            return Ok(new
+            {
+                NumRegs = numRegs,
+                Empleado = empleado
+            });
         }
 
         [HttpPut]
@@ -40,25 +46,33 @@ namespace AspNetServer.Controllers
 
             if (numRegs > 0)
             {
-                var context = GlobalHost.ConnectionManager.GetHubContext<EmpleadosHub>();
-                context.Clients.All.empleadoActualizado("Actualizado", empleado.EmployeeID);
+                EmpleadoNotifier.Actualizado(
+                    empleado.EmployeeID);
             }
+
             return Ok(numRegs);
         }
 
         [HttpDelete]
         [Route("eliminar/{id}")]
         [Permiso(1)]
-        public IHttpActionResult Eliminar(int id, [FromUri] string rowVersion)
+        public IHttpActionResult Eliminar(
+            int id,
+            [FromUri] string rowVersion)
         {
-            var rowVersionBytes = Convert.FromBase64String(rowVersion);
-            int numRegs = _empleadoBLL.Eliminar(id, rowVersionBytes);
+            var rowVersionBytes =
+                Convert.FromBase64String(rowVersion);
+
+            int numRegs =
+                _empleadoBLL.Eliminar(
+                    id,
+                    rowVersionBytes);
 
             if (numRegs > 0)
             {
-                var context = GlobalHost.ConnectionManager.GetHubContext<EmpleadosHub>();
-                context.Clients.All.empleadoActualizado("Eliminado", id);
+                EmpleadoNotifier.Eliminado(id);
             }
+
             return Ok(numRegs);
         }
 
@@ -66,10 +80,89 @@ namespace AspNetServer.Controllers
         [Route("{id}")]
         public IHttpActionResult Obtener(int id)
         {
-            var empleado = _empleadoBLL.ObtenerEmpleadoPorId(id);
+            var empleado =
+                _empleadoBLL.ObtenerEmpleadoPorId(id);
+
             if (empleado != null)
                 return Ok(empleado);
+
             return NotFound();
         }
     }
 }
+
+//using AspNetServer.Hubs;
+//using AspNetServer.Seguridad;
+//using BLL;
+//using Entities;
+//using Microsoft.AspNet.SignalR;
+//using System;
+//using System.Configuration;
+//using System.Web.Http;
+
+//namespace AspNetServer.Controllers
+//{
+//    [System.Web.Http.Authorize]
+//    [RoutePrefix("api/empleados")]
+//    public class EmpleadosController : ApiController
+//    {
+//        private EmpleadoBLL _empleadoBLL = new EmpleadoBLL(ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString);
+
+//        [HttpPost]
+//        [Route("insertar")]
+//        [Permiso(1)]
+//        public IHttpActionResult Insertar(Empleado empleado)
+//        {
+//            int numRegs = _empleadoBLL.Insertar(empleado);
+
+//            if (numRegs > 0)
+//            {
+//                var context = GlobalHost.ConnectionManager.GetHubContext<EmpleadosHub>();
+//                context.Clients.All.empleadoActualizado("Insertado", empleado.EmployeeID);
+//            }
+//            // Devuelves un objeto anónimo con ambos valores
+//            return Ok(new { NumRegs = numRegs, Empleado = empleado });
+//        }
+
+//        [HttpPut]
+//        [Route("actualizar")]
+//        [Permiso(1)]
+//        public IHttpActionResult Actualizar(Empleado empleado)
+//        {
+//            int numRegs = _empleadoBLL.Actualizar(empleado);
+
+//            if (numRegs > 0)
+//            {
+//                var context = GlobalHost.ConnectionManager.GetHubContext<EmpleadosHub>();
+//                context.Clients.All.empleadoActualizado("Actualizado", empleado.EmployeeID);
+//            }
+//            return Ok(numRegs);
+//        }
+
+//        [HttpDelete]
+//        [Route("eliminar/{id}")]
+//        [Permiso(1)]
+//        public IHttpActionResult Eliminar(int id, [FromUri] string rowVersion)
+//        {
+//            var rowVersionBytes = Convert.FromBase64String(rowVersion);
+//            int numRegs = _empleadoBLL.Eliminar(id, rowVersionBytes);
+
+//            if (numRegs > 0)
+//            {
+//                var context = GlobalHost.ConnectionManager.GetHubContext<EmpleadosHub>();
+//                context.Clients.All.empleadoActualizado("Eliminado", id);
+//            }
+//            return Ok(numRegs);
+//        }
+
+//        [HttpGet]
+//        [Route("{id}")]
+//        public IHttpActionResult Obtener(int id)
+//        {
+//            var empleado = _empleadoBLL.ObtenerEmpleadoPorId(id);
+//            if (empleado != null)
+//                return Ok(empleado);
+//            return NotFound();
+//        }
+//    }
+//}

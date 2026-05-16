@@ -3,7 +3,6 @@ using BLL.Services;
 using Entities;
 using Entities.DTOs;
 using Microsoft.AspNet.SignalR.Client;
-using NorthwindTradersV7EnCapasConSignalIR.Helpers;
 using NorthwindTradersV7EnCapasConSignalIR.Services;
 using System;
 using System.Collections.Generic;
@@ -141,13 +140,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     // sigue el bucle hasta agotar intentos
                 }
             }
-            //if (!reconectado)
-            //{
-            //    Invoke(new Action(() =>
-            //    {
-            //        MDIPrincipal.ActualizarBarraDeEstado("No se pudo reconectar a SignalR");
-            //    }));
-            //}
             _reconectando = false;
         }
 

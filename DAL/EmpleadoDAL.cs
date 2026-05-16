@@ -183,10 +183,15 @@ namespace DAL
                     {
                         if (reader.Read())
                         {
-                            reportaA = new DtoEmpleadoReportaACbo
+                            // Verifica si la columna es DBNull antes de llamar a GetInt32
+                            if (!reader.IsDBNull(0))
                             {
-                                EmployeeId = reader.GetInt32(0),
-                            };
+                                reportaA = new DtoEmpleadoReportaACbo
+                                {
+                                    EmployeeId = reader.GetInt32(0),
+                                };
+                            }
+                            // si es DBNull, reportaA queda en null (sin jefe)
                         }
                     }
                 }
