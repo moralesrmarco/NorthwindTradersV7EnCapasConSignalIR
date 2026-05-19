@@ -6,6 +6,7 @@ using System.Configuration;
 using System.Net.Http;
 using System.Windows.Forms;
 using Utilities;
+using Infrastructure.Services;
 
 namespace NorthwindTradersV7EnCapasConSignalIR
 {
@@ -64,6 +65,21 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         Materno = (string)result.Usuario.Materno,
                         Nombres = (string)result.Usuario.Nombres
                     };
+                    // =========================
+                    // CONFIGURAR SIGNALR
+                    // =========================
+                    SignalRService.Instance.Configurar(
+                        UrlBaseSignalR,
+                        SesionActual.AccessToken
+                    );
+
+                    // =========================
+                    // CONECTAR SIGNALR
+                    // =========================
+                    await SignalRService.Instance.ConectarAsync();
+
+                    this.DialogResult = DialogResult.OK;
+
                     this.Close();
                 }
                 else
@@ -78,13 +94,16 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     U.NotificacionError("Error de autenticación.\n\nUsuario o contraseña incorrectos.");
                     txtPwd.Clear();
                     txtPwd.Focus();
-                    btnTogglePwd.Enabled = true;
-                    btnEntrar.Enabled = true;
                 }
             }
             catch (Exception ex)
             {
                 U.MsgCatchOue(ex);
+            }
+            finally
+            {
+                btnTogglePwd.Enabled = true;
+                btnEntrar.Enabled = true;
             }
         }
 

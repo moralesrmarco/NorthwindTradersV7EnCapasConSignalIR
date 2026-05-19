@@ -17,9 +17,9 @@ namespace AspNetServer.Controllers
     [RoutePrefix("api/auth")]
     public class AuthController : ApiController
     {
-        private string _connectionString = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
-        private UsuarioBLL _usuarioBLL;
-        private PermisoService _permisoService;
+        private readonly string _connectionString = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
+        private readonly UsuarioBLL _usuarioBLL;
+        private readonly PermisoService _permisoService;
 
         public AuthController()
         {
@@ -31,6 +31,9 @@ namespace AspNetServer.Controllers
         [Route("login")]
         public IHttpActionResult Login(Usuario usuario)
         {
+            if (usuario == null)
+                return BadRequest("Datos inválidos");
+
             var usuarioAuth = _usuarioBLL.ValidarUsuario(usuario);
 
             if (usuarioAuth == null || usuarioAuth.Id <= 0)
@@ -42,64 +45,38 @@ namespace AspNetServer.Controllers
             usuarioAuth.PermisosIds =
                 _permisoService.ObtenerPermisosPorUsuarioId(usuarioAuth.Id);
 
-            var accessMinutes =
-                int.Parse(ConfigurationManager.AppSettings["JWT_ACCESS_MINUTES"]);
+            var accessMinutes = ObtenerAccessMinutes();
 
-            var refreshMinutes =
-                int.Parse(ConfigurationManager.AppSettings["JWT_REFRESH_MINUTES"]);
+            var refreshExpiration = ObtenerExpiracionRefreshToken();
 
             usuarioAuth.User = usuario.User;
-
-            var key = Encoding.UTF8.GetBytes(
-                ConfigurationManager.AppSettings["JWT_SECRET_KEY"]);
-
-            var tokenHandler = new JwtSecurityTokenHandler();
 
             // =========================
             // ACCESS TOKEN
             // =========================
-            var accessDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(
-                    ObtenerClaims(usuarioAuth, "access")
-                ),
-
-                Expires = DateTime.UtcNow.AddMinutes(accessMinutes),
-
-                SigningCredentials = new SigningCredentials(
-                    new SymmetricSecurityKey(key),
-                    SecurityAlgorithms.HmacSha256Signature)
-            };
-
             var accessToken =
-                tokenHandler.CreateToken(accessDescriptor);
+                CrearToken(
+                    usuarioAuth,
+                    "access",
+                    DateTime.UtcNow.AddMinutes(
+                        accessMinutes));
 
             // =========================
             // REFRESH TOKEN
             // =========================
-            var refreshDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(
-                    ObtenerClaims(usuarioAuth, "refresh")
-                ),
-
-                Expires = DateTime.UtcNow.AddMinutes(refreshMinutes),
-
-                SigningCredentials = new SigningCredentials(
-                    new SymmetricSecurityKey(key),
-                    SecurityAlgorithms.HmacSha256Signature)
-            };
-
             var refreshToken =
-                tokenHandler.CreateToken(refreshDescriptor);
+                CrearToken(
+                    usuarioAuth,
+                    "refresh",
+                    refreshExpiration);
 
             return Ok(new
             {
                 AccessToken =
-                    tokenHandler.WriteToken(accessToken),
+                    _tokenHandler.WriteToken(accessToken),
 
                 RefreshToken =
-                    tokenHandler.WriteToken(refreshToken),
+                    _tokenHandler.WriteToken(refreshToken),
 
                 Usuario = new
                 {
@@ -112,64 +89,24 @@ namespace AspNetServer.Controllers
             });
         }
 
-        private IEnumerable<Claim> ObtenerClaims(
-            Usuario usuario,
-            string tokenType)
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(
-                    ClaimTypes.Name,
-                    usuario.User),
-
-                new Claim(
-                    ClaimTypes.NameIdentifier,
-                    usuario.Id.ToString()),
-
-                new Claim(
-                    "TokenType",
-                    tokenType)
-            };
-
-            // SOLO ACCESS TOKEN LLEVA PERMISOS
-            if (tokenType == "access")
-            {
-                foreach (var permisoId in usuario.PermisosIds)
-                {
-                    claims.Add(
-                        new Claim(
-                            "Permiso",
-                            permisoId.ToString()));
-                }
-            }
-
-            return claims;
-        }
-
         [HttpPost]
         [Route("refresh")]
         public IHttpActionResult Refresh([FromBody] RefreshRequest request)
         {
-            var accessMinutes =
-                int.Parse(ConfigurationManager.AppSettings["JWT_ACCESS_MINUTES"]);
+            var accessMinutes = ObtenerAccessMinutes();
 
             if (request == null ||
             string.IsNullOrWhiteSpace(request.RefreshToken))
-            {
                 return BadRequest("RefreshToken requerido");
-            }
 
             var refreshToken = request.RefreshToken;
 
-            var key = Encoding.UTF8.GetBytes(
-                ConfigurationManager.AppSettings["JWT_SECRET_KEY"]);
-
-            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = ObtenerKey();
 
             try
             {
                 // VALIDAR REFRESH TOKEN
-                tokenHandler.ValidateToken(
+                _tokenHandler.ValidateToken(
                     refreshToken,
                     new TokenValidationParameters
                     {
@@ -178,8 +115,14 @@ namespace AspNetServer.Controllers
                         IssuerSigningKey =
                             new SymmetricSecurityKey(key),
 
-                        ValidateIssuer = false,
-                        ValidateAudience = false,
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+
+                        ValidIssuer =
+                            ConfigurationManager.AppSettings["JWT_ISSUER"],
+
+                        ValidAudience =
+                            ConfigurationManager.AppSettings["JWT_AUDIENCE"],
 
                         RequireSignedTokens = true,
                         RequireExpirationTime = true,
@@ -197,7 +140,7 @@ namespace AspNetServer.Controllers
 
                 // VALIDAR ALGORITMO
                 if (jwtSecurityToken.Header.Alg !=
-                    SecurityAlgorithms.HmacSha256)
+                    SecurityAlgorithms.HmacSha256Signature)
                 {
                     return Unauthorized();
                 }
@@ -239,37 +182,26 @@ namespace AspNetServer.Controllers
                         usuario.Id);
 
                 // GENERAR NUEVO ACCESS TOKEN
-                var claims =
-                    ObtenerClaims(usuario, "access");
-
-                var descriptor =
-                    new SecurityTokenDescriptor
-                    {
-                        Subject =
-                            new ClaimsIdentity(claims),
-
-                        Expires =
-                            DateTime.UtcNow.AddMinutes(
-                                accessMinutes),
-
-                        SigningCredentials =
-                            new SigningCredentials(
-                                new SymmetricSecurityKey(key),
-                                SecurityAlgorithms.HmacSha256Signature)
-                    };
-
                 var newAccessToken =
-                    tokenHandler.CreateToken(descriptor);
+                    CrearToken(
+                        usuario,
+                        "access",
+                        DateTime.UtcNow.AddMinutes(
+                            accessMinutes));
 
                 return Ok(new
                 {
                     AccessToken =
-                        tokenHandler.WriteToken(newAccessToken)
+                        _tokenHandler.WriteToken(newAccessToken)
                 });
             }
-            catch (Exception)
+            catch (SecurityTokenException)
             {
                 return Unauthorized();
+            }
+            catch (Exception ex)
+            {
+                return InternalServerError(ex);
             }
         }
 
@@ -283,6 +215,110 @@ namespace AspNetServer.Controllers
                 ok = true,
                 usuario = User.Identity.Name
             });
+        }
+
+        // =========================
+        // MÉTODOS AUXILIARES
+        // =========================
+
+        private bool EsProduccion()
+        {
+            return bool.Parse(
+                ConfigurationManager.AppSettings["JWT_IS_PRODUCTION"]);
+        }
+
+        private int ObtenerAccessMinutes()
+        {
+            return EsProduccion()
+                ? int.Parse(
+                    ConfigurationManager.AppSettings["JWT_ACCESS_MINUTES_PROD"])
+                : int.Parse(
+                    ConfigurationManager.AppSettings["JWT_ACCESS_MINUTES"]);
+        }
+
+        private DateTime ObtenerExpiracionRefreshToken()
+        {
+            return EsProduccion()
+                ? DateTime.UtcNow.AddDays(
+                    int.Parse(
+                        ConfigurationManager.AppSettings["JWT_REFRESH_DAYS"]))
+                : DateTime.UtcNow.AddMinutes(
+                    int.Parse(
+                        ConfigurationManager.AppSettings["JWT_REFRESH_MINUTES"]));
+        }
+
+        private IEnumerable<Claim> ObtenerClaims(
+            Usuario usuario,
+            string tokenType)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(
+                    ClaimTypes.Name,
+                    usuario.User),
+
+                new Claim(
+                    ClaimTypes.NameIdentifier,
+                    usuario.Id.ToString()),
+
+                new Claim(
+                    "TokenType",
+                    tokenType)
+            };
+
+            // SOLO ACCESS TOKEN LLEVA PERMISOS
+            if (tokenType == "access")
+            {
+                foreach (var permisoId in usuario.PermisosIds)
+                {
+                    claims.Add(
+                        new Claim(
+                            "Permiso",
+                            permisoId.ToString()));
+                }
+            }
+
+            return claims;
+        }
+
+        private SecurityToken CrearToken(
+            Usuario usuario,
+            string tokenType,
+            DateTime expiracion)
+        {
+            var key = ObtenerKey();
+
+            var descriptor =
+                new SecurityTokenDescriptor
+                {
+                    Subject =
+                        new ClaimsIdentity(
+                            ObtenerClaims(usuario, tokenType)),
+
+                    Expires = expiracion,
+
+                    Issuer =
+                        ConfigurationManager.AppSettings["JWT_ISSUER"],
+
+                    Audience =
+                        ConfigurationManager.AppSettings["JWT_AUDIENCE"],
+
+                    SigningCredentials =
+                        new SigningCredentials(
+                            new SymmetricSecurityKey(key),
+                            SecurityAlgorithms.HmacSha256Signature)
+                };
+
+            return _tokenHandler.CreateToken(descriptor);
+        }
+
+        private readonly JwtSecurityTokenHandler _tokenHandler =
+            new JwtSecurityTokenHandler();
+
+        private byte[] ObtenerKey()
+        {
+            return Encoding.UTF8.GetBytes(
+                ConfigurationManager.AppSettings["JWT_SECRET_KEY"]);
         }
     }
 }

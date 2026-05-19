@@ -13,10 +13,10 @@ namespace AspNetServer.Hubs
             var identity =
                 Context.User.Identity as ClaimsIdentity;
 
-            if (identity == null)
+            if (identity == null ||
+                !identity.IsAuthenticated)
             {
-                return Task.FromException(
-                    new HubException("No autorizado"));
+                throw new HubException("No autorizado");
             }
 
             var permisos =
@@ -30,8 +30,7 @@ namespace AspNetServer.Hubs
 
             if (!permisos.Contains(1))
             {
-                return Task.FromException(
-                    new HubException("Sin permisos"));
+                throw new HubException("Sin permisos");
             }
 
             return base.OnConnected();

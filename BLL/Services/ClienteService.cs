@@ -1,4 +1,5 @@
-﻿using DAL.Helpers;
+﻿using DAL;
+using DAL.Helpers;
 using System.Data;
 
 namespace BLL.Services
@@ -6,10 +7,12 @@ namespace BLL.Services
     public class ClienteService
     {
         private readonly ComboDataHelper _dal;
+        private readonly ClienteDAL _clienteDAL;
 
         public ClienteService(string connectionString)
         {
             _dal = new ComboDataHelper (connectionString);
+            _clienteDAL = new ClienteDAL(connectionString);
         }
 
         public DataTable ObtenerClientesCbo()
@@ -20,6 +23,11 @@ namespace BLL.Services
             filaSeleccione["CompanyName"] = "»--- Seleccione ---«";
             clientes.Rows.InsertAt(filaSeleccione, 0);
             return clientes;
+        }
+
+        public string ObtenerClientePais(string clienteId)
+        {
+            return _clienteDAL.ObtenerClientePais(clienteId);
         }
     }
 }

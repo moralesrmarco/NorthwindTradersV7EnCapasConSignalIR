@@ -450,12 +450,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\ApiClienteService.cs" />
     <Compile Include="Services\ApiEmpleadoService.cs" />
     <Compile Include="Services\ApiService.cs" />
     <Compile Include="Services\AppShutdownService.cs" />
     <Compile Include="Services\HttpClientProvider.cs" />
     <Compile Include="Services\SessionService.cs" />
-    <Compile Include="Services\SignalRService.cs" />
     <Compile Include="SesionActual.cs" />
     <Compile Include="U.cs" />
     <EmbeddedResource Include="FrmCambiarContrasena.resx">
@@ -668,6 +668,10 @@
     <ProjectReference Include="..\Entities\Entities.csproj">
       <Project>{9E50AC5C-62E4-446A-AB88-1C1EBFA19589}</Project>
       <Name>Entities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj">
+      <Project>{422bc343-2b41-43b2-b2e4-7a8f6d3cdea8}</Project>
+      <Name>Infrastructure</Name>
     </ProjectReference>
     <ProjectReference Include="..\Utilities\Utilities.csproj">
       <Project>{78D154D4-9DFF-4497-B21B-BA342FCDBDDF}</Project>

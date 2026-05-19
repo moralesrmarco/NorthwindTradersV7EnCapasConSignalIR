@@ -1,49 +1,55 @@
 ﻿using BLL;
+using BLL.Services;
 using Entities;
+using Infrastructure.Services;
 using Microsoft.AspNet.SignalR.Client;
-using Newtonsoft.Json;
+using NorthwindTradersV7EnCapasConSignalIR.Services;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
-using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Utilities;
-using ClientConnectionState = Microsoft.AspNet.SignalR.Client.ConnectionState;
 
 namespace NorthwindTradersV7EnCapasConSignalIR
 {
     public partial class FrmClientesCrud : Form
     {
+        string _connectionString = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
+        private ClienteBLL _clienteBLL;
+        private ClienteService _clienteService;
+
         private bool EjecutarConfDgv = true;
         internal Dictionary<string, object> valoresOriginales;
         private bool realizandoBusqueda = false;
 
-        string _connectionString = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
-        private ClienteBLL _clienteBLL;
-
-        private readonly string UrlBaseSignalR = ConfigurationManager.AppSettings["UrlBaseSignalR"];
-
-        private HubConnection _hubConnection;
-        private IHubProxy _hubProxy;
+        private IHubProxy _hubClientes;
+        private IDisposable _subClienteActualizado;
 
         public FrmClientesCrud()
         {
             InitializeComponent();
             _clienteBLL = new ClienteBLL(_connectionString);
+            _clienteService = new ClienteService(_connectionString);
         }
 
         private void GrbPaint(object sender, PaintEventArgs e) => Utils.GrbPaint(this, sender, e);
 
         private void FrmClientesCrud_FormClosed(object sender, FormClosedEventArgs e) => MDIPrincipal.ActualizarBarraDeEstado();
 
+
         internal void FrmClientesCrud_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (AppShutdownService.CerrandoPorLogout)
+                return;
+
             if (Utils.HayCambios(this, valoresOriginales, errorProvider1))
+            {
                 if (U.NotificacionQuestion(Utils.preguntaCerrar) == DialogResult.No)
                     e.Cancel = true;
+            }
         }
 
         private void tabcOperacion_DrawItem(object sender, DrawItemEventArgs e) => Utils.DibujarPestañas(sender as TabControl, e);
@@ -59,91 +65,102 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             CargarValoresOriginales();
 
             // Aquí agregas la conexión SignalR
-            InicializarSignalR();
+            _hubClientes = SignalRService.Instance
+                .ObtenerHubProxy("ClientesHub");
+
+            _subClienteActualizado =
+                _hubClientes.On<string, string>(
+                    "clienteActualizado",
+                    OnClienteActualizado);
         }
 
-        private async void InicializarSignalR()
+        protected override void OnFormClosed(
+            FormClosedEventArgs e)
         {
-            _hubConnection = new HubConnection(UrlBaseSignalR);
-            _hubProxy = _hubConnection.CreateHubProxy("ClientesHub");
-
-            // Suscribirse al evento que el servidor invoca
-            _hubProxy.On<string, string>("clienteActualizado", (accion, clienteId) =>
-            {
-                Invoke(new Action(() =>
-                {
-                    // Solo refrescar si NO estás realizando búsqueda
-                    if (!realizandoBusqueda)
-                        // Aquí refrescas el DataGridView
-                        LlenarDgv(false);
-                }));
-            });
-
-            _hubConnection.Closed += async () =>
-            {
-                await ReconectarSignalR();
-            };
-
             try
             {
-                await _hubConnection.Start();
-                MDIPrincipal.ActualizarBarraDeEstado("Conectado a SignalR");
+                _subClienteActualizado?.Dispose();
+                _subClienteActualizado = null;
+                _hubClientes = null;
+            }
+            catch
+            {
+            }
+
+            base.OnFormClosed(e);
+        }
+
+        private void OnClienteActualizado(string accion, string clienteId)
+        {
+            try
+            {
+                if (IsDisposed || !IsHandleCreated)
+                    return;
+
+                BeginInvoke(new Action(() =>
+                {
+                    if (realizandoBusqueda)
+                        return; // No refrescar si estás realizando búsqueda
+
+                    LlenarDgv(false);
+
+                    if (tabcOperacion.SelectedTab == tbpListar ||
+                        tabcOperacion.SelectedTab == tbpRegistrar ||
+                        tabcOperacion.SelectedTab == tbpEliminar)
+                        return;
+
+                    if (!string.IsNullOrWhiteSpace(txtId.Text))
+                    {
+                        string clienteActual =
+                        txtId.Text;
+
+                        if (clienteActual == clienteId)
+                        {
+                            CargarCliente(clienteId);
+                        }
+                    }
+                }));
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+            catch (InvalidOperationException)
+            {
+            }
+        }
+
+        private bool CargarCliente(string clienteId)
+        {
+            try
+            {
+                Cliente cliente = _clienteBLL.ObtenerClientePorId(clienteId);
+                if (cliente == null)
+                {
+                    U.NotificacionWarning($"No se encontró el cliente con Id: {clienteId}." + Utils.erfep1);
+                    BorrarDatosCliente();
+                    DeshabilitarControles();
+                    btnOperacion.Enabled = false;
+                    CargarValoresOriginales();
+                    return false;
+                }
+                txtId.Text = cliente.CustomerID;
+                txtId.Tag = cliente.RowVersion;
+                txtCompañia.Text = cliente.CompanyName;
+                txtContacto.Text = cliente.ContactName;
+                txtTitulo.Text = cliente.ContactTitle;
+                txtDomicilio.Text = cliente.Address;
+                txtCiudad.Text = cliente.City;
+                txtRegion.Text = cliente.Region;
+                txtCodigoP.Text = cliente.PostalCode;
+                cboPais.Text = cliente.Country;
+                txtTelefono.Text = cliente.Phone;
+                txtFax.Text = cliente.Fax;
+                return true;
             }
             catch (Exception ex)
             {
-                MDIPrincipal.ActualizarBarraDeEstado("Error al conectar: " + ex.Message);
-            }
-        }
-
-        private async Task ReconectarSignalR()
-        {
-            int intentos = 0;
-            bool reconectado = false;
-
-            while (!reconectado && intentos < 5)
-            {
-                // Si ya está conectado, rompe el bucle
-                if (_hubConnection.State == ClientConnectionState.Connected)
-                {
-                    reconectado = true;
-                    break;
-                }
-
-                intentos++;
-                int delay = (int)Math.Pow(2, intentos) * 1000; // 2^n segundos
-
-                Invoke(new Action(() =>
-                {
-                    MDIPrincipal.ActualizarBarraDeEstado($"Intentando reconectar... intento {intentos}");
-                }));
-
-                await Task.Delay(delay);
-
-                try
-                {
-                    // Solo intenta reconectar si no está ya en proceso
-                    if (_hubConnection.State == ClientConnectionState.Disconnected)
-                    {
-                        await _hubConnection.Start();
-                        reconectado = true;
-                        Invoke(new Action(() =>
-                        {
-                            MDIPrincipal.ActualizarBarraDeEstado("Reconectado a SignalR");
-                        }));
-                    }
-                }
-                catch
-                {
-                    // sigue el bucle hasta agotar intentos
-                }
-            }
-
-            if (!reconectado)
-            {
-                Invoke(new Action(() =>
-                {
-                    MDIPrincipal.ActualizarBarraDeEstado("No se pudo reconectar a SignalR");
-                }));
+                U.MsgCatchOue(ex);
+                return false;
             }
         }
 
@@ -171,8 +188,15 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             {
                 
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
+                bool tieneId = false;
+                string clienteId = "";
+                string selectedValueCboPais = cboPais.SelectedValue?.ToString();
+                if (tabcOperacion.SelectedTab == tbpModificar)
+                {
+                    tieneId = true;
+                    clienteId = txtId.Text;
+                }
                 DataTable paises = _clienteBLL.ObtenerClientesPaisesCbo();
-                MDIPrincipal.ActualizarBarraDeEstado();
                 cboBPais.DataSource = paises;
                 cboBPais.ValueMember = "Id";
                 cboBPais.DisplayMember = "Pais";
@@ -182,6 +206,51 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 cboPais.ValueMember = "Id";
                 cboPais.DisplayMember = "Pais";
                 cboPais.SelectedIndex = 0;
+
+                if (tabcOperacion.SelectedTab == tbpModificar)
+                {
+                    if (tieneId)
+                    {
+                        var pais = _clienteService.ObtenerClientePais(clienteId);
+                        if (pais != null)
+                            cboPais.SelectedValue = pais;
+                        else
+                        {
+                            // esto es para aceptar texto libre 
+                            if (!string.IsNullOrWhiteSpace(selectedValueCboPais))
+                            {
+                                cboPais.Text = selectedValueCboPais;
+                                int idx = cboPais.FindStringExact(selectedValueCboPais);
+                                if (idx >= 0)
+                                    cboPais.SelectedIndex = idx; // coincide con un ítem
+                                else
+                                {
+                                    cboPais.SelectedIndex = -1; // texto libre
+                                    cboPais.Text = selectedValueCboPais; // mantener el texto libre
+                                }
+                            }
+                            else
+                            {
+                                cboPais.SelectedIndex = 0;
+                            }
+                        }
+                    }
+                }
+                if ((tabcOperacion.SelectedTab == tbpRegistrar || tabcOperacion.SelectedTab == tbpEliminar || tabcOperacion.SelectedTab == tbpListar) && !string.IsNullOrWhiteSpace(selectedValueCboPais))
+                {
+                    // esto es para aceptar texto libre 
+                    cboPais.Text = selectedValueCboPais;
+                    int idx = cboPais.FindStringExact(selectedValueCboPais);
+                    if (idx >= 0)
+                        cboPais.SelectedIndex = idx; // coincide con un ítem
+                    else
+                    {
+                        cboPais.SelectedIndex = -1; // texto libre
+                        cboPais.Text = selectedValueCboPais;
+                    }
+                }
+                CargarValoresOriginales();
+                MDIPrincipal.ActualizarBarraDeEstado();
             }
             catch (Exception ex)
             {
@@ -365,7 +434,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 valida = false;
                 errorProvider1.SetError(txtCiudad, "Ingrese la ciudad");
             }
-            if (cboPais.Text.Trim() == "" || cboPais.SelectedIndex == 0)
+            if (string.IsNullOrWhiteSpace(cboPais.Text) || cboPais.SelectedIndex == 0)
             {
                 valida = false;
                 errorProvider1.SetError(cboPais, "Ingrese o seleccione el país");
@@ -417,43 +486,36 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void dgv_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0 || e.ColumnIndex < 0)
-                return;
+            // 🔹 Cuando viene desde un click real del DataGridView
+            if (e != null)
+            {
+                if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                    return;
+                DataGridViewRow dgvr = dgv.Rows[e.RowIndex];
+                if (dgvr.Cells["CustomerID"].Value == null)
+                    return;
+                txtId.Text = dgvr.Cells["CustomerID"].Value.ToString();
+            }
             BorrarMensajesError();
             if (tabcOperacion.SelectedTab != tbpRegistrar)
             {
                 DeshabilitarControles();
-                DataGridViewRow dgvr = dgv.CurrentRow;
-                txtId.Text = dgvr.Cells["CustomerID"].Value.ToString();
-                Cliente cliente = new Cliente();
                 try
                 {
-                    cliente = _clienteBLL.ObtenerClientePorId(txtId.Text);
-                    if (cliente != null)
+                    string clienteId = txtId.Text;
+                    if (!CargarCliente(clienteId))
                     {
-                        txtId.Tag = cliente.RowVersion;
-                        txtCompañia.Text = cliente.CompanyName;
-                        txtContacto.Text = cliente.ContactName;
-                        txtTitulo.Text = cliente.ContactTitle;
-                        txtDomicilio.Text = cliente.Address;
-                        txtCiudad.Text = cliente.City;
-                        txtRegion.Text = cliente.Region;
-                        txtCodigoP.Text = cliente.PostalCode;
-                        cboPais.Text = cliente.Country;
-                        txtTelefono.Text = cliente.Phone;
-                        txtFax.Text = cliente.Fax;
-                    }
-                    else
-                    {
-                        U.NotificacionWarning($"No se encontró el cliente con Id: {txtId.Text}." + Utils.erfep);
                         ActualizaDgv();
                         return;
                     }
-
-                }
+                } 
                 catch (Exception ex)
-                {
+                { 
                     U.MsgCatchOue(ex);
+                }
+                if (tabcOperacion.SelectedTab == tbpListar)
+                {
+                    btnOperacion.Visible = false;
                 }
                 if (tabcOperacion.SelectedTab == tbpModificar)
                 {
@@ -461,7 +523,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     txtId.Enabled = false;
                     btnOperacion.Enabled = true;
                 }
-                else if (tabcOperacion.SelectedTab == tbpEliminar)
+                if (tabcOperacion.SelectedTab == tbpEliminar)
                 {
                     btnOperacion.Visible = true;
                     btnOperacion.Enabled = true;
@@ -502,27 +564,15 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             Phone = txtTelefono.Text.Trim(),
                             Fax = string.IsNullOrWhiteSpace(txtFax.Text.Trim()) ? null : txtFax.Text.Trim()
                         };
-                        using (var client = new HttpClient())
+                        var resultado = await ApiClienteService.InsertarAsync(cliente);
+                        if (resultado.ok)
                         {
-                            client.BaseAddress = new Uri(UrlBaseSignalR);
-                            var response = await client.PostAsJsonAsync("api/clientes/insertar", cliente);
-                            if (response.IsSuccessStatusCode)
-                            {
-                                var resultado = await response.Content.ReadAsAsync<dynamic>();
-                                int numRegs = resultado.NumRegs;
-                                var clienteInsertado = JsonConvert.DeserializeObject<Cliente>(resultado.Cliente.ToString());
-                                MDIPrincipal.ActualizarBarraDeEstado($"Se insertaron {numRegs} registros");
-                                string idyNombreCompania = $"El cliente con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
-                                if (numRegs > 0)
-                                    U.NotificacionInformation(idyNombreCompania + Utils.srs);
-                                else
-                                    U.NotificacionError(idyNombreCompania + Utils.nfrs);
-                            }
-                            else
-                            {
-                                U.NotificacionError($"Error al insertar el cliente a través de la API. Código de estado: {response.StatusCode}");
-                            }
+                            string idyNombreCompania = $"El cliente con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
+                            U.NotificacionInformation(idyNombreCompania + Utils.srs);
+                            MDIPrincipal.ActualizarBarraDeEstado();
                         }
+                        else
+                            U.NotificacionError(resultado.mensaje);
                     }
                     catch (Exception ex)
                     {
@@ -562,33 +612,33 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             Fax = txtFax.Text,
                             RowVersion = txtId.Tag as byte[]
                         };
-                        using (var client = new HttpClient())
+                        var resultado = await ApiClienteService.ActualizarAsync(cliente);
+                        if (resultado.ok)
                         {
-                            client.BaseAddress = new Uri(UrlBaseSignalR);
-                            var response = await client.PutAsJsonAsync("api/clientes/actualizar", cliente);
-                            if (response.IsSuccessStatusCode)
+                            int numRegs = resultado.numRegs;
+                            MDIPrincipal.ActualizarBarraDeEstado($"Se actualizó {(numRegs < 0 ? 0 : numRegs)} registro");
+                            string idyNombreCompania = $"El cliente con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
+                            if (numRegs > 0)
                             {
-                                int numRegs = await response.Content.ReadAsAsync<int>();
-                                MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registros");
-                                string idyNombreCompania = $"El cliente con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
-                                if (numRegs > 0)
-                                    U.NotificacionInformation(idyNombreCompania + Utils.sms);
-                                else if (numRegs == -1)
-                                    U.NotificacionError(idyNombreCompania + Utils.nfmfe);
-                                else if (numRegs == -2)
-                                    U.NotificacionError(idyNombreCompania + Utils.nfmfm);
-                                else
-                                    U.NotificacionError(idyNombreCompania + Utils.nfmmd);
+                                U.NotificacionInformation(idyNombreCompania + Utils.sms);
                             }
+                            else if (numRegs == -1)
+                                U.NotificacionError(idyNombreCompania + Utils.nfmfe);
+                            else if (numRegs == -2)
+                                U.NotificacionError(idyNombreCompania + Utils.nfmfm);
                             else
-                            {
-                                U.NotificacionError($"Error al actualizar el cliente a través de la API. Código de estado: {response.StatusCode}");
-                            }
+                                U.NotificacionInformation(idyNombreCompania + Utils.nfmmd);
                         }
+                        else
+                            U.NotificacionError(resultado.mensaje);
                     }
                     catch (Exception ex)
                     {
-                        U.MsgCatchOue(ex);
+                        U.NotificacionError("Error al modificar el cliente: " + ex.Message);
+                    }
+                    finally
+                    {
+                        MDIPrincipal.ActualizarBarraDeEstado();
                     }
                 }
             }
@@ -598,42 +648,42 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 {
                     MDIPrincipal.ActualizarBarraDeEstado(Utils.eliminandoRegistro);
                     btnOperacion.Enabled = false;
+                    Cliente cliente = new Cliente()
+                    {
+                        CustomerID = txtId.Text,
+                        RowVersion = txtId.Tag as byte[]
+                    };
                     try
                     {
-                        Cliente cliente = new Cliente()
+                        var resultado = await ApiClienteService.EliminarAsync(cliente.CustomerID, txtId.Tag as byte[]);
+                        if (resultado.ok)
                         {
-                            CustomerID = txtId.Text,
-                            RowVersion = txtId.Tag as byte[]
-                        };
-                        using (var client = new HttpClient())
-                        {
-                            client.BaseAddress = new Uri(UrlBaseSignalR);
-                            var rowVersionBase64 = Convert.ToBase64String(txtId.Tag as byte[]);
-                            var response = await client.DeleteAsync(
-                                $"api/clientes/eliminar/{txtId.Text}?rowVersion={rowVersionBase64}");
-                            if (response.IsSuccessStatusCode)
+                            int numRegs = resultado.numRegs;
+                            MDIPrincipal.ActualizarBarraDeEstado($"Se eliminó {(numRegs < 0 ? 0 : numRegs)} registro");
+                            string idyNombreCompania = $"El cliente con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
+                            if (numRegs > 0)
                             {
-                                int numRegs = await response.Content.ReadAsAsync<int>();
-                                MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registros");
-                                string idyNombreCompania = $"El cliente con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
-                                if (numRegs > 0)
-                                    U.NotificacionInformation(idyNombreCompania + Utils.ses);
-                                else if (numRegs == -1)
-                                    U.NotificacionError(idyNombreCompania + Utils.nfefe);
-                                else if (numRegs == -2)
-                                    U.NotificacionError(idyNombreCompania + Utils.nfefm);
-                                else
-                                    U.NotificacionError(idyNombreCompania + Utils.nfemd);
+                                U.NotificacionInformation(idyNombreCompania + Utils.ses);
                             }
+                            else if (numRegs == -1)
+                                U.NotificacionError(idyNombreCompania + Utils.nfefe);
+                            else if (numRegs == -2)
+                                U.NotificacionError(idyNombreCompania + Utils.nfefm);
                             else
-                            {
-                                U.NotificacionError($"Error al eliminar el cliente a través de la API. Código de estado: {response.StatusCode}");
-                            }
+                                U.NotificacionError(idyNombreCompania + Utils.nfemd);
+                        }
+                        else
+                        {
+                            U.NotificacionError(resultado.mensaje);
                         }
                     }
                     catch (Exception ex)
                     {
                         U.MsgCatchOue(ex);
+                    }
+                    finally
+                    {
+                        MDIPrincipal.ActualizarBarraDeEstado();
                     }
                 }
             }

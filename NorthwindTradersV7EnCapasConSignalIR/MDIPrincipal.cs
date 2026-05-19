@@ -1,6 +1,8 @@
 ﻿using BLL.Services;
 using Entities;
 using Entities.Config;
+using Infrastructure.Services;
+using Microsoft.AspNet.SignalR.Client;
 using NorthwindTradersV7EnCapasConSignalIR.Services;
 using System;
 using System.Collections.Generic;
@@ -23,12 +25,13 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private readonly string cnStr = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
         private readonly PermisoService _permisoService;
-        private SignalRService _signalRService;
+        private bool _signalRInicializado = false;
+        //private IHubProxy _hubClientes;
+        //private IDisposable _subClienteCreado;
 
         public MDIPrincipal()
         {
             InitializeComponent();
-            _signalRService = new SignalRService();
             TabControlPrincipal.ConfigurarIconos(Properties.Resources.pestanaOff, Properties.Resources.pestanaOn);
             Instance = this;
             this.Text = Utils.nwtr;
@@ -76,20 +79,17 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             }
         }
 
-        private async void MDIPrincipal_Load(object sender, EventArgs e)
+        private void MDIPrincipal_Load(object sender, EventArgs e)
         {
-            WindowState = FormWindowState.Maximized;
-            toolStripStatusLabel2.Text = UsuarioLogueado.User;
-            ConfiguracionFiscal.TasaIVA = Convert.ToDecimal(ConfigurationManager.AppSettings["TasaIVA"]);
-            try
-            {
-                await _signalRService.ConectarAsync();
-            }
-            catch (Exception ex) 
-            {
-                U.NotificacionError(ex.Message);
-            }
             IniciarSesion();
+            InicializarSignalR();
+        }
+
+        // método protegido sobrescribible que se ejecuta cuando el formulario se muestra por primera vez
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+
             if (permisosUsuarioAutenticado.Contains(10))
             {
                 tableroDeControlParaLaAltaDirecciónToolStripMenuItem_Click(null, null);
@@ -98,24 +98,46 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             {
                 tableroDeControlParaLosVendedoresToolStripMenuItem_Click(null, null);
             }
-            ActualizarBarraDeEstado("Sesión iniciada correctamente.     |     Bienvenido " + UsuarioLogueado.NombreCompleto + " al sistema " + Utils.nwtr.Substring(2, (Utils.nwtr.Length - 4)) + ". Para comenzar, seleccione una opción del menú correspondiente a sus permisos de usuario."); 
+            WindowState = FormWindowState.Maximized;
+            toolStripStatusLabel2.Text = UsuarioLogueado.User;
+            ConfiguracionFiscal.TasaIVA = Convert.ToDecimal(ConfigurationManager.AppSettings["TasaIVA"]);
+            ActualizarBarraDeEstado("Sesión iniciada correctamente.     |     Bienvenido " + UsuarioLogueado.NombreCompleto + " al sistema " + Utils.nwtr.Substring(2, (Utils.nwtr.Length - 4)) + ". Para comenzar, seleccione una opción del menú correspondiente a sus permisos de usuario.");
+
         }
 
-        public async Task<bool> ReiniciarSignalR()
+        private void InicializarSignalR()
         {
-            try
-            {
-                await _signalRService.ReconectarAsync();
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            if (_signalRInicializado)
+                return;
+            _signalRInicializado = true;
+            var signalR = SignalRService.Instance;
+            // Estado conexión
+            signalR.EstadoConexion -= OnEstadoConexion;
+            signalR.EstadoConexion += OnEstadoConexion;
+            // Error conexión
+            signalR.ErrorConexion -= OnError;
+            signalR.ErrorConexion += OnError;
+            // Logout remoto
+            signalR.SolicitarLogout -= OnLogout;
+            signalR.SolicitarLogout += OnLogout;
         }
 
-        private void TabControlPrincipal_SelectedIndexChanged(object sender, EventArgs e) => MDIPrincipal.ActualizarBarraDeEstado();
+        private void OnEstadoConexion(string msg)
+        {
+            ActualizarBarraDeEstado(msg);
+        }
+
+        private void OnError(string msg)
+        {
+            U.NotificacionError(msg);
+        }
+
+        private void OnLogout()
+        {
+            AppShutdownService.LogoutAndClose();
+        }
+
+        private void TabControlPrincipal_SelectedIndexChanged(object sender, EventArgs e) => ActualizarBarraDeEstado();
 
         private void IniciarSesion()
         {
@@ -688,5 +710,20 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         {
             await U.AbrirFormularioAsync(TabControlPrincipal, new FrmTableroControlVendedores(), "» Tablero de control para los vendedores «");
         }
+
+        //private async void MDIPrincipal_FormClosing(
+        //    object sender,
+        //    FormClosingEventArgs e)
+        //{
+        //    try
+        //    {
+        //        _subClienteCreado?.Dispose();
+
+        //        await SignalRService.Instance.DesconectarAsync();
+        //    }
+        //    catch
+        //    {
+        //    }
+        //}
     }
 }

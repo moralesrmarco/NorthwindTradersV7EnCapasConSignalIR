@@ -1,24 +1,25 @@
 ﻿using AspNetServer.Hubs;
 using Microsoft.AspNet.SignalR;
+using System.Threading.Tasks;
 
 public static class EmpleadoNotifier
 {
-    public static void Insertado(int id)
+    public static async Task Insertado(int id)
     {
-        Notify("Insertado", id);
+        await Notify("Insertado", id);
     }
 
-    public static void Actualizado(int id)
+    public static async Task Actualizado(int id)
     {
-        Notify("Actualizado", id);
+        await Notify("Actualizado", id);
     }
 
-    public static void Eliminado(int id)
+    public static async Task Eliminado(int id)
     {
-        Notify("Eliminado", id);
+        await Notify("Eliminado", id);
     }
 
-    private static void Notify(
+    private static Task Notify(
         string accion,
         int id)
     {
@@ -29,5 +30,7 @@ public static class EmpleadoNotifier
         context.Clients.All.empleadoActualizado(
             accion,
             id);
+
+        return Task.CompletedTask;
     }
 }

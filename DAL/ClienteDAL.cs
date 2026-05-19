@@ -406,5 +406,26 @@ namespace DAL
             }
             return paises;
         }
+
+        public string ObtenerClientePais(string clienteId)
+        {
+            try
+            {
+                using (var con = new SqlConnection(_connectionString))
+                using (var cmd = new SqlCommand("SpClienteObtenerPais", con))
+                {
+                    DataTable pais = new DataTable();
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@clienteId", clienteId);
+                    con.Open();
+                    var result = cmd.ExecuteScalar();
+                    return result?.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener el país del cliente: " + ex.Message, ex);
+            }
+        }
     }
 }

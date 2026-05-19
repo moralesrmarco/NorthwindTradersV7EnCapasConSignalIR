@@ -2,6 +2,7 @@
 using BLL.Services;
 using Entities;
 using Entities.DTOs;
+using Infrastructure.Services;
 using Microsoft.AspNet.SignalR.Client;
 using NorthwindTradersV7EnCapasConSignalIR.Services;
 using System;
@@ -10,7 +11,6 @@ using System.Configuration;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Utilities;
 
@@ -25,13 +25,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         OpenFileDialog openFileDialog;
         internal Dictionary<string, object> valoresOriginales;
         private byte[] fotoOriginalOle = null;
-
-        private HubConnection _hubConnection;
-        private IHubProxy _hubProxy;
-        private readonly string UrlBaseSignalR = ConfigurationManager.AppSettings["UrlBaseSignalR"];
-
         private bool realizandoBusqueda = false;
-        private bool _reconectando = false;
+
+        private IHubProxy _hubEmpleados;
+        private IDisposable _subEmpleadoActualizado;
 
         public FrmEmpleadosCrud()
         {
@@ -53,113 +50,82 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             CargarValoresOriginales();
 
             // Aquí agregas la conexión SignalR
-            InicializarSignalR();
+            _hubEmpleados =
+                SignalRService.Instance
+                .ObtenerHubProxy("EmpleadosHub");
+
+            _subEmpleadoActualizado =
+                _hubEmpleados.On<string, int>(
+                    "empleadoActualizado",
+                    OnEmpleadoActualizado);
         }
 
-        private async void InicializarSignalR()
+        protected override void OnFormClosed(
+            FormClosedEventArgs e)
         {
-            var query = new Dictionary<string, string>
-            {
-                { "access_token", SesionActual.AccessToken }
-            };
-
-            _hubConnection = new HubConnection(
-                UrlBaseSignalR,
-                query);
-
-            _hubProxy = _hubConnection.CreateHubProxy("EmpleadosHub");
-
-            _hubProxy.On<string, int>("empleadoActualizado", (accion, empleadoId) =>
-            {
-                Invoke(new Action(() =>
-                {
-                    if (!realizandoBusqueda)
-                        LlenarDgv(false);
-                    else
-                        return; // No refrescar si estás realizando búsqueda
-                    if (tabcOperacion.SelectedTab == tbpListar || tabcOperacion.SelectedTab == tbpRegistrar || tabcOperacion.SelectedTab == tbpEliminar)
-                        return;
-                    if (!string.IsNullOrWhiteSpace(txtId.Text))
-                    {
-                        int empleadoActual = Convert.ToInt32(txtId.Text);
-                        if (empleadoActual == empleadoId)
-                            CargarEmpleado(empleadoId);
-                    }
-                }));
-            });
-            _hubConnection.Closed += async () =>
-            {
-                await ReconectarSignalR();
-            };
-
             try
             {
-                await _hubConnection.Start();
-                MDIPrincipal.ActualizarBarraDeEstado("Conectado a SignalR");
+                _subEmpleadoActualizado?.Dispose();
+                _subEmpleadoActualizado = null;
+                _hubEmpleados = null;
             }
-            catch (Exception ex)
+            catch
             {
-                MDIPrincipal.ActualizarBarraDeEstado("Error al conectar: " + ex.Message);
             }
+
+            base.OnFormClosed(e);
         }
-
-        private async Task ReconectarSignalR()
+        private void OnEmpleadoActualizado(string accion, int empleadoId)
         {
-            if (_reconectando)
-                return; // Evita múltiples intentos simultáneos
-            _reconectando = true;
-
-            int intentos = 0;
-            bool reconectado = false;
-
-            while (!reconectado && intentos < 5) // máximo 5 intentos
+            try
             {
-                intentos++;
-                int delay = (int)Math.Pow(2, intentos) * 1000; // backoff exponencial
+                if (IsDisposed || !IsHandleCreated)
+                    return;
 
-                // Actualizar UI sin bloquear (BeginInvoke)
-                if (this.IsHandleCreated && !this.IsDisposed)
-                    this.BeginInvoke(new Action(() => MDIPrincipal.ActualizarBarraDeEstado($"Intentando reconectar... intento {intentos}")));
-
-                await Task.Delay(delay);
-
-                try
+                BeginInvoke(new Action(() =>
                 {
-                    if (_hubConnection.State != ConnectionState.Disconnected)
-                        continue;
+                    if (realizandoBusqueda)
+                        return; // No refrescar si estás realizando búsqueda
 
-                    await _hubConnection.Start();
-                    reconectado = true;
-                    Invoke(new Action(() =>
+                    LlenarDgv(false);
+
+                    if (tabcOperacion.SelectedTab == tbpListar ||
+                        tabcOperacion.SelectedTab == tbpRegistrar ||
+                        tabcOperacion.SelectedTab == tbpEliminar)
+                        return;
+
+                    if (!string.IsNullOrWhiteSpace(txtId.Text))
                     {
-                        MDIPrincipal.ActualizarBarraDeEstado("Reconectado a SignalR");
-                    }));
-                }
-                catch
-                {
-                    // sigue el bucle hasta agotar intentos
-                }
+                        if (int.TryParse(txtId.Text, out int empleadoActual))
+                        {
+                            if (empleadoActual == empleadoId)
+                            {
+                                CargarEmpleado(empleadoId);
+                            }
+                        }
+                    }
+                }));
             }
-            _reconectando = false;
+            catch (ObjectDisposedException)
+            {
+            }
+            catch (InvalidOperationException)
+            {
+            }
         }
 
         private void tabcOperacion_DrawItem(object sender, DrawItemEventArgs e) => Utils.DibujarPestañas(sender as TabControl, e);
 
         private void GrbPaint(object sender, PaintEventArgs e) => Utils.GrbPaint(this, sender, e);
 
-        private void FrmEmpleadosCrud_FormClosed(object sender, FormClosedEventArgs e)
-        {
+        private void FrmEmpleadosCrud_FormClosed(object sender, FormClosedEventArgs e) =>
             MDIPrincipal.ActualizarBarraDeEstado();
-            // Libera la conexión SignalR
-            if (_hubConnection != null)
-            {
-                _hubConnection.Stop();
-                _hubConnection.Dispose();
-            }
-        }
 
         internal void FrmEmpleadosCrud_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (AppShutdownService.CerrandoPorLogout)
+                return;
+
             // pone un error con errorprovider en cada control que ha cambiado
             if (Utils.HayCambios(this, valoresOriginales, errorProvider1))
                 if (U.NotificacionQuestion(Utils.preguntaCerrar) == DialogResult.No)
@@ -238,10 +204,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                                 cboPais.Text = selectedValueCboPais;
                                 int idx = cboPais.FindStringExact(selectedValueCboPais);
                                 if (idx >= 0)
-                                    cboPais.SelectedIndex = idx;   // coincide con un ítem
+                                    cboPais.SelectedIndex = idx; // coincide con un ítem
                                 else
                                 {
-                                    cboPais.SelectedIndex = -1;    // texto libre
+                                    cboPais.SelectedIndex = -1; // texto libre
                                     cboPais.Text = selectedValueCboPais;
                                 }
                             }
@@ -258,10 +224,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     cboPais.Text = selectedValueCboPais;
                     int idx = cboPais.FindStringExact(selectedValueCboPais);
                     if (idx >= 0)
-                        cboPais.SelectedIndex = idx;   // coincide con un ítem
+                        cboPais.SelectedIndex = idx; // coincide con un ítem
                     else
                     {
-                        cboPais.SelectedIndex = -1;    // texto libre
+                        cboPais.SelectedIndex = -1; // texto libre
                         cboPais.Text = selectedValueCboPais;
                     }
                 }
@@ -569,7 +535,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     btnOperacion.Enabled = true;
                     btnCargar.Visible = true;
                 }
-                else if (tabcOperacion.SelectedTab == tbpEliminar)
+                if (tabcOperacion.SelectedTab == tbpEliminar)
                 {
                     btnOperacion.Enabled = true;
                     btnOperacion.Visible = true;
@@ -740,7 +706,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     HabilitarControles();
                     btnOperacion.Enabled = true;
                     btnCargar.Enabled = true;
-                    BorrarDatosEmpleado();
                 }
             }
             else if (tabcOperacion.SelectedTab == tbpModificar)
@@ -801,7 +766,9 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                                 $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
 
                             if (numRegs > 0)
+                            { 
                                 U.NotificacionInformation(idyNombre + Utils.sms);
+                            }
                             else if (numRegs == -1)
                                 U.NotificacionError(idyNombre + Utils.nfmfe);
                             else if (numRegs == -2)
@@ -822,7 +789,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     {
                         MDIPrincipal.ActualizarBarraDeEstado();
                     }
-                    BorrarDatosEmpleado();
                 }
             }
             else if (tabcOperacion.SelectedTab == tbpEliminar)
@@ -853,7 +819,9 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                                 $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
 
                             if (numRegs > 0)
+                            {
                                 U.NotificacionInformation(idyNombre + Utils.ses);
+                            }
                             else if (numRegs == -1)
                                 U.NotificacionError(idyNombre + Utils.nfefe);
                             else if (numRegs == -2)
@@ -874,9 +842,9 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     {
                         MDIPrincipal.ActualizarBarraDeEstado();
                     }
-                    BorrarDatosEmpleado();
                 }
             }
+            BorrarDatosEmpleado();
             CargarValoresOriginales();
         }
 
@@ -894,8 +862,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 if (empleado == null)
                 {
                     U.NotificacionWarning(
-                        $"No se encontró el empleado con Id: {employeeId}\n\n" + 
-                        "El registro fue eliminado previamente por otro usuario de la red.");
+                        $"No se encontró el empleado con Id: {employeeId}." + Utils.erfep1);
                     BorrarDatosEmpleado();
                     DeshabilitarControles();
                     btnOperacion.Enabled = false;

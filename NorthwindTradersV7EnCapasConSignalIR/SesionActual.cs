@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Infrastructure.Services;
+using Newtonsoft.Json;
 using NorthwindTradersV7EnCapasConSignalIR.Services;
 using System.Configuration;
 using System.Net.Http;
@@ -21,7 +22,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         public static bool RefreshTokenExpirado { get; set; }
 
-        public static async Task<bool> RefreshAccessTokenAsync(string baseUrl)
+        public static async Task<bool> RefreshAccessTokenAsync()
         {
             var client =
                 HttpClientProvider.Client;
@@ -56,6 +57,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
             AccessToken =
                 (string)result.AccessToken;
+
+            await SignalRService.Instance
+               .ActualizarTokenYReconectarAsync(
+                   AccessToken);
 
             return true;
         }

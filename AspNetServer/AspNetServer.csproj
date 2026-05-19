@@ -290,6 +290,7 @@
     <Compile Include="Hubs\ClientesHub.cs" />
     <Compile Include="Hubs\EmpleadosHub.cs" />
     <Compile Include="Models\RefreshRequest.cs" />
+    <Compile Include="Notifications\ClienteNotifier.cs" />
     <Compile Include="Notifications\EmpleadoNotifier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Seguridad\PermisoAttribute.cs" />

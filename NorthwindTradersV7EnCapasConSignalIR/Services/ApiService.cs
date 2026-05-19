@@ -25,8 +25,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
             // 401 → intentar refresh
             if (response.StatusCode == HttpStatusCode.Unauthorized && !retrying)
             {
-                bool refreshed = await SesionActual.RefreshAccessTokenAsync(
-                    SesionActual.UrlBaseSignalR);
+                bool refreshed = await SesionActual.RefreshAccessTokenAsync();
 
                 if (refreshed)
                 {
