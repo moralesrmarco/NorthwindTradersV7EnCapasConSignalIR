@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using Infrastructure.Services;
 
 namespace BLL
 {
@@ -20,16 +19,7 @@ namespace BLL
 
         public int Insertar(Empleado empleado)
         {
-            int id = _empleadoDAL.Insertar(empleado);
-            var hub =
-                SignalRService.Instance
-                .ObtenerHubProxy("EmpleadosHub");
-
-                    hub.Invoke(
-                        "NotificarEmpleadoActualizado",
-                        "INSERT",
-                        id);
-            return id;
+            return _empleadoDAL.Insertar(empleado);
         }
 
         public int Actualizar(Empleado empleado)

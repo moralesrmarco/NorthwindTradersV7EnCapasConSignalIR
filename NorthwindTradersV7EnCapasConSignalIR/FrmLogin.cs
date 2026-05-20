@@ -1,5 +1,4 @@
-﻿using BLL;
-using Entities;
+﻿using Entities;
 using NorthwindTradersV7EnCapasConSignalIR.Services;
 using System;
 using System.Configuration;
@@ -16,16 +15,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         bool _imagenMostrada = true;
         byte numeroIntentos = 0;
 
-        string _connectionString = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
-        private readonly UsuarioBLL _usuarioBLL;
-
-        private readonly string UrlBaseSignalR = ConfigurationManager.AppSettings["UrlBaseSignalR"];
-
         public FrmLogin()
         {
             InitializeComponent();
             this.Text = Utils.nwtr;
-            _usuarioBLL = new UsuarioBLL(_connectionString);
             // Al presionar Enter se ejecuta btnEntrar_Click
             this.AcceptButton = btnEntrar;
         }
@@ -52,9 +45,31 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadAsAsync<dynamic>();
+
                     SesionActual.AccessToken = (string)result.AccessToken;
                     SesionActual.RefreshToken = (string)result.RefreshToken;
                     SesionActual.Usuario = (string)result.Usuario.User;
+
+                    try
+                    {
+                        // =========================
+                        // CONFIGURAR SIGNALR
+                        // =========================
+                        await SignalRService.Instance.DesconectarAsync();
+
+                        SignalRService.Instance.Configurar(
+                            ConfigurationManager
+                                .AppSettings["UrlBaseSignalR"],
+                            SesionActual.AccessToken);
+
+                        await SignalRService.Instance.ConectarAsync();
+                    }
+                    catch (Exception)
+                    {
+                        U.NotificacionWarning("No se pudo conectar al servicio de notificaciones en tiempo real.\n\n");
+                        this.Close();
+                        return;
+                    }
 
                     // Asignar datos del usuario autenticado
                     UsuarioLogueado = new Usuario
@@ -65,18 +80,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         Materno = (string)result.Usuario.Materno,
                         Nombres = (string)result.Usuario.Nombres
                     };
-                    // =========================
-                    // CONFIGURAR SIGNALR
-                    // =========================
-                    SignalRService.Instance.Configurar(
-                        UrlBaseSignalR,
-                        SesionActual.AccessToken
-                    );
-
-                    // =========================
-                    // CONECTAR SIGNALR
-                    // =========================
-                    await SignalRService.Instance.ConectarAsync();
 
                     this.DialogResult = DialogResult.OK;
 

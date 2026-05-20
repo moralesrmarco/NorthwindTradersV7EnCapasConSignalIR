@@ -27,8 +27,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         private byte[] fotoOriginalOle = null;
         private bool realizandoBusqueda = false;
 
-        private IHubProxy _hubEmpleados;
-        private IDisposable _subEmpleadoActualizado;
+        private IDisposable _empleadosSubscription;
 
         public FrmEmpleadosCrud()
         {
@@ -48,63 +47,70 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             Utils.ConfDgv(dgv);
             LlenarDgv(false);
             CargarValoresOriginales();
-
-            // Aquí agregas la conexión SignalR
-            _hubEmpleados =
-                SignalRService.Instance
-                .ObtenerHubProxy("EmpleadosHub");
-
-            _subEmpleadoActualizado =
-                _hubEmpleados.On<string, int>(
-                    "empleadoActualizado",
-                    OnEmpleadoActualizado);
         }
 
-        protected override void OnFormClosed(
-            FormClosedEventArgs e)
+        protected override void OnLoad(EventArgs e)
         {
-            try
-            {
-                _subEmpleadoActualizado?.Dispose();
-                _subEmpleadoActualizado = null;
-                _hubEmpleados = null;
-            }
-            catch
-            {
-            }
+            base.OnLoad(e);
 
-            base.OnFormClosed(e);
+            Action registrarEventos = () =>
+            {
+                _empleadosSubscription?.Dispose();
+
+                _empleadosSubscription =
+                    SignalRService.Instance.EmpleadosHub
+                    .On<string, int>(
+                        "empleadoActualizado",
+                        EmpleadoActualizadoHandler);
+            };
+
+            registrarEventos();
+
+            SignalRService.Instance
+                .RegistrarSuscripcion(registrarEventos);
         }
-        private void OnEmpleadoActualizado(string accion, int empleadoId)
+
+        private void EmpleadoActualizadoHandler(
+            string accion,
+            int empleadoId)
         {
             try
             {
                 if (IsDisposed || !IsHandleCreated)
                     return;
 
-                BeginInvoke(new Action(() =>
+                if (InvokeRequired)
                 {
-                    if (realizandoBusqueda)
-                        return; // No refrescar si estás realizando búsqueda
-
-                    LlenarDgv(false);
-
-                    if (tabcOperacion.SelectedTab == tbpListar ||
-                        tabcOperacion.SelectedTab == tbpRegistrar ||
-                        tabcOperacion.SelectedTab == tbpEliminar)
-                        return;
-
-                    if (!string.IsNullOrWhiteSpace(txtId.Text))
+                    BeginInvoke(new Action(() =>
                     {
-                        if (int.TryParse(txtId.Text, out int empleadoActual))
+                        EmpleadoActualizadoHandler(
+                            accion,
+                            empleadoId);
+                    }));
+
+                    return;
+                }
+
+                if (realizandoBusqueda)
+                    return;
+
+                LlenarDgv(false);
+
+                if (tabcOperacion.SelectedTab == tbpListar ||
+                    tabcOperacion.SelectedTab == tbpRegistrar ||
+                    tabcOperacion.SelectedTab == tbpEliminar)
+                    return;
+
+                if (!string.IsNullOrWhiteSpace(txtId.Text))
+                {
+                    if (int.TryParse(txtId.Text, out int empleadoActual))
+                    {
+                        if (empleadoActual == empleadoId)
                         {
-                            if (empleadoActual == empleadoId)
-                            {
-                                CargarEmpleado(empleadoId);
-                            }
+                            CargarEmpleado(empleadoId);
                         }
                     }
-                }));
+                }
             }
             catch (ObjectDisposedException)
             {
@@ -113,6 +119,62 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             {
             }
         }
+
+        protected override void OnFormClosed(
+            FormClosedEventArgs e)
+        {
+            try
+            {
+                _empleadosSubscription?.Dispose();
+                //_subEmpleadoActualizado?.Dispose();
+                //_subEmpleadoActualizado = null;
+                //_hubEmpleados = null;
+            }
+            catch
+            {
+            }
+
+            base.OnFormClosed(e);
+        }
+
+        //private void OnEmpleadoActualizado(string accion, int empleadoId)
+        //{
+        //    try
+        //    {
+        //        if (IsDisposed || !IsHandleCreated)
+        //            return;
+
+        //        BeginInvoke(new Action(() =>
+        //        {
+        //            if (realizandoBusqueda)
+        //                return; // No refrescar si estás realizando búsqueda
+
+        //            LlenarDgv(false);
+
+        //            if (tabcOperacion.SelectedTab == tbpListar ||
+        //                tabcOperacion.SelectedTab == tbpRegistrar ||
+        //                tabcOperacion.SelectedTab == tbpEliminar)
+        //                return;
+
+        //            if (!string.IsNullOrWhiteSpace(txtId.Text))
+        //            {
+        //                if (int.TryParse(txtId.Text, out int empleadoActual))
+        //                {
+        //                    if (empleadoActual == empleadoId)
+        //                    {
+        //                        CargarEmpleado(empleadoId);
+        //                    }
+        //                }
+        //            }
+        //        }));
+        //    }
+        //    catch (ObjectDisposedException)
+        //    {
+        //    }
+        //    catch (InvalidOperationException)
+        //    {
+        //    }
+        //}
 
         private void tabcOperacion_DrawItem(object sender, DrawItemEventArgs e) => Utils.DibujarPestañas(sender as TabControl, e);
 
@@ -685,10 +747,16 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             txtId.Text = resultado.empleado.EmployeeID.ToString();
                             string idyNombre =
                                 $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
-                            U.NotificacionInformation(
-                                idyNombre + Utils.srs);
                             MDIPrincipal.ActualizarBarraDeEstado(
                                 $"Se insertó 1 registro");
+                            U.NotificacionInformation(
+                                idyNombre + Utils.srs);
+                            await SignalRService.Instance
+                                .EmpleadosHub
+                                .Invoke(
+                                    "NotificarEmpleadoActualizado",
+                                    "INSERT",
+                                    resultado.empleado.EmployeeID);
                         }
                         else
                         {
@@ -768,6 +836,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             if (numRegs > 0)
                             { 
                                 U.NotificacionInformation(idyNombre + Utils.sms);
+                                await SignalRService.Instance
+                                    .EmpleadosHub
+                                    .Invoke(
+                                        "NotificarEmpleadoActualizado",
+                                        "UPDATE",
+                                        empleado.EmployeeID);
                             }
                             else if (numRegs == -1)
                                 U.NotificacionError(idyNombre + Utils.nfmfe);
@@ -821,6 +895,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             if (numRegs > 0)
                             {
                                 U.NotificacionInformation(idyNombre + Utils.ses);
+                                await SignalRService.Instance
+                                    .EmpleadosHub
+                                    .Invoke(
+                                        "NotificarEmpleadoActualizado",
+                                        "DELETE",
+                                        empleado.EmployeeID);
                             }
                             else if (numRegs == -1)
                                 U.NotificacionError(idyNombre + Utils.nfefe);

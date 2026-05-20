@@ -25,8 +25,10 @@ namespace Infrastructure.Services
         // =========================
         private HubConnection _connection;
 
-        private readonly Dictionary<string, IHubProxy> _hubs =
-            new Dictionary<string, IHubProxy>();
+        // aqui deben ir propiedades específicas para cada hub, para evitar tener que usar strings en el código cliente
+        public IHubProxy EmpleadosHub { get; private set; }
+        //public IHubProxy ProductosHub { get; private set; }
+
         private readonly List<Action> _subscriptions =
             new List<Action>();
 
@@ -53,37 +55,29 @@ namespace Infrastructure.Services
         // =========================
         // CONECTAR
         // =========================
+
         public async Task ConectarAsync()
         {
             try
             {
-                // Evita crear múltiples conexiones
                 if (_connection != null &&
                     _connection.State != ConnectionState.Disconnected)
                 {
                     return;
                 }
 
-                var query =
-                    new Dictionary<string, string>
-                    {
-                        { "access_token", _accessToken }
-                    };
+                if (string.IsNullOrWhiteSpace(_urlBase))
+                {
+                    throw new InvalidOperationException(
+                        "Debe configurar la URL antes de conectar.");
+                }
 
                 _connection =
-                    new HubConnection(_urlBase, query);
+                    new HubConnection(_urlBase);
 
-                // Importante:
-                // quitar antes de agregar para evitar duplicados
                 _connection.Closed -= OnConnectionClosed;
                 _connection.Closed += OnConnectionClosed;
 
-                await _connection.Start();
-
-                foreach (var sub in _subscriptions)
-                {
-                    sub();
-                }
                 _connection.Reconnecting += () =>
                 {
                     EstadoConexion?.Invoke("Reconectando...");
@@ -98,6 +92,34 @@ namespace Infrastructure.Services
                 {
                     ErrorConexion?.Invoke(ex.Message);
                 };
+
+                if (_connection.Headers.ContainsKey("Authorization"))
+                {
+                    _connection.Headers.Remove("Authorization");
+                }
+
+                // JWT / Bearer token
+                _connection.Headers.Add(
+                    "Authorization",
+                    $"Bearer {_accessToken}");
+
+                // MUY importante:
+                // CreateHubProxy(...)
+                // siempre antes de:
+                // Start()
+                EmpleadosHub =
+                    _connection.CreateHubProxy("EmpleadosHub");
+
+                //ProductosHub =
+                //    _connection.CreateHubProxy("ProductosHub");
+
+                // registrar nuevamente las suscripciones
+                foreach (var sub in _subscriptions)
+                {
+                    sub();
+                }
+
+                await _connection.Start();
             }
             catch (Exception ex)
             {
@@ -105,30 +127,6 @@ namespace Infrastructure.Services
                     "Error al conectar con el servidor SignalR: " +
                     ex.Message, ex);
             }
-        }
-
-        // =========================
-        // OBTENER HUB
-        // =========================
-        public IHubProxy ObtenerHubProxy(string hubName)
-        {
-            if (_connection == null)
-            {
-                throw new InvalidOperationException(
-                    "SignalR no está conectado.");
-            }
-
-            if (_hubs.ContainsKey(hubName))
-            {
-                return _hubs[hubName];
-            }
-
-            var hub =
-                _connection.CreateHubProxy(hubName);
-
-            _hubs.Add(hubName, hub);
-
-            return hub;
         }
 
         // =========================
@@ -150,8 +148,7 @@ namespace Infrastructure.Services
                 _connection.Dispose();
 
                 _connection = null;
-
-                _hubs.Clear();
+                EmpleadosHub = null;
 
                 _cerrandoManual = false;
             }
@@ -212,13 +209,25 @@ namespace Infrastructure.Services
 
         public void RegistrarSuscripcion(Action accion)
         {
-            _subscriptions.Add(accion);
-
-            accion();
+            if (!_subscriptions.Contains(accion))
+            {
+                _subscriptions.Add(accion);
+            }
         }
-
         public void Configurar(string urlBase, string accessToken)
         {
+            if (string.IsNullOrWhiteSpace(urlBase))
+            {
+                throw new ArgumentException(
+                    "La URL base es obligatoria.");
+            }
+
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new ArgumentException(
+                    "El access token es obligatorio.");
+            }
+
             _urlBase = urlBase;
             _accessToken = accessToken;
         }
@@ -228,6 +237,14 @@ namespace Infrastructure.Services
             _accessToken = nuevoToken;
 
             await ReconectarAsync();
+        }
+
+        public void DesregistrarSuscripcion(Action accion)
+        {
+            if (_subscriptions.Contains(accion))
+            {
+                _subscriptions.Remove(accion);
+            }
         }
     }
 }

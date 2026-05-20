@@ -2,7 +2,6 @@
 using Entities;
 using Entities.Config;
 using Infrastructure.Services;
-using Microsoft.AspNet.SignalR.Client;
 using NorthwindTradersV7EnCapasConSignalIR.Services;
 using System;
 using System.Collections.Generic;
@@ -10,7 +9,6 @@ using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Utilities;
 
@@ -25,9 +23,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private readonly string cnStr = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
         private readonly PermisoService _permisoService;
-        private bool _signalRInicializado = false;
-        //private IHubProxy _hubClientes;
-        //private IDisposable _subClienteCreado;
+        
+        private readonly string UrlBaseSignalR = ConfigurationManager.AppSettings["UrlBaseSignalR"];
 
         public MDIPrincipal()
         {
@@ -85,6 +82,25 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             InicializarSignalR();
         }
 
+        protected override async void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            try
+            {
+                SignalRService.Instance.Configurar(
+                    UrlBaseSignalR,
+                    SesionActual.AccessToken);
+
+                await SignalRService.Instance.ConectarAsync();
+            }
+            catch (Exception ex)
+            {
+                U.MsgCatchOue(ex);
+                Close();
+            }
+        }
+
         // método protegido sobrescribible que se ejecuta cuando el formulario se muestra por primera vez
         protected override void OnShown(EventArgs e)
         {
@@ -107,9 +123,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void InicializarSignalR()
         {
-            if (_signalRInicializado)
-                return;
-            _signalRInicializado = true;
             var signalR = SignalRService.Instance;
             // Estado conexión
             signalR.EstadoConexion -= OnEstadoConexion;
@@ -503,7 +516,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private async void mantenimientoDeClientesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmClientesCrud(), "» Mantenimiento de clientes «");
+            //await U.AbrirFormularioAsync(TabControlPrincipal, new FrmClientesCrud(), "» Mantenimiento de clientes «");
         }
 
         private async void directorioDeClientesYProveedoresToolStripMenuItem_Click(object sender, EventArgs e)
@@ -710,20 +723,5 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         {
             await U.AbrirFormularioAsync(TabControlPrincipal, new FrmTableroControlVendedores(), "» Tablero de control para los vendedores «");
         }
-
-        //private async void MDIPrincipal_FormClosing(
-        //    object sender,
-        //    FormClosingEventArgs e)
-        //{
-        //    try
-        //    {
-        //        _subClienteCreado?.Dispose();
-
-        //        await SignalRService.Instance.DesconectarAsync();
-        //    }
-        //    catch
-        //    {
-        //    }
-        //}
     }
 }
