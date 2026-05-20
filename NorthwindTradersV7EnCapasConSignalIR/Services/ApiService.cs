@@ -39,7 +39,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
                 {
                     // refresh falló → cerrar app
                     SesionActual.RefreshTokenExpirado = true;
-                    AppShutdownService.LogoutAndClose();
+                    await AppShutdownService.LogoutAndClose();
                     return response;
                 }
             }
@@ -47,7 +47,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
             // 403 → acceso prohibido (no hay recuperación posible)
             if (response.StatusCode == HttpStatusCode.Forbidden)
             {
-                AppShutdownService.LogoutAndClose();
+                await AppShutdownService.LogoutAndClose();
             }
 
             return response;

@@ -483,7 +483,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 valida = false;
                 errorProvider1.SetError(txtCiudad, "Ingrese la ciudad");
             }
-            //if (cboPais.Text.Trim() == "" || cboPais.SelectedIndex == 0)
             if (string.IsNullOrWhiteSpace(cboPais.Text) || cboPais.SelectedIndex == 0)
             {
                 valida = false;
@@ -705,7 +704,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             ReportsTo = cboReportaA.SelectedValue.ToString() == "0" ? (int?)null : Convert.ToInt32(cboReportaA.SelectedValue),
                             Photo = picFoto.Image != null ? Utils.ImageToByteArray(picFoto.Image) : null
                         };
-
                         var resultado = await ApiEmpleadoService.InsertarAsync(empleado);
                         if (resultado.ok)
                         {
@@ -722,6 +720,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                                     "NotificarEmpleadoActualizado",
                                     "INSERT",
                                     resultado.empleado.EmployeeID);
+                            BorrarDatosEmpleado();
+                            CargarValoresOriginales();
                         }
                         else
                         {
@@ -814,6 +814,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                                 U.NotificacionError(idyNombre + Utils.nfmfm);
                             else
                                 U.NotificacionError(idyNombre + Utils.nfmmd);
+                            BorrarDatosEmpleado();
+                            CargarValoresOriginales();
                         }
                         else
                         {
@@ -873,6 +875,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                                 U.NotificacionError(idyNombre + Utils.nfefm);
                             else
                                 U.NotificacionError(idyNombre + Utils.nfemd);
+                            BorrarDatosEmpleado();
+                            CargarValoresOriginales();
                         }
                         else
                         {
@@ -893,8 +897,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     btnOperacion.Enabled = false;
                 }
             }
-            BorrarDatosEmpleado();
-            CargarValoresOriginales();
         }
 
         private void CargarValoresOriginales()

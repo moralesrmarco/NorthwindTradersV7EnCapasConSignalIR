@@ -43,7 +43,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                AppShutdownService.LogoutAndClose();
+                await AppShutdownService.LogoutAndClose();
             }
 
             return (
@@ -70,7 +70,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                AppShutdownService.LogoutAndClose();
+                await AppShutdownService.LogoutAndClose();
             }
 
             string mensaje =
@@ -85,8 +85,11 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
             string rowVersionBase64 =
                 System.Convert.ToBase64String(rowVersion);
 
+            string encoded =
+                System.Net.WebUtility.UrlEncode(rowVersionBase64);
+
             var response = await ApiService.DeleteAsync(
-                $"api/empleados/eliminar/{employeeId}?rowVersion={rowVersionBase64}");
+                $"api/empleados/eliminar/{employeeId}?rowVersion={encoded}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -98,7 +101,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                AppShutdownService.LogoutAndClose();
+                await AppShutdownService.LogoutAndClose();
             }
 
             string mensaje =

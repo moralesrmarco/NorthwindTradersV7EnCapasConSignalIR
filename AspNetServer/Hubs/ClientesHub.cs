@@ -36,5 +36,15 @@ namespace AspNetServer.Hubs
 
             return base.OnConnected();
         }
+
+        public void NotificarClienteActualizado(
+            string accion,
+            string clienteId)
+        {
+            Clients.All.clienteActualizado(
+                accion,
+                clienteId);
+        }
+
     }
 }

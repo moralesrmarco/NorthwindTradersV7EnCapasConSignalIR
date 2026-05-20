@@ -27,7 +27,7 @@ namespace Infrastructure.Services
 
         // aqui deben ir propiedades específicas para cada hub, para evitar tener que usar strings en el código cliente
         public IHubProxy EmpleadosHub { get; private set; }
-        //public IHubProxy ProductosHub { get; private set; }
+        public IHubProxy ClientesHub { get; private set; }
 
         private readonly List<Action> _subscriptions =
             new List<Action>();
@@ -109,9 +109,8 @@ namespace Infrastructure.Services
                 // Start()
                 EmpleadosHub =
                     _connection.CreateHubProxy("EmpleadosHub");
-
-                //ProductosHub =
-                //    _connection.CreateHubProxy("ProductosHub");
+                ClientesHub =
+                    _connection.CreateHubProxy("ClientesHub");
 
                 // registrar nuevamente las suscripciones
                 foreach (var sub in _subscriptions)

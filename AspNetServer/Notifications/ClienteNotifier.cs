@@ -1,6 +1,5 @@
 ﻿using AspNetServer.Hubs;
 using Microsoft.AspNet.SignalR;
-using Microsoft.Owin.Security.Provider;
 using System.Threading.Tasks;
 
 namespace AspNetServer.Notifications

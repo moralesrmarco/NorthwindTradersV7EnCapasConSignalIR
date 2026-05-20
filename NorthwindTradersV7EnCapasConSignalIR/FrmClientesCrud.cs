@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Utilities;
 
@@ -24,9 +23,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         private bool EjecutarConfDgv = true;
         internal Dictionary<string, object> valoresOriginales;
         private bool realizandoBusqueda = false;
+        private bool _procesandoSignalR = false;
 
-        private IHubProxy _hubClientes;
-        private IDisposable _subClienteActualizado;
+        //private IHubProxy _hubClientes;
+        private IDisposable _clientesSubscription;
 
         public FrmClientesCrud()
         {
@@ -63,15 +63,83 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             Utils.ConfDgv(dgv);
             LlenarDgv(false);
             CargarValoresOriginales();
+        }
 
-            // Aquí agregas la conexión SignalR
-            _hubClientes = SignalRService.Instance
-                .ObtenerHubProxy("ClientesHub");
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
 
-            _subClienteActualizado =
-                _hubClientes.On<string, string>(
-                    "clienteActualizado",
-                    OnClienteActualizado);
+            Action registrarEventos = () =>
+            {
+                _clientesSubscription?.Dispose();
+
+                _clientesSubscription =
+                    SignalRService.Instance.ClientesHub
+                    .On<string, string>(
+                        "clienteActualizado",
+                        ClienteActualizadoHandler);
+            };
+
+            registrarEventos();
+
+            SignalRService.Instance
+                .RegistrarSuscripcion(registrarEventos);
+        }
+
+        private void ClienteActualizadoHandler(string accion, string clienteId)
+        {
+            try
+            {
+                if (IsDisposed || !IsHandleCreated)
+                    return;
+
+                if (InvokeRequired)
+                {
+                    BeginInvoke(new Action(() =>
+                        ClienteActualizadoHandler(accion, clienteId)));
+                    return;
+                }
+
+                if (realizandoBusqueda)
+                    return;
+
+                if (_procesandoSignalR)
+                    return;
+
+                _procesandoSignalR = true;
+
+                // 🔥 1. SI ES DELETE → SOLO REFRESCAR LISTA Y SALIR
+                if (accion == "DELETE")
+                {
+                    LlenarDgv(false); // SOLO lista
+
+                    _procesandoSignalR = false;
+                    return;
+                }
+
+                // 🔥 2. PARA INSERT/UPDATE
+                LlenarDgv(false);
+
+                if (tabcOperacion.SelectedTab == tbpRegistrar ||
+                    tabcOperacion.SelectedTab == tbpEliminar)
+                {
+                    _procesandoSignalR = false;
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(txtId.Text))
+                {
+                    string clienteActual = txtId.Text;
+                    if (clienteActual == clienteId)
+                    {
+                        CargarCliente(clienteId);
+                    }
+                }
+            }
+            finally
+            {
+                _procesandoSignalR = false;
+            }
         }
 
         protected override void OnFormClosed(
@@ -79,9 +147,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         {
             try
             {
-                _subClienteActualizado?.Dispose();
-                _subClienteActualizado = null;
-                _hubClientes = null;
+                _clientesSubscription?.Dispose();
             }
             catch
             {
@@ -90,44 +156,44 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             base.OnFormClosed(e);
         }
 
-        private void OnClienteActualizado(string accion, string clienteId)
-        {
-            try
-            {
-                if (IsDisposed || !IsHandleCreated)
-                    return;
+        //private void OnClienteActualizado(string accion, string clienteId)
+        //{
+        //    try
+        //    {
+        //        if (IsDisposed || !IsHandleCreated)
+        //            return;
 
-                BeginInvoke(new Action(() =>
-                {
-                    if (realizandoBusqueda)
-                        return; // No refrescar si estás realizando búsqueda
+        //        BeginInvoke(new Action(() =>
+        //        {
+        //            if (realizandoBusqueda)
+        //                return; // No refrescar si estás realizando búsqueda
 
-                    LlenarDgv(false);
+        //            LlenarDgv(false);
 
-                    if (tabcOperacion.SelectedTab == tbpListar ||
-                        tabcOperacion.SelectedTab == tbpRegistrar ||
-                        tabcOperacion.SelectedTab == tbpEliminar)
-                        return;
+        //            if (tabcOperacion.SelectedTab == tbpListar ||
+        //                tabcOperacion.SelectedTab == tbpRegistrar ||
+        //                tabcOperacion.SelectedTab == tbpEliminar)
+        //                return;
 
-                    if (!string.IsNullOrWhiteSpace(txtId.Text))
-                    {
-                        string clienteActual =
-                        txtId.Text;
+        //            if (!string.IsNullOrWhiteSpace(txtId.Text))
+        //            {
+        //                string clienteActual =
+        //                txtId.Text;
 
-                        if (clienteActual == clienteId)
-                        {
-                            CargarCliente(clienteId);
-                        }
-                    }
-                }));
-            }
-            catch (ObjectDisposedException)
-            {
-            }
-            catch (InvalidOperationException)
-            {
-            }
-        }
+        //                if (clienteActual == clienteId)
+        //                {
+        //                    CargarCliente(clienteId);
+        //                }
+        //            }
+        //        }));
+        //    }
+        //    catch (ObjectDisposedException)
+        //    {
+        //    }
+        //    catch (InvalidOperationException)
+        //    {
+        //    }
+        //}
 
         private bool CargarCliente(string clienteId)
         {
@@ -155,6 +221,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 cboPais.Text = cliente.Country;
                 txtTelefono.Text = cliente.Phone;
                 txtFax.Text = cliente.Fax;
+                CargarValoresOriginales();
                 return true;
             }
             catch (Exception ex)
@@ -352,6 +419,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         {
             txtId.Text = txtCompañia.Text = txtContacto.Text = txtDomicilio.Text = txtCiudad.Text = "";
             txtRegion.Text = txtCodigoP.Text = txtTelefono.Text = txtFax.Text = txtTitulo.Text = "";
+            cboPais.Text = null;
             cboPais.SelectedIndex = 0;
         }
 
@@ -521,6 +589,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 {
                     HabilitarControles();
                     txtId.Enabled = false;
+                    btnOperacion.Visible = true;
                     btnOperacion.Enabled = true;
                 }
                 if (tabcOperacion.SelectedTab == tbpEliminar)
@@ -568,15 +637,28 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         if (resultado.ok)
                         {
                             string idyNombreCompania = $"El cliente con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
+                            MDIPrincipal.ActualizarBarraDeEstado(
+                                $"Se insertó 1 registro");
                             U.NotificacionInformation(idyNombreCompania + Utils.srs);
-                            MDIPrincipal.ActualizarBarraDeEstado();
+                            await SignalRService.Instance
+                                .ClientesHub
+                                .Invoke(
+                                    "NotificarClienteActualizado",
+                                    "INSERT",
+                                    resultado.cliente.CustomerID);
+                            BorrarDatosCliente();
+                            CargarValoresOriginales();
                         }
                         else
                             U.NotificacionError(resultado.mensaje);
                     }
                     catch (Exception ex)
                     {
-                        U.MsgCatchOue(ex);
+                        U.NotificacionError("Error al insertar el cliente: " + ex.Message);
+                    }
+                    finally
+                    {
+                        MDIPrincipal.ActualizarBarraDeEstado();
                     }
                     HabilitarControles();
                     btnOperacion.Enabled = true;
@@ -621,6 +703,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             if (numRegs > 0)
                             {
                                 U.NotificacionInformation(idyNombreCompania + Utils.sms);
+                                await SignalRService.Instance
+                                    .ClientesHub
+                                    .Invoke(
+                                        "NotificarClienteActualizado",
+                                        "UPDATE",
+                                        cliente.CustomerID);
                             }
                             else if (numRegs == -1)
                                 U.NotificacionError(idyNombreCompania + Utils.nfmfe);
@@ -628,6 +716,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                                 U.NotificacionError(idyNombreCompania + Utils.nfmfm);
                             else
                                 U.NotificacionInformation(idyNombreCompania + Utils.nfmmd);
+                            BorrarDatosCliente();
+                            CargarValoresOriginales();
                         }
                         else
                             U.NotificacionError(resultado.mensaje);
@@ -655,6 +745,16 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     };
                     try
                     {
+                        var rv = txtId.Tag as byte[];
+
+                        if (rv == null)
+                        {
+                            U.NotificacionError("RowVersion es NULL");
+                            return;
+                        }
+
+                        System.Diagnostics.Debug.WriteLine(Convert.ToBase64String(rv));
+
                         var resultado = await ApiClienteService.EliminarAsync(cliente.CustomerID, txtId.Tag as byte[]);
                         if (resultado.ok)
                         {
@@ -664,6 +764,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             if (numRegs > 0)
                             {
                                 U.NotificacionInformation(idyNombreCompania + Utils.ses);
+                                await SignalRService.Instance
+                                    .ClientesHub
+                                    .Invoke(
+                                        "NotificarClienteActualizado",
+                                        "DELETE",
+                                        cliente.CustomerID);
                             }
                             else if (numRegs == -1)
                                 U.NotificacionError(idyNombreCompania + Utils.nfefe);
@@ -671,6 +777,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                                 U.NotificacionError(idyNombreCompania + Utils.nfefm);
                             else
                                 U.NotificacionError(idyNombreCompania + Utils.nfemd);
+                            BorrarDatosCliente();
+                            CargarValoresOriginales();
                         }
                         else
                         {
@@ -686,16 +794,17 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         MDIPrincipal.ActualizarBarraDeEstado();
                     }
                 }
+                else 
+                { 
+                    btnOperacion.Enabled = true; 
+                }
             }
-            BorrarDatosCliente();
-            CargarValoresOriginales();
         }
 
         void ActualizaDgv() => btnLimpiar.PerformClick();
 
         private void CargarValoresOriginales()
         {
-            // Captura inicial usando la utilidad
             valoresOriginales = Utils.CapturarValoresOriginales(this);
         }
 

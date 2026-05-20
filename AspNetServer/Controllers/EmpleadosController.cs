@@ -3,6 +3,7 @@ using BLL;
 using Entities;
 using System;
 using System.Configuration;
+using System.Threading.Tasks;
 using System.Web.Http;
 
 namespace AspNetServer.Controllers
@@ -20,13 +21,13 @@ namespace AspNetServer.Controllers
         [HttpPost]
         [Route("insertar")]
         [Permiso(1)]
-        public IHttpActionResult Insertar(Empleado empleado)
+        public async Task<IHttpActionResult> Insertar(Empleado empleado)
         {
             int numRegs = _empleadoBLL.Insertar(empleado);
 
             if (numRegs > 0)
             {
-                EmpleadoNotifier.Insertado(
+                await EmpleadoNotifier.Insertado(
                     empleado.EmployeeID);
             }
 
@@ -40,13 +41,13 @@ namespace AspNetServer.Controllers
         [HttpPut]
         [Route("actualizar")]
         [Permiso(1)]
-        public IHttpActionResult Actualizar(Empleado empleado)
+        public async Task<IHttpActionResult> Actualizar(Empleado empleado)
         {
             int numRegs = _empleadoBLL.Actualizar(empleado);
 
             if (numRegs > 0)
             {
-                EmpleadoNotifier.Actualizado(
+                await EmpleadoNotifier.Actualizado(
                     empleado.EmployeeID);
             }
 
@@ -56,7 +57,7 @@ namespace AspNetServer.Controllers
         [HttpDelete]
         [Route("eliminar/{id}")]
         [Permiso(1)]
-        public IHttpActionResult Eliminar(
+        public async Task<IHttpActionResult> Eliminar(
             int id,
             [FromUri] string rowVersion)
         {
@@ -70,7 +71,7 @@ namespace AspNetServer.Controllers
 
             if (numRegs > 0)
             {
-                EmpleadoNotifier.Eliminado(id);
+                await EmpleadoNotifier.Eliminado(id);
             }
 
             return Ok(numRegs);

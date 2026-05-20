@@ -151,9 +151,9 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             U.NotificacionError(msg);
         }
 
-        private void OnLogout()
+        private async void OnLogout()
         {
-            AppShutdownService.LogoutAndClose();
+            await AppShutdownService.LogoutAndClose();
         }
 
         private void TabControlPrincipal_SelectedIndexChanged(object sender, EventArgs e) => ActualizarBarraDeEstado();
@@ -522,7 +522,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private async void mantenimientoDeClientesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            //await U.AbrirFormularioAsync(TabControlPrincipal, new FrmClientesCrud(), "» Mantenimiento de clientes «");
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmClientesCrud(), "» Mantenimiento de clientes «");
         }
 
         private async void directorioDeClientesYProveedoresToolStripMenuItem_Click(object sender, EventArgs e)

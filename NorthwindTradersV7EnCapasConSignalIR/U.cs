@@ -1,6 +1,7 @@
 ﻿using NorthwindTradersV7EnCapasConSignalIR.Services;
 using System;
 using System.Drawing;
+using System.Linq;
 using System.Media;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -108,28 +109,20 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             //    return frm.ShowDialog();
             //}
 
-            using (var frm = new FrmNotificacion(
-                    mensaje,
-                    icono,
-                    colorTexto,
-                    modo))
+            using (var frm = new FrmNotificacion(mensaje, icono, colorTexto, modo))
             {
-                Form owner = null;
+                // 🔥 NUEVA FORMA ROBUSTA DE OBTENER OWNER
+                Form owner =
+                    MDIPrincipal.Instance ??
+                    Application.OpenForms
+                        .Cast<Form>()
+                        .FirstOrDefault(f => f.IsMdiContainer);
 
-                if (MDIPrincipal.Instance != null)
-                {
-                    owner =
-                        MDIPrincipal.Instance.ActiveMdiChild
-                        ?? MDIPrincipal.Instance;
-                }
-                else
-                {
-                    owner = Form.ActiveForm;
-                }
+                // 🔥 SEGURIDAD EXTRA
+                if (owner != null && !owner.IsDisposed)
+                    return frm.ShowDialog(owner);
 
-                return owner != null
-                    ? frm.ShowDialog(owner)
-                    : frm.ShowDialog();
+                return frm.ShowDialog();
             }
         }
 
