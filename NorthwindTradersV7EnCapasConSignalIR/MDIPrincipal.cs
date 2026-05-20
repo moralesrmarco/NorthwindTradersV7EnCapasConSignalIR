@@ -76,6 +76,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             }
         }
 
+        private async void MDIPrincipal_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            await SignalRService.Instance.DesconectarAsync();
+        }
+
+
         private void MDIPrincipal_Load(object sender, EventArgs e)
         {
             IniciarSesion();
@@ -723,5 +729,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         {
             await U.AbrirFormularioAsync(TabControlPrincipal, new FrmTableroControlVendedores(), "» Tablero de control para los vendedores «");
         }
+
     }
 }
