@@ -88,25 +88,22 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 if (realizandoBusqueda)
                     return;
 
-                // 🔥 BLOQUEO GLOBAL
                 if (_procesandoSignalR)
                     return;
 
                 _procesandoSignalR = true;
 
-                LlenarDgv(false);
-
+                // 🔥 1. SI ES DELETE → SOLO REFRESCAR LISTA Y SALIR
                 if (accion == "DELETE")
                 {
-                    // 🔥 clave: limpiar selección ANTES de cualquier carga
-                    txtId.Clear();
-                    BorrarDatosEmpleado();
-                    DeshabilitarControles();
-                    btnOperacion.Enabled = false;
+                    LlenarDgv(false); // SOLO lista
 
                     _procesandoSignalR = false;
                     return;
                 }
+
+                // 🔥 2. PARA INSERT/UPDATE
+                LlenarDgv(false);
 
                 if (tabcOperacion.SelectedTab == tbpRegistrar ||
                     tabcOperacion.SelectedTab == tbpEliminar)
@@ -129,57 +126,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 _procesandoSignalR = false;
             }
         }
-
-        //private void EmpleadoActualizadoHandler(
-        //    string accion,
-        //    int empleadoId)
-        //{
-        //    try
-        //    {
-        //        if (IsDisposed || !IsHandleCreated)
-        //            return;
-
-        //        if (InvokeRequired)
-        //        {
-        //            BeginInvoke(new Action(() =>
-        //            {
-        //                EmpleadoActualizadoHandler(
-        //                    accion,
-        //                    empleadoId);
-        //            }));
-
-        //            return;
-        //        }
-
-        //        if (realizandoBusqueda)
-        //            return;
-
-        //        LlenarDgv(false);
-
-        //        //if (tabcOperacion.SelectedTab == tbpListar ||
-        //        //    tabcOperacion.SelectedTab == tbpRegistrar ||
-        //        //    tabcOperacion.SelectedTab == tbpEliminar)
-        //        if (tabcOperacion.SelectedTab == tbpRegistrar || tabcOperacion.SelectedTab == tbpEliminar)
-        //            return;
-
-        //        if (!string.IsNullOrWhiteSpace(txtId.Text))
-        //        {
-        //            if (int.TryParse(txtId.Text, out int empleadoActual))
-        //            {
-        //                if (empleadoActual == empleadoId)
-        //                {
-        //                    CargarEmpleado(empleadoId);
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (ObjectDisposedException)
-        //    {
-        //    }
-        //    catch (InvalidOperationException)
-        //    {
-        //    }
-        //}
 
         protected override void OnFormClosed(
             FormClosedEventArgs e)
