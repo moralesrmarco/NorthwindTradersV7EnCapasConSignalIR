@@ -26,8 +26,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         internal Dictionary<string, object> valoresOriginales;
         private byte[] fotoOriginalOle = null;
         private bool realizandoBusqueda = false;
-        //private bool _actualizacionSignalR = false;
-        //private bool _cargandoEmpleado = false;
+        private bool _procesandoSignalR = false;
 
         private IDisposable _empleadosSubscription;
 
@@ -51,44 +50,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             CargarValoresOriginales();
         }
 
-        //protected override void OnLoad(EventArgs e)
-        //{
-        //    base.OnLoad(e);
-
-        //    Action registrarEventos = () =>
-        //    {
-        //        _empleadosSubscription?.Dispose();
-
-        //        _empleadosSubscription =
-        //            SignalRService.Instance.EmpleadosHub
-        //            .On<string, int>("empleadoActualizado",
-        //            (accion, empleadoId) =>
-        //            {
-        //                if (_actualizacionSignalR)
-        //                    return;
-
-        //                if (accion == "DELETE")
-        //                {
-        //                    _actualizacionSignalR = true;
-
-        //                    LlenarDgv(false);
-
-        //                    _actualizacionSignalR = false;
-        //                    return;
-        //                }
-
-        //                if (accion == "ADD" || accion == "UPDATE")
-        //                {
-        //                    LlenarDgv(false);
-        //                }
-        //            });
-        //    };
-
-        //    registrarEventos();
-
-        //    SignalRService.Instance.RegistrarSuscripcion(registrarEventos);
-        //}
-
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -110,9 +71,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 .RegistrarSuscripcion(registrarEventos);
         }
 
-        private void EmpleadoActualizadoHandler(
-            string accion,
-            int empleadoId)
+        private void EmpleadoActualizadoHandler(string accion, int empleadoId)
         {
             try
             {
@@ -122,44 +81,105 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 if (InvokeRequired)
                 {
                     BeginInvoke(new Action(() =>
-                    {
-                        EmpleadoActualizadoHandler(
-                            accion,
-                            empleadoId);
-                    }));
-
+                        EmpleadoActualizadoHandler(accion, empleadoId)));
                     return;
                 }
 
                 if (realizandoBusqueda)
                     return;
 
-                LlenarDgv(false);
-
-                //if (tabcOperacion.SelectedTab == tbpListar ||
-                //    tabcOperacion.SelectedTab == tbpRegistrar ||
-                //    tabcOperacion.SelectedTab == tbpEliminar)
-                if (tabcOperacion.SelectedTab == tbpRegistrar || tabcOperacion.SelectedTab == tbpEliminar)
+                // 🔥 BLOQUEO GLOBAL
+                if (_procesandoSignalR)
                     return;
 
-                if (!string.IsNullOrWhiteSpace(txtId.Text))
+                _procesandoSignalR = true;
+
+                LlenarDgv(false);
+
+                if (accion == "DELETE")
                 {
-                    if (int.TryParse(txtId.Text, out int empleadoActual))
+                    // 🔥 clave: limpiar selección ANTES de cualquier carga
+                    txtId.Clear();
+                    BorrarDatosEmpleado();
+                    DeshabilitarControles();
+                    btnOperacion.Enabled = false;
+
+                    _procesandoSignalR = false;
+                    return;
+                }
+
+                if (tabcOperacion.SelectedTab == tbpRegistrar ||
+                    tabcOperacion.SelectedTab == tbpEliminar)
+                {
+                    _procesandoSignalR = false;
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(txtId.Text) &&
+                    int.TryParse(txtId.Text, out int empleadoActual))
+                {
+                    if (empleadoActual == empleadoId)
                     {
-                        if (empleadoActual == empleadoId)
-                        {
-                            CargarEmpleado(empleadoId);
-                        }
+                        CargarEmpleado(empleadoId);
                     }
                 }
             }
-            catch (ObjectDisposedException)
+            finally
             {
-            }
-            catch (InvalidOperationException)
-            {
+                _procesandoSignalR = false;
             }
         }
+
+        //private void EmpleadoActualizadoHandler(
+        //    string accion,
+        //    int empleadoId)
+        //{
+        //    try
+        //    {
+        //        if (IsDisposed || !IsHandleCreated)
+        //            return;
+
+        //        if (InvokeRequired)
+        //        {
+        //            BeginInvoke(new Action(() =>
+        //            {
+        //                EmpleadoActualizadoHandler(
+        //                    accion,
+        //                    empleadoId);
+        //            }));
+
+        //            return;
+        //        }
+
+        //        if (realizandoBusqueda)
+        //            return;
+
+        //        LlenarDgv(false);
+
+        //        //if (tabcOperacion.SelectedTab == tbpListar ||
+        //        //    tabcOperacion.SelectedTab == tbpRegistrar ||
+        //        //    tabcOperacion.SelectedTab == tbpEliminar)
+        //        if (tabcOperacion.SelectedTab == tbpRegistrar || tabcOperacion.SelectedTab == tbpEliminar)
+        //            return;
+
+        //        if (!string.IsNullOrWhiteSpace(txtId.Text))
+        //        {
+        //            if (int.TryParse(txtId.Text, out int empleadoActual))
+        //            {
+        //                if (empleadoActual == empleadoId)
+        //                {
+        //                    CargarEmpleado(empleadoId);
+        //                }
+        //            }
+        //        }
+        //    }
+        //    catch (ObjectDisposedException)
+        //    {
+        //    }
+        //    catch (InvalidOperationException)
+        //    {
+        //    }
+        //}
 
         protected override void OnFormClosed(
             FormClosedEventArgs e)
