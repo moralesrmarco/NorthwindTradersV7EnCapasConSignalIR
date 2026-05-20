@@ -26,6 +26,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         internal Dictionary<string, object> valoresOriginales;
         private byte[] fotoOriginalOle = null;
         private bool realizandoBusqueda = false;
+        //private bool _actualizacionSignalR = false;
+        //private bool _cargandoEmpleado = false;
 
         private IDisposable _empleadosSubscription;
 
@@ -48,6 +50,44 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             LlenarDgv(false);
             CargarValoresOriginales();
         }
+
+        //protected override void OnLoad(EventArgs e)
+        //{
+        //    base.OnLoad(e);
+
+        //    Action registrarEventos = () =>
+        //    {
+        //        _empleadosSubscription?.Dispose();
+
+        //        _empleadosSubscription =
+        //            SignalRService.Instance.EmpleadosHub
+        //            .On<string, int>("empleadoActualizado",
+        //            (accion, empleadoId) =>
+        //            {
+        //                if (_actualizacionSignalR)
+        //                    return;
+
+        //                if (accion == "DELETE")
+        //                {
+        //                    _actualizacionSignalR = true;
+
+        //                    LlenarDgv(false);
+
+        //                    _actualizacionSignalR = false;
+        //                    return;
+        //                }
+
+        //                if (accion == "ADD" || accion == "UPDATE")
+        //                {
+        //                    LlenarDgv(false);
+        //                }
+        //            });
+        //    };
+
+        //    registrarEventos();
+
+        //    SignalRService.Instance.RegistrarSuscripcion(registrarEventos);
+        //}
 
         protected override void OnLoad(EventArgs e)
         {
@@ -96,9 +136,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
                 LlenarDgv(false);
 
-                if (tabcOperacion.SelectedTab == tbpListar ||
-                    tabcOperacion.SelectedTab == tbpRegistrar ||
-                    tabcOperacion.SelectedTab == tbpEliminar)
+                //if (tabcOperacion.SelectedTab == tbpListar ||
+                //    tabcOperacion.SelectedTab == tbpRegistrar ||
+                //    tabcOperacion.SelectedTab == tbpEliminar)
+                if (tabcOperacion.SelectedTab == tbpRegistrar || tabcOperacion.SelectedTab == tbpEliminar)
                     return;
 
                 if (!string.IsNullOrWhiteSpace(txtId.Text))
@@ -126,9 +167,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 _empleadosSubscription?.Dispose();
-                //_subEmpleadoActualizado?.Dispose();
-                //_subEmpleadoActualizado = null;
-                //_hubEmpleados = null;
             }
             catch
             {
@@ -136,45 +174,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
             base.OnFormClosed(e);
         }
-
-        //private void OnEmpleadoActualizado(string accion, int empleadoId)
-        //{
-        //    try
-        //    {
-        //        if (IsDisposed || !IsHandleCreated)
-        //            return;
-
-        //        BeginInvoke(new Action(() =>
-        //        {
-        //            if (realizandoBusqueda)
-        //                return; // No refrescar si estás realizando búsqueda
-
-        //            LlenarDgv(false);
-
-        //            if (tabcOperacion.SelectedTab == tbpListar ||
-        //                tabcOperacion.SelectedTab == tbpRegistrar ||
-        //                tabcOperacion.SelectedTab == tbpEliminar)
-        //                return;
-
-        //            if (!string.IsNullOrWhiteSpace(txtId.Text))
-        //            {
-        //                if (int.TryParse(txtId.Text, out int empleadoActual))
-        //                {
-        //                    if (empleadoActual == empleadoId)
-        //                    {
-        //                        CargarEmpleado(empleadoId);
-        //                    }
-        //                }
-        //            }
-        //        }));
-        //    }
-        //    catch (ObjectDisposedException)
-        //    {
-        //    }
-        //    catch (InvalidOperationException)
-        //    {
-        //    }
-        //}
 
         private void tabcOperacion_DrawItem(object sender, DrawItemEventArgs e) => Utils.DibujarPestañas(sender as TabControl, e);
 
@@ -922,6 +921,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     {
                         MDIPrincipal.ActualizarBarraDeEstado();
                     }
+                }
+                else
+                {
+                    btnOperacion.Enabled = false;
                 }
             }
             BorrarDatosEmpleado();

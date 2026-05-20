@@ -103,9 +103,33 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     break;
             }
 
-            using (var frm = new FrmNotificacion(mensaje, icono, colorTexto, modo))
+            //using (var frm = new FrmNotificacion(mensaje, icono, colorTexto, modo))
+            //{
+            //    return frm.ShowDialog();
+            //}
+
+            using (var frm = new FrmNotificacion(
+                    mensaje,
+                    icono,
+                    colorTexto,
+                    modo))
             {
-                return frm.ShowDialog();
+                Form owner = null;
+
+                if (MDIPrincipal.Instance != null)
+                {
+                    owner =
+                        MDIPrincipal.Instance.ActiveMdiChild
+                        ?? MDIPrincipal.Instance;
+                }
+                else
+                {
+                    owner = Form.ActiveForm;
+                }
+
+                return owner != null
+                    ? frm.ShowDialog(owner)
+                    : frm.ShowDialog();
             }
         }
 
