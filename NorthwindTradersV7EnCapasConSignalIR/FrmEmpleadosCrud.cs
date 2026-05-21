@@ -25,7 +25,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         OpenFileDialog openFileDialog;
         internal Dictionary<string, object> valoresOriginales;
         private byte[] fotoOriginalOle = null;
-        private bool realizandoBusqueda = false;
+        private bool _realizandoBusqueda = false;
         private bool _procesandoSignalR = false;
 
         private IDisposable _empleadosSubscription;
@@ -85,7 +85,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     return;
                 }
 
-                if (realizandoBusqueda)
+                if (_realizandoBusqueda)
                     return;
 
                 if (_procesandoSignalR)
@@ -397,7 +397,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 DeshabilitarControles();
             LlenarDgv(true);
             CargarValoresOriginales();
-            realizandoBusqueda = true;
+            _realizandoBusqueda = true;
         }
 
         private void btnLimpiar_Click(object sender, EventArgs e)
@@ -409,7 +409,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 DeshabilitarControles();
             LlenarDgv(false);
             CargarValoresOriginales();
-            realizandoBusqueda = false;
+            _realizandoBusqueda = false;
         }
 
         void BorrarMensajesError() => errorProvider1.Clear();

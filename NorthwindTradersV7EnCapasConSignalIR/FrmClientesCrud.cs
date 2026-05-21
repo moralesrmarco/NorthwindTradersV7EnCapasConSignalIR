@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Utilities;
@@ -22,10 +23,9 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private bool EjecutarConfDgv = true;
         internal Dictionary<string, object> valoresOriginales;
-        private bool realizandoBusqueda = false;
+        private bool _realizandoBusqueda = false;
         private bool _procesandoSignalR = false;
 
-        //private IHubProxy _hubClientes;
         private IDisposable _clientesSubscription;
 
         public FrmClientesCrud()
@@ -100,7 +100,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     return;
                 }
 
-                if (realizandoBusqueda)
+                if (_realizandoBusqueda)
                     return;
 
                 if (_procesandoSignalR)
@@ -155,45 +155,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
             base.OnFormClosed(e);
         }
-
-        //private void OnClienteActualizado(string accion, string clienteId)
-        //{
-        //    try
-        //    {
-        //        if (IsDisposed || !IsHandleCreated)
-        //            return;
-
-        //        BeginInvoke(new Action(() =>
-        //        {
-        //            if (realizandoBusqueda)
-        //                return; // No refrescar si estás realizando búsqueda
-
-        //            LlenarDgv(false);
-
-        //            if (tabcOperacion.SelectedTab == tbpListar ||
-        //                tabcOperacion.SelectedTab == tbpRegistrar ||
-        //                tabcOperacion.SelectedTab == tbpEliminar)
-        //                return;
-
-        //            if (!string.IsNullOrWhiteSpace(txtId.Text))
-        //            {
-        //                string clienteActual =
-        //                txtId.Text;
-
-        //                if (clienteActual == clienteId)
-        //                {
-        //                    CargarCliente(clienteId);
-        //                }
-        //            }
-        //        }));
-        //    }
-        //    catch (ObjectDisposedException)
-        //    {
-        //    }
-        //    catch (InvalidOperationException)
-        //    {
-        //    }
-        //}
 
         private bool CargarCliente(string clienteId)
         {
@@ -257,7 +218,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
                 bool tieneId = false;
                 string clienteId = "";
-                string selectedValueCboPais = cboPais.SelectedValue?.ToString();
+                string selectedValueCboPais = cboPais.Text; // guardar el valor seleccionado actual antes de recargar el ComboBox
                 if (tabcOperacion.SelectedTab == tbpModificar)
                 {
                     tieneId = true;
@@ -276,11 +237,17 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
                 if (tabcOperacion.SelectedTab == tbpModificar)
                 {
+                    // 🔹 Restaurar desde BD
                     if (tieneId)
                     {
                         var pais = _clienteService.ObtenerClientePais(clienteId);
-                        if (pais != null)
-                            cboPais.SelectedValue = pais;
+                        if (!string.IsNullOrWhiteSpace(pais) &&
+                            paises.AsEnumerable().Any(p => p["pais"]
+                                .ToString() 
+                                .Equals(pais, StringComparison.OrdinalIgnoreCase)))
+                        {
+                             cboPais.Text = pais;
+                        }
                         else
                         {
                             // esto es para aceptar texto libre 
@@ -398,7 +365,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 DeshabilitarControles();
             LlenarDgv(true);
             CargarValoresOriginales();
-            realizandoBusqueda = true;
+            _realizandoBusqueda = true;
         }
 
         private void btnLimpiar_Click(object sender, EventArgs e)
@@ -410,7 +377,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 DeshabilitarControles();
             LlenarDgv(false);
             CargarValoresOriginales();
-            realizandoBusqueda = false;
+            _realizandoBusqueda = false;
         }
 
         void BorrarMensajesError() => errorProvider1.Clear();
@@ -745,16 +712,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     };
                     try
                     {
-                        var rv = txtId.Tag as byte[];
-
-                        if (rv == null)
-                        {
-                            U.NotificacionError("RowVersion es NULL");
-                            return;
-                        }
-
-                        System.Diagnostics.Debug.WriteLine(Convert.ToBase64String(rv));
-
                         var resultado = await ApiClienteService.EliminarAsync(cliente.CustomerID, txtId.Tag as byte[]);
                         if (resultado.ok)
                         {
