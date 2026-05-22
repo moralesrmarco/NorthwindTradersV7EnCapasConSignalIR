@@ -1,9 +1,15 @@
 ﻿using BLL;
+using BLL.Services;
 using Entities;
 using Entities.DTOs;
+using Infrastructure.Services;
+using Microsoft.AspNet.SignalR.Client;
+using NorthwindTradersV7EnCapasConSignalIR.Services;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
+using System.Linq;
 using System.Windows.Forms;
 using Utilities;
 
@@ -11,16 +17,21 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 {
     public partial class FrmProveedoresCrud : Form
     {
-        private bool EjecutarConfDgv = true;
-        internal Dictionary<string, object> valoresOriginales;
-
         string _connectionString = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
         ProveedorBLL _proveedorBLL;
+        ProveedorService _proveedorService;
+        private bool EjecutarConfDgv = true;
+        internal Dictionary<string, object> valoresOriginales;
+        private bool _realizandoBusqueda = false;
+        private bool _procesandoSignalR = false;
+
+        private IDisposable _proveedoresSubscription;
 
         public FrmProveedoresCrud()
         {
             InitializeComponent();
             _proveedorBLL = new ProveedorBLL(_connectionString);
+            _proveedorService = new ProveedorService(_connectionString);
         }
 
         private void GrbPaint(object sender, PaintEventArgs e) => Utils.GrbPaint(this, sender, e);
@@ -29,6 +40,9 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         internal void FrmProveedoresCrud_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (AppShutdownService.CerrandoPorLogout)
+                return;
+
             if (Utils.HayCambios(this, valoresOriginales, errorProvider1))
                 if (U.NotificacionQuestion(Utils.preguntaCerrar) == DialogResult.No)
                     e.Cancel = true;
@@ -45,6 +59,129 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             Utils.ConfDgv(Dgv);
             LlenarDgv(false);
             CargarValoresOriginales();
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            Action registrarEventos = () =>
+            {
+                _proveedoresSubscription?.Dispose();
+
+                _proveedoresSubscription =
+                    SignalRService.Instance.ProveedoresHub
+                    .On<string, int>(
+                        "proveedorActualizado",
+                        ProveedorActualizadoHandler);
+            };
+
+            registrarEventos();
+
+            SignalRService.Instance
+                .RegistrarSuscripcion(registrarEventos);
+        }
+
+        private void ProveedorActualizadoHandler(string accion, int proveedorId)
+        {
+            try
+            {
+                if (IsDisposed || !IsHandleCreated)
+                    return;
+
+                if (InvokeRequired)
+                {
+                    BeginInvoke(new Action(() =>
+                        ProveedorActualizadoHandler(accion, proveedorId)));
+                    return;
+                }
+
+                if (_realizandoBusqueda)
+                    return;
+
+                if (_procesandoSignalR)
+                    return;
+
+                _procesandoSignalR = true;
+
+                // 🔥 1. SI ES DELETE → SOLO REFRESCAR LISTA Y SALIR
+                if (accion == "DELETE")
+                {
+                    LlenarDgv(false); // SOLO lista
+                    _procesandoSignalR = false;
+                    return;
+                }
+                // 🔥 2. PARA INSERT/UPDATE
+                LlenarDgv(false);
+                if (tabcOperacion.SelectedTab == tbpRegistrar ||
+                    tabcOperacion.SelectedTab == tbpEliminar)
+                {
+                    _procesandoSignalR = false;
+                    return;
+                }
+                if (!string.IsNullOrWhiteSpace(txtId.Text) &&
+                    int.TryParse(txtId.Text, out int proveedorActual))
+                {
+                    if (proveedorActual == proveedorId)
+                    {
+                        CargarProveedor(proveedorId);
+                    }
+                }
+            }
+            finally
+            {
+                _procesandoSignalR = false;
+            }
+        }
+
+        protected override void OnFormClosed(
+            FormClosedEventArgs e)
+        {
+            try
+            {
+                _proveedoresSubscription?.Dispose();
+            }
+            catch
+            {
+            }
+
+            base.OnFormClosed(e);
+        }
+
+        private bool CargarProveedor(int proveedorId)
+        {
+            try
+            {
+                Proveedor proveedor = _proveedorBLL.ObtenerProveedorPorId(proveedorId);
+                if (proveedor == null)
+                {
+                    U.NotificacionWarning($"No se encontró el proveedor con Id: {proveedorId}." + Utils.erfep1);
+                    BorrarDatosProveedor();
+                    DeshabilitarControles();
+                    btnOperacion.Enabled = false;
+                    CargarValoresOriginales();
+                    return false;
+                }
+                txtId.Text = proveedor.SupplierID.ToString();
+                txtId.Tag = proveedor.RowVersion;
+                txtCompañia.Text = proveedor.CompanyName;
+                txtContacto.Text = proveedor.ContactName;
+                txtTitulo.Text = proveedor.ContactTitle;
+                txtDomicilio.Text = proveedor.Address;
+                txtCiudad.Text = proveedor.City;
+                txtRegion.Text = proveedor.Region;
+                txtCodigoP.Text = proveedor.PostalCode;
+                cboPais.Text = proveedor.Country;
+                txtTelefono.Text = proveedor.Phone;
+                txtFax.Text = proveedor.Fax;
+                CargarValoresOriginales();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                U.MsgCatchOue(ex);
+                return false;
+            }
         }
 
         private void DeshabilitarControles()
@@ -68,8 +205,15 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
+                bool tieneId = false;
+                int proveedorId = 0;
+                string selectedValueCboPais = cboPais.Text;
+                if (tabcOperacion.SelectedTab == tbpModificar)
+                {
+                    proveedorId = 0;
+                    tieneId = int.TryParse(txtId.Text, out proveedorId);
+                }
                 var paises = _proveedorBLL.ObtenerProveedorPaisesCbo();
-                MDIPrincipal.ActualizarBarraDeEstado();
                 cboBPais.DataSource = paises;
                 cboBPais.ValueMember = "Id";
                 cboBPais.DisplayMember = "Pais";
@@ -79,6 +223,58 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 cboPais.ValueMember = "Id";
                 cboPais.DisplayMember = "Pais";
                 cboPais.SelectedIndex = 0;
+
+                if (tabcOperacion.SelectedTab == tbpModificar)
+                {
+                    // 🔹 Restaurar desde BD
+                    if (tieneId)
+                    {
+                        var pais = _proveedorService.ObtenerProveedorPais(proveedorId);
+                        // paises es una colección, pero solo debe haber uno o ninguno, así que buscamos el primero que coincida
+                        if (!string.IsNullOrWhiteSpace(pais) &&
+                            paises.AsEnumerable().Any(p => p["pais"]
+                                .ToString()
+                                .Equals(pais, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            cboPais.Text = pais;
+                        }
+                        else
+                        {
+                            // esto es para aceptar texto libre 
+                            if (!string.IsNullOrWhiteSpace(selectedValueCboPais))
+                            {
+                                cboPais.Text = selectedValueCboPais;
+                                int idx = cboPais.FindStringExact(selectedValueCboPais);
+                                if (idx >= 0)
+                                    cboPais.SelectedIndex = idx; // coincide con un ítem
+                                else
+                                {
+                                    cboPais.SelectedIndex = -1; // texto libre
+                                    cboPais.Text = selectedValueCboPais; // mantener el texto libre
+                                }
+                            }
+                            else
+                            {
+                                cboPais.SelectedIndex = 0;
+                            }
+                        }
+                    }
+                }
+                if ((tabcOperacion.SelectedTab == tbpRegistrar || tabcOperacion.SelectedTab == tbpEliminar || tabcOperacion.SelectedTab == tbpConsultar) && !string.IsNullOrWhiteSpace(selectedValueCboPais))
+                {
+                    // esto es para aceptar texto libre 
+                    cboPais.Text = selectedValueCboPais;
+                    int idx = cboPais.FindStringExact(selectedValueCboPais);
+                    if (idx >= 0)
+                        cboPais.SelectedIndex = idx; // coincide con un ítem
+                    else
+                    {
+                        cboPais.SelectedIndex = -1; // texto libre
+                        cboPais.Text = selectedValueCboPais;
+                    }
+                }
+                CargarValoresOriginales();
+                MDIPrincipal.ActualizarBarraDeEstado();
             }
             catch (Exception ex)
             {
@@ -112,6 +308,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     ConfDgv();
                     EjecutarConfDgv = false;
                 }
+                LlenarCboPais();
                 if (selectorRealizaBusqueda)
                     MDIPrincipal.ActualizarBarraDeEstado($"Se encontraron {Dgv.RowCount} registro(s)");
                 else
@@ -126,8 +323,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         private void ConfDgv()
         {
             Dgv.Columns["RowVersion"].Visible = false;
-            //Dgv.Columns["HomePage"].Visible = false;
-            //Dgv.Columns["Products"].Visible = false;
 
             Dgv.Columns["SupplierID"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
             Dgv.Columns["ContactTitle"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
@@ -163,6 +358,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 DeshabilitarControles();
             LlenarDgv(true);
             CargarValoresOriginales();
+            _realizandoBusqueda = true;
         }
 
         private void btnLimpiar_Click(object sender, EventArgs e)
@@ -174,6 +370,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 DeshabilitarControles();
             LlenarDgv(false);
             CargarValoresOriginales();
+            _realizandoBusqueda = false;
         }
 
         void BorrarMensajesError() => errorProvider1.Clear();
@@ -191,6 +388,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             txtId.Text = txtCompañia.Text = txtContacto.Text = txtTitulo.Text = "";
             txtDomicilio.Text = txtCiudad.Text = txtRegion.Text = txtCodigoP.Text = "";
             txtTelefono.Text = txtFax.Text = "";
+            cboPais.Text = null;
             cboPais.SelectedIndex = 0;
         }
 
@@ -252,35 +450,28 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void Dgv_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0 || e.ColumnIndex < 0)
-                return;
+            // 🔹 Cuando viene desde un click real del DataGridView
+            if (e != null)
+            {
+                if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                    return;
+                DataGridViewRow dgvr = Dgv.Rows[e.RowIndex];
+                if (dgvr.Cells["SupplierID"].Value == null)
+                    return;
+                txtId.Text = dgvr.Cells["SupplierID"].Value.ToString();
+            }
             BorrarMensajesError();
             if (tabcOperacion.SelectedTab != tbpRegistrar)
             {
                 DeshabilitarControles();
-                DataGridViewRow dgvr = Dgv.CurrentRow;
-                txtId.Text = dgvr.Cells["SupplierID"].Value.ToString();
-                Proveedor proveedor = new Proveedor();
+                //DataGridViewRow dgvr = Dgv.CurrentRow;
+                //txtId.Text = dgvr.Cells["SupplierID"].Value.ToString();
+                //Proveedor proveedor = new Proveedor();
                 try
                 {
-                    proveedor = _proveedorBLL.ObtenerProveedorPorId(Convert.ToInt32(txtId.Text));
-                    if (proveedor != null)
+                    int proveedorId = Convert.ToInt32(txtId.Text);
+                    if (!CargarProveedor(proveedorId))
                     {
-                        txtId.Tag = proveedor.RowVersion;
-                        txtCompañia.Text = proveedor.CompanyName;
-                        txtContacto.Text = proveedor.ContactName;
-                        txtTitulo.Text = proveedor.ContactTitle;
-                        txtDomicilio.Text = proveedor.Address;
-                        txtCiudad.Text = proveedor.City;
-                        txtRegion.Text = proveedor.Region;
-                        txtCodigoP.Text = proveedor.PostalCode;
-                        cboPais.Text = proveedor.Country;
-                        txtTelefono.Text = proveedor.Phone;
-                        txtFax.Text = proveedor.Fax;
-                    }
-                    else
-                    {
-                        U.NotificacionWarning($"No se encontró el proveedor con Id: {txtId.Text}." + Utils.erfep);
                         ActualizaDgv();
                         return;
                     }
@@ -289,12 +480,17 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 {
                     U.MsgCatchOue(ex);
                 }
+                //if (tabcOperacion.SelectedTab == tbpConsultar)
+                //{
+                //    btnOperacion.Visible = true;
+                //    btnOperacion.Enabled = true;
+                //}
                 if (tabcOperacion.SelectedTab == tbpModificar)
                 {
                     HabilitarControles();
                     btnOperacion.Enabled = true;
                 }
-                else if (tabcOperacion.SelectedTab == tbpEliminar)
+                if (tabcOperacion.SelectedTab == tbpEliminar)
                     btnOperacion.Enabled = true;
             }
             CargarValoresOriginales();
@@ -344,7 +540,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             CargarValoresOriginales();
         }
 
-        private void btnOperacion_Click(object sender, EventArgs e)
+        private async void btnOperacion_Click(object sender, EventArgs e)
         {
             BorrarMensajesError();
             if (tabcOperacion.SelectedTab == tbpRegistrar)
@@ -369,26 +565,38 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             Phone = txtTelefono.Text.Trim(),
                             Fax = string.IsNullOrWhiteSpace(txtFax.Text.Trim()) ? null : txtFax.Text.Trim()
                         };
-                        int numRegs = _proveedorBLL.Insertar(proveedor);
-                        MDIPrincipal.ActualizarBarraDeEstado($"Se insertaron {numRegs} registro(s)");
-                        string idyNombreCompania = $"El proveedor con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
-                        if (numRegs > 0)
+                        var resultado = await ApiProveedorService.InsertarAsync(proveedor);
+                        if (resultado.ok)
                         {
-                            txtId.Text = proveedor.SupplierID.ToString();
-                            idyNombreCompania = $"El proveedor con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
-                            U.NotificacionInformation(idyNombreCompania + Utils.srs);
+                            txtId.Text = resultado.proveedor.SupplierID.ToString();
+                            string idyNombreCompania = $"El proveedor con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
+                            MDIPrincipal.ActualizarBarraDeEstado($"Se insertó 1 registro");
+                            U.NotificacionInformation(idyNombreCompania +
+                                Utils.srs);
+                            await SignalRService
+                                .Instance
+                                .ProveedoresHub
+                                .Invoke(
+                                    "NotificarProveedorActualizado", "INSERT",
+                                    resultado.proveedor.SupplierID);
+                            BorrarDatosProveedor();
+                            CargarValoresOriginales();
                         }
                         else
-                            U.NotificacionError(idyNombreCompania + Utils.nfrs);
+                        { 
+                            U.NotificacionError(resultado.mensaje);
+                        }
                     }
                     catch (Exception ex)
                     {
                         U.MsgCatchOue(ex);
                     }
-                    LlenarCboPais();
+                    finally
+                    {
+                        MDIPrincipal.ActualizarBarraDeEstado();
+                    }
                     HabilitarControles();
                     btnOperacion.Enabled = true;
-                    ActualizaDgv();
                 }
             }
             else if (tabcOperacion.SelectedTab == tbpModificar)
@@ -421,24 +629,42 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             Fax = txtFax.Text.Trim(),
                             RowVersion = txtId.Tag as byte[]
                         };
-                        int numRegs = _proveedorBLL.Actualizar(proveedor);
-                        MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
-                        string idyNombreCompania = $"El proveedor con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
-                        if (numRegs > 0)
-                            U.NotificacionInformation(idyNombreCompania + Utils.sms);
-                        else if (numRegs == -1)
-                            U.NotificacionError(idyNombreCompania + Utils.nfmfe);
-                        else if (numRegs == -2)
-                            U.NotificacionError(idyNombreCompania + Utils.nfmfm);
+                        var resultado = await ApiProveedorService.ActualizarAsync(proveedor);
+                        if (resultado.ok)
+                        {
+                            int numRegs = resultado.numRegs;
+                            MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
+                            string idyNombreCompania = $"El proveedor con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
+                            if (numRegs > 0)
+                            {
+                                U.NotificacionInformation(idyNombreCompania + Utils.sms);
+                                await SignalRService
+                                    .Instance
+                                    .ProveedoresHub
+                                    .Invoke(
+                                        "NotificarProveedorActualizado", "UPDATE",
+                                        proveedor.SupplierID);
+                            }
+                            else if (numRegs == -1)
+                                U.NotificacionError(idyNombreCompania + Utils.nfmfe);
+                            else if (numRegs == -2)
+                                U.NotificacionError(idyNombreCompania + Utils.nfmfm);
+                            else
+                                U.NotificacionError(idyNombreCompania + Utils.nfmmd);
+                            BorrarDatosProveedor();
+                            CargarValoresOriginales();
+                        }
                         else
-                            U.NotificacionError(idyNombreCompania + Utils.nfmmd);
+                            U.NotificacionError(resultado.mensaje);
                     }
                     catch (Exception ex)
                     {
-                        U.MsgCatchOue(ex);
+                        U.NotificacionError("Error al modificar el proveedor: " + ex.Message);
                     }
-                    LlenarCboPais();
-                    ActualizaDgv();
+                    finally
+                    {
+                        MDIPrincipal.ActualizarBarraDeEstado();
+                    }
                 }
             }
             else if (tabcOperacion.SelectedTab == tbpEliminar)
@@ -447,34 +673,58 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 {
                     MDIPrincipal.ActualizarBarraDeEstado(Utils.eliminandoRegistro);
                     btnOperacion.Enabled = false;
+                    Proveedor proveedor = new Proveedor
+                    {
+                        SupplierID = int.Parse(txtId.Text),
+                        RowVersion = txtId.Tag as byte[]
+                    };
                     try
                     {
-                        Proveedor proveedor = new Proveedor
+                        var resultado = await ApiProveedorService.EliminarAsync
+                            (proveedor.SupplierID, txtId.Tag as byte[]);
+                        if (resultado.ok)
                         {
-                            SupplierID = int.Parse(txtId.Text),
-                            RowVersion = txtId.Tag as byte[]
-                        };
-                        int numRegs = _proveedorBLL.Eliminar(proveedor.SupplierID, proveedor.RowVersion);
-                        MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
-                        string idyNombre = $"El proveedor con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
-                        if (numRegs > 0)
-                            U.NotificacionInformation(idyNombre + Utils.ses);
-                        else if (numRegs == -1)
-                            U.NotificacionError(idyNombre + Utils.nfefe);
-                        else if (numRegs == -2)
-                            U.NotificacionError(idyNombre + Utils.nfefm);
+                            int numRegs = resultado.numRegs;
+                            MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
+                            string idyNombre = $"El proveedor con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
+                            if (numRegs > 0)
+                            {
+                                U.NotificacionInformation(idyNombre + Utils.ses);
+                                await SignalRService
+                                    .Instance
+                                    .ProveedoresHub
+                                    .Invoke(
+                                        "NotificarProveedorActualizado", "DELETE",
+                                        proveedor.SupplierID);
+                            }
+                            else if (numRegs == -1)
+                                U.NotificacionError(idyNombre + Utils.nfefe);
+                            else if (numRegs == -2)
+                                U.NotificacionError(idyNombre + Utils.nfefm);
+                            else
+                                U.NotificacionError(idyNombre + Utils.nfemd);
+                            BorrarDatosProveedor();
+                            CargarValoresOriginales();
+                        }
                         else
-                            U.NotificacionError(idyNombre + Utils.nfemd);
+                        {
+                            U.NotificacionError(resultado.mensaje);
+                        }
                     }
                     catch (Exception ex)
                     {
                         U.MsgCatchOue(ex);
                     }
-                    LlenarCboPais();
-                    ActualizaDgv();
+                    finally
+                    {
+                        MDIPrincipal.ActualizarBarraDeEstado();
+                    }
+                }
+                else
+                {
+                    btnOperacion.Enabled = true;
                 }
             }
-            CargarValoresOriginales();
         }
 
         private void CargarValoresOriginales()

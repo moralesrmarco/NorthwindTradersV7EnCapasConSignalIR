@@ -1,4 +1,5 @@
-﻿using DAL.Helpers;
+﻿using DAL;
+using DAL.Helpers;
 using System.Data;
 
 namespace BLL.Services
@@ -6,10 +7,12 @@ namespace BLL.Services
     public class ProveedorService
     {
         private readonly ComboDataHelper _dal;
+        private readonly ProveedorDAL _proveedorDAL;
 
         public ProveedorService(string connectionString)
         {
             _dal = new ComboDataHelper(connectionString);
+            _proveedorDAL = new ProveedorDAL(connectionString);
         }
 
         public DataTable ObtenerProveedoresCbo()
@@ -20,6 +23,11 @@ namespace BLL.Services
             filaSeleccione["CompanyName"] = "»--- Seleccione ---«";
             proveedores.Rows.InsertAt(filaSeleccione, 0);
             return proveedores;
+        }
+
+        public string ObtenerProveedorPais(int proveedorId)
+        {
+            return _proveedorDAL.ObtenerProveedorPais(proveedorId);
         }
     }
 }

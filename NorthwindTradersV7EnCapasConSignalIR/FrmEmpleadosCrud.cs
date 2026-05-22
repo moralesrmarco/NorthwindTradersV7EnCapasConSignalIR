@@ -784,7 +784,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         {
                             empleado.Photo = Utils.ImageToByteArray(picFoto.Image);
                         }
-                        var valorPais = cboPais.SelectedValue?.ToString();
+                        //var valorPais = cboPais.SelectedValue?.ToString();
 
                         var resultado = await ApiEmpleadoService.ActualizarAsync(empleado);
 

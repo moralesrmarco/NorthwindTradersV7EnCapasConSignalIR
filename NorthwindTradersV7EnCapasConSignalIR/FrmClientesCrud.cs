@@ -20,7 +20,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         string _connectionString = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
         private ClienteBLL _clienteBLL;
         private ClienteService _clienteService;
-
         private bool EjecutarConfDgv = true;
         internal Dictionary<string, object> valoresOriginales;
         private bool _realizandoBusqueda = false;
@@ -214,7 +213,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         {
             try
             {
-                
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
                 bool tieneId = false;
                 string clienteId = "";
@@ -443,6 +441,11 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             {
                 valida = false;
                 errorProvider1.SetError(txtId, "Ingrese el Id del cliente");
+            }
+            if (txtId.Text.Length < 5)
+            {
+                valida = false;
+                errorProvider1.SetError(txtId, "El Id del cliente no puede tener menos de 5 caracteres");
             }
             if (txtCompañia.Text.Trim() == "")
             {

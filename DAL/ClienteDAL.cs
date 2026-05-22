@@ -414,7 +414,6 @@ namespace DAL
                 using (var con = new SqlConnection(_connectionString))
                 using (var cmd = new SqlCommand("SpClienteObtenerPais", con))
                 {
-                    DataTable pais = new DataTable();
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@clienteId", clienteId);
                     con.Open();
@@ -424,7 +423,7 @@ namespace DAL
             }
             catch (Exception ex)
             {
-                throw new Exception("Error al obtener el país del cliente: " + ex.Message, ex);
+                throw new Exception("Error al obtener el país del cliente: " + ex.Message);
             }
         }
     }

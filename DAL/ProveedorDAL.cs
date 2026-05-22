@@ -263,5 +263,26 @@ namespace DAL
             }
             return ds;
         }
+
+        public string ObtenerProveedorPais(int proveedorId)
+        {
+            try
+            {
+                using (var con = new SqlConnection(_connectionString))
+                using (var cmd = new SqlCommand("SpProveedorObtenerPais", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@proveedorId", proveedorId);
+                    con.Open();
+                    var result = cmd.ExecuteScalar();
+                    return result?.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener el país del proveedor: " + ex.Message);
+            }
+        }
+
     }
 }

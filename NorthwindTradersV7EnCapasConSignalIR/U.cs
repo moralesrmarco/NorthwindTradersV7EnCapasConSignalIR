@@ -112,15 +112,15 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             using (var frm = new FrmNotificacion(mensaje, icono, colorTexto, modo))
             {
                 // 🔥 NUEVA FORMA ROBUSTA DE OBTENER OWNER
-                Form owner =
-                    MDIPrincipal.Instance ??
-                    Application.OpenForms
-                        .Cast<Form>()
-                        .FirstOrDefault(f => f.IsMdiContainer);
+                //Form owner =
+                //    MDIPrincipal.Instance ??
+                //    Application.OpenForms
+                //        .Cast<Form>()
+                //        .FirstOrDefault(f => f.IsMdiContainer);
 
-                // 🔥 SEGURIDAD EXTRA
-                if (owner != null && !owner.IsDisposed)
-                    return frm.ShowDialog(owner);
+                //// 🔥 SEGURIDAD EXTRA
+                //if (owner != null && !owner.IsDisposed)
+                //    return frm.ShowDialog(owner);
 
                 return frm.ShowDialog();
             }

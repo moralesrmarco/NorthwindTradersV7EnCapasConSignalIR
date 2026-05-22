@@ -28,6 +28,7 @@ namespace Infrastructure.Services
         // aqui deben ir propiedades específicas para cada hub, para evitar tener que usar strings en el código cliente
         public IHubProxy EmpleadosHub { get; private set; }
         public IHubProxy ClientesHub { get; private set; }
+        public IHubProxy ProveedoresHub { get; private set; }
 
         private readonly List<Action> _subscriptions =
             new List<Action>();
@@ -62,16 +63,16 @@ namespace Infrastructure.Services
             {
                 if (_connection != null &&
                     _connection.State != ConnectionState.Disconnected)
-                {
                     return;
-                }
 
                 if (string.IsNullOrWhiteSpace(_urlBase))
-                {
                     throw new InvalidOperationException(
                         "Debe configurar la URL antes de conectar.");
-                }
 
+                if (_connection != null)
+                {
+                    _connection.Closed -= OnConnectionClosed;
+                }
                 _connection =
                     new HubConnection(_urlBase);
 
@@ -79,24 +80,16 @@ namespace Infrastructure.Services
                 _connection.Closed += OnConnectionClosed;
 
                 _connection.Reconnecting += () =>
-                {
                     EstadoConexion?.Invoke("Reconectando...");
-                };
 
                 _connection.Reconnected += () =>
-                {
                     EstadoConexion?.Invoke("Reconectado.");
-                };
 
                 _connection.Error += ex =>
-                {
                     ErrorConexion?.Invoke(ex.Message);
-                };
 
                 if (_connection.Headers.ContainsKey("Authorization"))
-                {
                     _connection.Headers.Remove("Authorization");
-                }
 
                 // JWT / Bearer token
                 _connection.Headers.Add(
@@ -111,14 +104,17 @@ namespace Infrastructure.Services
                     _connection.CreateHubProxy("EmpleadosHub");
                 ClientesHub =
                     _connection.CreateHubProxy("ClientesHub");
+                ProveedoresHub =
+                    _connection.CreateHubProxy("ProveedoresHub");
 
                 // registrar nuevamente las suscripciones
                 foreach (var sub in _subscriptions)
-                {
                     sub();
-                }
 
                 await _connection.Start();
+                if (_connection.State != ConnectionState.Connected)
+                    throw new Exception(
+                        "No se pudo establecer la conexión.");
             }
             catch (Exception ex)
             {
@@ -140,14 +136,15 @@ namespace Infrastructure.Services
                 _connection.Closed -= OnConnectionClosed;
 
                 if (_connection.State != ConnectionState.Disconnected)
-                {
                     _connection.Stop();
-                }
 
                 _connection.Dispose();
 
                 _connection = null;
+                // MUY importante:
                 EmpleadosHub = null;
+                ClientesHub = null;
+                ProveedoresHub = null;
 
                 _cerrandoManual = false;
             }
@@ -169,23 +166,115 @@ namespace Infrastructure.Services
         // =========================
         // RECONEXIÓN
         // =========================
-        private Task ConnectionClosedHandler()
+        private async Task ConnectionClosedHandler()
         {
             if (_reconectando)
-                return Task.CompletedTask;
+                return;
 
             _reconectando = true;
 
             try
             {
+                EstadoConexion?.Invoke(
+                    "Conexión perdida. Reconectando...");
+
+                // 🔹 intentar varias veces
+                for (int i = 0; i < 5; i++)
+                {
+                    EstadoConexion?.Invoke(
+                        $"Intento de reconexión {i + 1}/5");
+
+                    await Task.Delay(10000);
+
+                    bool reconectado =
+                        await ReconectarAsync();
+
+                    if (reconectado)
+                    {
+                        EstadoConexion?.Invoke(
+                            "Reconectado correctamente.");
+
+                        return;
+                    }
+                }
+
+                EstadoConexion?.Invoke(
+                    "No se pudo reconectar.");
+
                 SolicitarLogout?.Invoke();
-                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                ErrorConexion?.Invoke(ex.Message);
+
+                SolicitarLogout?.Invoke();
             }
             finally
             {
                 _reconectando = false;
             }
         }
+
+        //private async Task ConnectionClosedHandler()
+        //{
+        //    if (_reconectando)
+        //        return;
+
+        //    _reconectando = true;
+
+        //    try
+        //    {
+        //        EstadoConexion?.Invoke(
+        //            "Conexión perdida. Reconectando...");
+
+        //        // esperar unos segundos
+        //        await Task.Delay(5000);
+
+        //        bool reconectado =
+        //            await ReconectarAsync();
+
+        //        if (reconectado)
+        //        {
+        //            EstadoConexion?.Invoke(
+        //                "Reconectado correctamente.");
+        //        }
+        //        else
+        //        {
+        //            EstadoConexion?.Invoke(
+        //                "No se pudo reconectar.");
+
+        //            SolicitarLogout?.Invoke();
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ErrorConexion?.Invoke(ex.Message);
+
+        //        SolicitarLogout?.Invoke();
+        //    }
+        //    finally
+        //    {
+        //        _reconectando = false;
+        //    }
+        //}
+
+        //private Task ConnectionClosedHandler()
+        //{
+        //    if (_reconectando)
+        //        return Task.CompletedTask;
+
+        //    _reconectando = true;
+
+        //    try
+        //    {
+        //        SolicitarLogout?.Invoke();
+        //        return Task.CompletedTask;
+        //    }
+        //    finally
+        //    {
+        //        _reconectando = false;
+        //    }
+        //}
 
         // =========================
         // RECONECTAR
@@ -194,7 +283,27 @@ namespace Infrastructure.Services
         {
             try
             {
-                await DesconectarAsync();
+                if (_connection != null)
+                {
+                    try
+                    {
+                        _connection.Closed -= OnConnectionClosed;
+
+                        if (_connection.State != ConnectionState.Disconnected)
+                            _connection.Stop();
+
+                        _connection.Dispose();
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                _connection = null;
+                // MUY importante:
+                EmpleadosHub = null;
+                ClientesHub = null;
+                ProveedoresHub = null;
 
                 await ConectarAsync();
 
@@ -206,26 +315,36 @@ namespace Infrastructure.Services
             }
         }
 
+        //public async Task<bool> ReconectarAsync()
+        //{
+        //    try
+        //    {
+        //        await DesconectarAsync();
+
+        //        await ConectarAsync();
+
+        //        return true;
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+        //}
+
         public void RegistrarSuscripcion(Action accion)
         {
             if (!_subscriptions.Contains(accion))
-            {
                 _subscriptions.Add(accion);
-            }
         }
         public void Configurar(string urlBase, string accessToken)
         {
             if (string.IsNullOrWhiteSpace(urlBase))
-            {
                 throw new ArgumentException(
                     "La URL base es obligatoria.");
-            }
 
             if (string.IsNullOrWhiteSpace(accessToken))
-            {
                 throw new ArgumentException(
                     "El access token es obligatorio.");
-            }
 
             _urlBase = urlBase;
             _accessToken = accessToken;
@@ -241,9 +360,7 @@ namespace Infrastructure.Services
         public void DesregistrarSuscripcion(Action accion)
         {
             if (_subscriptions.Contains(accion))
-            {
                 _subscriptions.Remove(accion);
-            }
         }
     }
 }
