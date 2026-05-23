@@ -183,8 +183,8 @@ namespace DAL
         public DataTable ObtenerProductosPorCategoriaListado()
         {
             var dt = new DataTable();
-            try 
-            { 
+            try
+            {
                 using (var con = new SqlConnection(_connectionString))
                 using (var cmd = new SqlCommand
                 {
@@ -255,6 +255,40 @@ namespace DAL
                 }
             }
             return categorias;
+        }
+
+        public Categoria ObtenerCategoriaPorId(int categoriaId)
+        {
+            Categoria categoria = null;
+            try
+            {
+                using (var con = new SqlConnection(_connectionString))
+                using (var cmd = new SqlCommand("SpCategoriaObtenerPorId", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Id", categoriaId);
+                    con.Open();
+                    using (var dr = cmd.ExecuteReader())
+                    {
+                        if (dr.Read())
+                        {
+                            categoria = new Categoria()
+                            {
+                                CategoryID = dr["CategoryID"] != DBNull.Value ? Convert.ToInt32(dr["CategoryID"]) : 0,
+                                CategoryName = dr["CategoryName"] != DBNull.Value ? dr["CategoryName"].ToString() : null,
+                                Description = dr["Description"] != DBNull.Value ? dr["Description"].ToString() : null,
+                                Picture = (byte[])dr["Picture"],
+                                RowVersion = dr["RowVersion"] != DBNull.Value ? (byte[])dr["RowVersion"] : null
+                            };
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            return categoria;
         }
     }
 }
