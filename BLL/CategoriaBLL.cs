@@ -50,6 +50,9 @@ namespace BLL
         {
             return _categoriaDAL.ObtenerCategoriasConProductos();
         }
-
+        public Categoria ObtenerCategoriaPorId(int categoriaId)
+        {
+            return _categoriaDAL.ObtenerCategoriaPorId(categoriaId);
+        }
     }
 }

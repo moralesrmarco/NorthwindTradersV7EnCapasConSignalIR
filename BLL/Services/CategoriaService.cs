@@ -1,4 +1,6 @@
-﻿using DAL.Helpers;
+﻿using DAL;
+using DAL.Helpers;
+using Entities;
 using System.Data;
 
 namespace BLL.Services
@@ -6,10 +8,12 @@ namespace BLL.Services
     public class CategoriaService
     {
         private readonly ComboDataHelper _dal;
+        private readonly CategoriaDAL _categoriaDAL;
 
         public CategoriaService(string connectionString)
         {
             _dal = new ComboDataHelper(connectionString);
+            _categoriaDAL = new CategoriaDAL(connectionString);
         }
 
         public DataTable ObtenerCategoriasCbo()

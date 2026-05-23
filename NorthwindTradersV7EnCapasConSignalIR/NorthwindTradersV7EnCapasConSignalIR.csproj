@@ -450,6 +450,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\ApiCategoriaService.cs" />
     <Compile Include="Services\ApiClienteService.cs" />
     <Compile Include="Services\ApiEmpleadoService.cs" />
     <Compile Include="Services\ApiProveedorService.cs" />

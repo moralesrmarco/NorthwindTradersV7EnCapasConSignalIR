@@ -1,12 +1,17 @@
 ﻿using BLL;
+using BLL.Services;
 using Entities;
 using Entities.DTOs;
+using Infrastructure.Services;
+using Microsoft.AspNet.SignalR.Client;
+using NorthwindTradersV7EnCapasConSignalIR.Services;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Utilities;
 
@@ -14,18 +19,22 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 {
     public partial class FrmCategoriasCrud : Form
     {
-
-        private bool EjecutarConfDgv = true;
-        internal Dictionary<string, object> valoresOriginales;
-        OpenFileDialog openFileDialog;
-
         string _connectionString = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
         private CategoriaBLL _categoriaBLL;
+        private CategoriaService _categoriaService;
+        private bool EjecutarConfDgv = true;
+        OpenFileDialog openFileDialog;
+        internal Dictionary<string, object> valoresOriginales;
+        private bool _realizandoBusqueda = false;
+        private bool _procesandoSignalR = false;
+
+        private IDisposable _categoriasSubscription;
 
         public FrmCategoriasCrud()
         {
             InitializeComponent();
             _categoriaBLL = new CategoriaBLL(_connectionString);
+            _categoriaService = new CategoriaService(_connectionString);
         }
 
         private void GrbPaint(object sender, PaintEventArgs e) => Utils.GrbPaint(this, sender, e);
@@ -34,6 +43,9 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         internal void FrmCategoriasCrud_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (AppShutdownService.CerrandoPorLogout)
+                return;
+
             if (Utils.HayCambios(this, valoresOriginales, errorProvider1))
                 if (U.NotificacionQuestion(Utils.preguntaCerrar) == DialogResult.No)
                     e.Cancel = true;
@@ -59,6 +71,150 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             Utils.ConfDgv(Dgv);
             LlenarDgv(false);
             CargarValoresOriginales();
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            Action registrarEventos = () =>
+            {
+                _categoriasSubscription?.Dispose();
+
+                _categoriasSubscription =
+                    SignalRService.Instance.CategoriasHub
+                    .On<string, int>(
+                        "categoriaActualizada",
+                        CategoriaActualizadaHandler);
+            };
+
+            registrarEventos();
+
+            SignalRService.Instance
+                .RegistrarSuscripcion(registrarEventos);
+        }
+
+        private void CategoriaActualizadaHandler(string accion, int categoriaId)
+        {
+            try
+            {
+                if (IsDisposed || !IsHandleCreated)
+                    return;
+
+                if (InvokeRequired)
+                {
+                    BeginInvoke(new Action(() =>
+                        CategoriaActualizadaHandler(accion, categoriaId)));
+                    return;
+                }
+
+                if (_realizandoBusqueda)
+                    return;
+
+                if (_procesandoSignalR)
+                    return;
+
+                _procesandoSignalR = true;
+
+                // 🔥 1. SI ES DELETE → SOLO REFRESCAR LISTA Y SALIR
+                if (accion == "DELETE")
+                {
+                    LlenarDgv(false); // SOLO lista
+
+                    _procesandoSignalR = false;
+                    return;
+                }
+
+                // 🔥 2. PARA INSERT/UPDATE
+                LlenarDgv(false);
+
+                if (tabcOperacion.SelectedTab == tbpRegistrar ||
+                    tabcOperacion.SelectedTab == tbpEliminar)
+                {
+                    _procesandoSignalR = false;
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(txtId.Text) &&
+                    int.TryParse(txtId.Text, out int categoriaActual))
+                {
+                    if (categoriaActual == categoriaId)
+                    {
+                        CargarCategoria(categoriaId);
+                    }
+                }
+            }
+            finally
+            {
+                _procesandoSignalR = false;
+            }
+        }
+
+        protected override void OnFormClosed(
+            FormClosedEventArgs e)
+        {
+            try
+            {
+                _categoriasSubscription?.Dispose();
+            }
+            catch
+            {
+            }
+
+            base.OnFormClosed(e);
+        }
+
+        private bool CargarCategoria(int categoriaId)
+        {
+            try
+            {
+                var categoria =
+                    _categoriaBLL.ObtenerCategoriaPorId(categoriaId);
+                if (categoria == null)
+                {
+                    U.NotificacionWarning(
+                        $"No se encontró la categoría con Id: {categoriaId}." + Utils.erfep1);
+                    BorrarDatosCategoria();
+                    DeshabilitarControles();
+                    btnOperacion.Enabled = false;
+                    CargarValoresOriginales();
+                    return false;
+                }
+                txtId.Text = categoria.CategoryID.ToString();
+                txtId.Tag = categoria.RowVersionStr;
+                txtCategoria.Text = categoria.CategoryName;
+                txtDescripcion.Text = categoria.Description;
+                if (categoria.Picture != null)
+                {
+                    byte[] foto = categoria.Picture;
+                    MemoryStream ms;
+                    if (int.Parse(txtId.Text) <= 8)
+                    {
+                        ms = new MemoryStream(foto, 78, foto.Length - 78);
+                        btnCargar.Enabled = false; // no se permite modificar porque desconozco el formato de la imagen
+                    }
+                    else
+                    {
+                        ms = new MemoryStream(foto);
+                        btnCargar.Enabled = true;
+                    }
+                    picFoto.Image = Image.FromStream(ms);
+                    picFoto.BackgroundImage = null;
+                }
+                else
+                {
+                    picFoto.Image = null;
+                    picFoto.BackgroundImage = Properties.Resources.Categorias;
+                    btnCargar.Enabled = true;
+                }
+                CargarValoresOriginales();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                U.MsgCatchOue(ex);
+                return false;
+            }
         }
 
         private void DeshabilitarControles()
@@ -141,6 +297,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 DeshabilitarControles();
             LlenarDgv(true);
             CargarValoresOriginales();
+            _realizandoBusqueda = true;
         }
 
         private void btnLimpiar_Click(object sender, EventArgs e)
@@ -152,6 +309,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 DeshabilitarControles();
             LlenarDgv(false);
             CargarValoresOriginales();
+            _realizandoBusqueda = false;
         }
 
         private void BorrarMensajesError() => errorProvider1.Clear();
@@ -206,39 +364,32 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void Dgv_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0 || e.ColumnIndex < 0)
-                return;
+            if (e != null)
+            {
+                if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                    return;
+                DataGridViewRow dgvr = Dgv.Rows[e.RowIndex];
+                if (dgvr.Cells["CategoryID"].Value == null)
+                    return;
+                txtId.Text = dgvr.Cells["CategoryID"].Value.ToString();
+            }
             BorrarMensajesError();
             if (tabcOperacion.SelectedTab != tbpRegistrar)
             {
                 DeshabilitarControles();
-                DataGridViewRow dgvr = Dgv.CurrentRow;
-                txtId.Text = dgvr.Cells["CategoryId"].Value.ToString();
-                txtCategoria.Text = dgvr.Cells["CategoryName"].Value.ToString();
-                txtDescripcion.Text = dgvr.Cells["Description"].Value.ToString();
-                if (dgvr.Cells["Picture"].Value != DBNull.Value)
+                try
                 {
-                    byte[] foto = (byte[])dgvr.Cells["Picture"].Value;
-                    MemoryStream ms;
-                    if (int.Parse(txtId.Text) <= 8)
+                    int categoriaId = int.Parse(txtId.Text);
+                    if (!CargarCategoria(categoriaId))
                     {
-                        ms = new MemoryStream(foto, 78, foto.Length - 78);
-                        btnCargar.Enabled = false; // no se permite modificar porque desconozco el formato de la imagen
+                        ActualizaDgv();
+                        return;
                     }
-                    else
-                    {
-                        ms = new MemoryStream(foto);
-                        btnCargar.Enabled = true;
-                    }
-                    picFoto.Image = Image.FromStream(ms);
-                    picFoto.BackgroundImage = null;
                 }
-                else
+                catch (Exception ex)
                 {
-                    picFoto.Image = null;
-                    picFoto.BackgroundImage = Properties.Resources.Categorias;
+                    U.MsgCatchOue(ex);
                 }
-                txtId.Tag = dgvr.Cells["RowVersionStr"].Value;
                 if (tabcOperacion.SelectedTab == tbpConsultar)
                 {
                     btnCargar.Visible = false;
@@ -316,7 +467,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             CargarValoresOriginales();
         }
 
-        private void btnOperacion_Click(object sender, EventArgs e)
+        private async void btnOperacion_Click(object sender, EventArgs e)
         {
             BorrarMensajesError();
             if (tabcOperacion.SelectedTab == tbpRegistrar)
@@ -339,27 +490,38 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             Description = txtDescripcion.Text.Trim(),
                             Picture = fileFoto
                         };
-                        int numRegs = _categoriaBLL.Insertar(categoria);
-                        MDIPrincipal.ActualizarBarraDeEstado($"Se insertaron {numRegs} registro(s)");
-                        string idyNombreCategoria = $"La categoría con Id: {txtId.Text} - Nombre de categoria: {txtCategoria.Text}:";
-                        if (numRegs > 0)
+                        var resultado = await ApiCategoriaService.InsertarAsync(categoria);
+                        if (resultado.ok)
                         {
-                            txtId.Text = categoria.CategoryID.ToString();
-                            idyNombreCategoria = $"La categoría con Id: {txtId.Text} - Nombre de categoria: {txtCategoria.Text}:";
-                            U.NotificacionInformation(idyNombreCategoria + Utils.srs);
+                            txtId.Text =
+                                resultado.categoria.CategoryID.ToString();
+                            string idyNombreCategoria = $"La categoría con Id: {txtId.Text} - Nombre de categoria: {txtCategoria.Text}:";
+                            MDIPrincipal.ActualizarBarraDeEstado($"Se insertó 1 registro");
+                            U.NotificacionInformation(idyNombreCategoria + Utils.srs);   
+                            //await SignalRService.Instance
+                            //    .CategoriasHub
+                            //    .Invoke("NotificarCategoriaActualizada", "INSERT", 
+                            //    resultado.categoria.CategoryID);
+                            BorrarDatosCategoria();
+                            CargarValoresOriginales();
                         }
                         else
-                            U.NotificacionError(idyNombreCategoria + Utils.nfrs);
+                        {
+                            U.NotificacionError(resultado.mensaje);
+                        }
                     }
                     catch (Exception ex)
                     {
-                        U.MsgCatchOue(ex);
+                        U.NotificacionError("Error al insertar la categoría: " + ex.Message);
+                    }
+                    finally
+                    {
+                        MDIPrincipal.ActualizarBarraDeEstado();
                     }
                     HabilitarControles();
                     btnOperacion.Enabled = true;
                     btnCargar.Enabled = true;
                     picFoto.BackgroundImage = Properties.Resources.Categorias;
-                    ActualizaDgv();
                 }
             }
             else if (tabcOperacion.SelectedTab == tbpModificar)
@@ -370,8 +532,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     U.NotificacionWarning(Utils.ndc);
                     return; // Salir sin hacer UPDATE
                 }
-
-                // aqui no manejo la concurrencia con el entity framework, modo de simultaneidad = none, por que la concurrencia la maneja el stored procedure
                 if (ValidarControles())
                 {
                     btnOperacion.Enabled = false;
@@ -392,26 +552,43 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             Picture = fileFoto,
                             RowVersionStr = txtId.Tag.ToString() // reconstruye el byte[] a partir del string para enviarlo al BLL, y lo asigna al RowVersion del objeto categoria, ojo no eliminar esta linea porque es necesaria para el manejo de la concurrencia optimista, si se elimina se pierde la funcionalidad de la concurrencia optimista y se podrían presentar problemas de actualización sin que el usuario se dé cuenta, como por ejemplo que se sobreescriban cambios realizados por otro usuario sin que se muestre un mensaje de error indicando que hubo un conflicto de concurrencia.
                         };
-                        int numRegs = _categoriaBLL.Actualizar(categoria);
-                        MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
-                        string idyNombreCategoria = $"La categoría con Id: {txtId.Text} - Nombre de categoría: {txtCategoria.Text}:";
-                        if (numRegs > 0)
-                            U.NotificacionInformation(idyNombreCategoria + Utils.sms);
-                        else if (numRegs == 0)
-                            U.NotificacionWarning(idyNombreCategoria + Utils.ndc);
-                        else if (numRegs == -1)
-                            U.NotificacionError(idyNombreCategoria + Utils.nfmfe);
-                        else if (numRegs == -2)
-                            U.NotificacionError(idyNombreCategoria + Utils.nfmfm);
+                        var resultado = await ApiCategoriaService.ActualizarAsync(categoria);
+                        if (resultado.ok)
+                        {
+                            int numRegs = resultado.numRegs;
+                            MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
+                            string idyNombreCategoria = $"La categoría con Id: {txtId.Text} - Nombre de categoría: {txtCategoria.Text}:";
+                            if (numRegs > 0)
+                            {
+                                U.NotificacionInformation(idyNombreCategoria + Utils.sms);
+                                //await SignalRService.Instance
+                                //    .CategoriasHub
+                                //    .Invoke("NotificarCategoriaActualizada", "UPDATE",
+                                //    categoria.CategoryID);
+                            }
+                            else if (numRegs == -1)
+                                U.NotificacionError(idyNombreCategoria + Utils.nfmfe);
+                            else if (numRegs == -2)
+                                U.NotificacionError(idyNombreCategoria + Utils.nfmfm);
+                            else
+                                U.NotificacionError(idyNombreCategoria + Utils.nfmmd);
+                            BorrarDatosCategoria();
+                            CargarValoresOriginales();
+                        }
                         else
-                            U.NotificacionError(idyNombreCategoria + Utils.nfmmd);
+                        {
+                            U.NotificacionError(resultado.mensaje);
+                        }
                     }
                     catch (Exception ex)
                     {
-                        U.MsgCatchOue(ex);
+                        U.NotificacionError("Error al modificar la categoría: " + ex.Message);
+                    }
+                    finally
+                    {
+                        MDIPrincipal.ActualizarBarraDeEstado();
                     }
                     picFoto.BackgroundImage = Properties.Resources.Categorias;
-                    ActualizaDgv();
                 }
             }
             else if (tabcOperacion.SelectedTab == tbpEliminar)
@@ -420,36 +597,56 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 {
                     btnOperacion.Enabled = false;
                     MDIPrincipal.ActualizarBarraDeEstado(Utils.eliminandoRegistro);
+                    var categoria = new Categoria
+                    {
+                        CategoryID = int.Parse(txtId.Text),
+                        RowVersionStr = txtId.Tag.ToString() // reconstruye el byte[] a partir del string para enviarlo al BLL, y lo asigna al RowVersion del objeto categoria, ojo no eliminar esta linea porque es necesaria para el manejo de la concurrencia optimista, si se elimina se pierde la funcionalidad de la concurrencia optimista y se podrían presentar problemas de eliminación sin que el usuario se dé cuenta, como por ejemplo que se eliminen registros que otro usuario haya modificado sin que se muestre un mensaje de error indicando que hubo un conflicto de concurrencia.
+                    };
                     try
                     {
-                        var categoria = new Categoria
+                        var resultado = await ApiCategoriaService.EliminarAsync(categoria.CategoryID, categoria.RowVersion);
+                        if (resultado.ok)
                         {
-                            CategoryID = int.Parse(txtId.Text),
-                            RowVersionStr = txtId.Tag.ToString() // reconstruye el byte[] a partir del string para enviarlo al BLL, y lo asigna al RowVersion del objeto categoria, ojo no eliminar esta linea porque es necesaria para el manejo de la concurrencia optimista, si se elimina se pierde la funcionalidad de la concurrencia optimista y se podrían presentar problemas de eliminación sin que el usuario se dé cuenta, como por ejemplo que se eliminen registros que otro usuario haya modificado sin que se muestre un mensaje de error indicando que hubo un conflicto de concurrencia.
-                        };
-                        int numRegs = _categoriaBLL.Eliminar(categoria.CategoryID, categoria.RowVersion);
-                        MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
-                        string idyNombreCategoria = $"La categoría con Id: {txtId.Text} - Nombre de categoría: {txtCategoria.Text}:";
-                        if (numRegs > 0)
-                            U.NotificacionInformation(idyNombreCategoria + Utils.ses);
-                        else if (numRegs == 0)
-                            U.NotificacionWarning(idyNombreCategoria + Utils.ndc);
-                        else if (numRegs == -1)
-                            U.NotificacionError(idyNombreCategoria + Utils.nfefe);
-                        else if (numRegs == -2)
-                            U.NotificacionError(idyNombreCategoria + Utils.nfefm);
+                            int numRegs = resultado.numRegs;
+                            MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
+                            string idyNombreCategoria = $"La categoría con Id: {txtId.Text} - Nombre de categoría: {txtCategoria.Text}:";
+                            if (numRegs > 0)
+                            {
+                                U.NotificacionInformation(idyNombreCategoria + Utils.ses);
+                                //await SignalRService.Instance
+                                //    .CategoriasHub
+                                //    .Invoke("NotificarCategoriaActualizada", "DELETE",
+                                //    categoria.CategoryID);
+                            }
+                            else if (numRegs == -1)
+                                U.NotificacionError(idyNombreCategoria + Utils.nfefe);
+                            else if (numRegs == -2)
+                                U.NotificacionError(idyNombreCategoria + Utils.nfefm);
+                            else
+                                U.NotificacionError(idyNombreCategoria + Utils.nfemd);
+                            BorrarDatosCategoria();
+                            CargarValoresOriginales();
+                        }
                         else
-                            U.NotificacionError(idyNombreCategoria + Utils.nfemd);
+                        {
+                            U.NotificacionError(resultado.mensaje);
+                        }
                     }
                     catch (Exception ex)
                     {
                         U.MsgCatchOue(ex);
                     }
+                    finally
+                    {
+                        MDIPrincipal.ActualizarBarraDeEstado();
+                    }
                     picFoto.BackgroundImage = Properties.Resources.Categorias;
-                    ActualizaDgv();
+                }
+                else
+                { 
+                    btnOperacion.Enabled = false;
                 }
             }
-            CargarValoresOriginales();
         }
 
         private void btnCargar_Click(object sender, EventArgs e)

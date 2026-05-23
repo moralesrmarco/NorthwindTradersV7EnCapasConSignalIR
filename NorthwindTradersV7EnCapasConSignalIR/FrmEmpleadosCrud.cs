@@ -714,12 +714,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                                 $"Se insertó 1 registro");
                             U.NotificacionInformation(
                                 idyNombre + Utils.srs);
-                            await SignalRService.Instance
-                                .EmpleadosHub
-                                .Invoke(
-                                    "NotificarEmpleadoActualizado",
-                                    "INSERT",
-                                    resultado.empleado.EmployeeID);
+                            //await SignalRService.Instance
+                            //    .EmpleadosHub
+                            //    .Invoke(
+                            //        "NotificarEmpleadoActualizado",
+                            //        "INSERT",
+                            //        resultado.empleado.EmployeeID);
                             BorrarDatosEmpleado();
                             CargarValoresOriginales();
                         }
@@ -784,8 +784,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         {
                             empleado.Photo = Utils.ImageToByteArray(picFoto.Image);
                         }
-                        //var valorPais = cboPais.SelectedValue?.ToString();
-
                         var resultado = await ApiEmpleadoService.ActualizarAsync(empleado);
 
                         if (resultado.ok)
@@ -801,12 +799,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             if (numRegs > 0)
                             { 
                                 U.NotificacionInformation(idyNombre + Utils.sms);
-                                await SignalRService.Instance
-                                    .EmpleadosHub
-                                    .Invoke(
-                                        "NotificarEmpleadoActualizado",
-                                        "UPDATE",
-                                        empleado.EmployeeID);
+                                //await SignalRService.Instance
+                                //    .EmpleadosHub
+                                //    .Invoke(
+                                //        "NotificarEmpleadoActualizado",
+                                //        "UPDATE",
+                                //        empleado.EmployeeID);
                             }
                             else if (numRegs == -1)
                                 U.NotificacionError(idyNombre + Utils.nfmfe);
@@ -862,12 +860,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             if (numRegs > 0)
                             {
                                 U.NotificacionInformation(idyNombre + Utils.ses);
-                                await SignalRService.Instance
-                                    .EmpleadosHub
-                                    .Invoke(
-                                        "NotificarEmpleadoActualizado",
-                                        "DELETE",
-                                        empleado.EmployeeID);
+                                //await SignalRService.Instance
+                                //    .EmpleadosHub
+                                //    .Invoke(
+                                //        "NotificarEmpleadoActualizado",
+                                //        "DELETE",
+                                //        empleado.EmployeeID);
                             }
                             else if (numRegs == -1)
                                 U.NotificacionError(idyNombre + Utils.nfefe);

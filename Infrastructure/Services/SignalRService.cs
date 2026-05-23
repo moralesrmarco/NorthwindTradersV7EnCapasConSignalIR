@@ -29,6 +29,7 @@ namespace Infrastructure.Services
         public IHubProxy EmpleadosHub { get; private set; }
         public IHubProxy ClientesHub { get; private set; }
         public IHubProxy ProveedoresHub { get; private set; }
+        public IHubProxy CategoriasHub { get; private set; }
 
         private readonly List<Action> _subscriptions =
             new List<Action>();
@@ -106,6 +107,8 @@ namespace Infrastructure.Services
                     _connection.CreateHubProxy("ClientesHub");
                 ProveedoresHub =
                     _connection.CreateHubProxy("ProveedoresHub");
+                CategoriasHub =
+                    _connection.CreateHubProxy("CategoriasHub");
 
                 // registrar nuevamente las suscripciones
                 foreach (var sub in _subscriptions)
@@ -145,6 +148,7 @@ namespace Infrastructure.Services
                 EmpleadosHub = null;
                 ClientesHub = null;
                 ProveedoresHub = null;
+                CategoriasHub = null;
 
                 _cerrandoManual = false;
             }
@@ -215,67 +219,6 @@ namespace Infrastructure.Services
             }
         }
 
-        //private async Task ConnectionClosedHandler()
-        //{
-        //    if (_reconectando)
-        //        return;
-
-        //    _reconectando = true;
-
-        //    try
-        //    {
-        //        EstadoConexion?.Invoke(
-        //            "Conexión perdida. Reconectando...");
-
-        //        // esperar unos segundos
-        //        await Task.Delay(5000);
-
-        //        bool reconectado =
-        //            await ReconectarAsync();
-
-        //        if (reconectado)
-        //        {
-        //            EstadoConexion?.Invoke(
-        //                "Reconectado correctamente.");
-        //        }
-        //        else
-        //        {
-        //            EstadoConexion?.Invoke(
-        //                "No se pudo reconectar.");
-
-        //            SolicitarLogout?.Invoke();
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        ErrorConexion?.Invoke(ex.Message);
-
-        //        SolicitarLogout?.Invoke();
-        //    }
-        //    finally
-        //    {
-        //        _reconectando = false;
-        //    }
-        //}
-
-        //private Task ConnectionClosedHandler()
-        //{
-        //    if (_reconectando)
-        //        return Task.CompletedTask;
-
-        //    _reconectando = true;
-
-        //    try
-        //    {
-        //        SolicitarLogout?.Invoke();
-        //        return Task.CompletedTask;
-        //    }
-        //    finally
-        //    {
-        //        _reconectando = false;
-        //    }
-        //}
-
         // =========================
         // RECONECTAR
         // =========================
@@ -304,6 +247,7 @@ namespace Infrastructure.Services
                 EmpleadosHub = null;
                 ClientesHub = null;
                 ProveedoresHub = null;
+                CategoriasHub = null;
 
                 await ConectarAsync();
 
@@ -314,22 +258,6 @@ namespace Infrastructure.Services
                 return false;
             }
         }
-
-        //public async Task<bool> ReconectarAsync()
-        //{
-        //    try
-        //    {
-        //        await DesconectarAsync();
-
-        //        await ConectarAsync();
-
-        //        return true;
-        //    }
-        //    catch
-        //    {
-        //        return false;
-        //    }
-        //}
 
         public void RegistrarSuscripcion(Action accion)
         {

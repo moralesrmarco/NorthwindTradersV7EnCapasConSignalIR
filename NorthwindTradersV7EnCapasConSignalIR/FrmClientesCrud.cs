@@ -610,12 +610,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             MDIPrincipal.ActualizarBarraDeEstado(
                                 $"Se insertó 1 registro");
                             U.NotificacionInformation(idyNombreCompania + Utils.srs);
-                            await SignalRService.Instance
-                                .ClientesHub
-                                .Invoke(
-                                    "NotificarClienteActualizado",
-                                    "INSERT",
-                                    resultado.cliente.CustomerID);
+                            //await SignalRService.Instance
+                            //    .ClientesHub
+                            //    .Invoke(
+                            //        "NotificarClienteActualizado",
+                            //        "INSERT",
+                            //        resultado.cliente.CustomerID);
                             BorrarDatosCliente();
                             CargarValoresOriginales();
                         }
@@ -673,12 +673,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             if (numRegs > 0)
                             {
                                 U.NotificacionInformation(idyNombreCompania + Utils.sms);
-                                await SignalRService.Instance
-                                    .ClientesHub
-                                    .Invoke(
-                                        "NotificarClienteActualizado",
-                                        "UPDATE",
-                                        cliente.CustomerID);
+                                //await SignalRService.Instance
+                                //    .ClientesHub
+                                //    .Invoke(
+                                //        "NotificarClienteActualizado",
+                                //        "UPDATE",
+                                //        cliente.CustomerID);
                             }
                             else if (numRegs == -1)
                                 U.NotificacionError(idyNombreCompania + Utils.nfmfe);
@@ -724,12 +724,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             if (numRegs > 0)
                             {
                                 U.NotificacionInformation(idyNombreCompania + Utils.ses);
-                                await SignalRService.Instance
-                                    .ClientesHub
-                                    .Invoke(
-                                        "NotificarClienteActualizado",
-                                        "DELETE",
-                                        cliente.CustomerID);
+                                //await SignalRService.Instance
+                                //    .ClientesHub
+                                //    .Invoke(
+                                //        "NotificarClienteActualizado",
+                                //        "DELETE",
+                                //        cliente.CustomerID);
                             }
                             else if (numRegs == -1)
                                 U.NotificacionError(idyNombreCompania + Utils.nfefe);

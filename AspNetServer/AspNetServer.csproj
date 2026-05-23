@@ -274,6 +274,7 @@
       <DependentUpon>Contact.aspx</DependentUpon>
     </Compile>
     <Compile Include="Controllers\AuthController.cs" />
+    <Compile Include="Controllers\CategoriasController.cs" />
     <Compile Include="Controllers\ClientesController.cs" />
     <Compile Include="Controllers\EmpleadosController.cs" />
     <Compile Include="Controllers\ProveedoresController.cs" />
@@ -287,11 +288,13 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Hubs\CategoriasHub.cs" />
     <Compile Include="Hubs\ChatHub.cs" />
     <Compile Include="Hubs\ClientesHub.cs" />
     <Compile Include="Hubs\EmpleadosHub.cs" />
     <Compile Include="Hubs\ProveedoresHub.cs" />
     <Compile Include="Models\RefreshRequest.cs" />
+    <Compile Include="Notifications\CategoriaNotifier.cs" />
     <Compile Include="Notifications\ClienteNotifier.cs" />
     <Compile Include="Notifications\EmpleadoNotifier.cs" />
     <Compile Include="Notifications\ProveedorNotifier.cs" />

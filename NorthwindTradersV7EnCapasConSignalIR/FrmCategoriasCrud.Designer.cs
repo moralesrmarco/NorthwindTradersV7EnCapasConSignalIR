@@ -88,7 +88,6 @@
             // 
             this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer2.Location = new System.Drawing.Point(0, 0);
-            this.splitContainer2.Margin = new System.Windows.Forms.Padding(4);
             this.splitContainer2.Name = "splitContainer2";
             this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -99,9 +98,8 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.grbCategoria);
-            this.splitContainer2.Size = new System.Drawing.Size(942, 670);
-            this.splitContainer2.SplitterDistance = 332;
-            this.splitContainer2.SplitterWidth = 5;
+            this.splitContainer2.Size = new System.Drawing.Size(707, 544);
+            this.splitContainer2.SplitterDistance = 269;
             this.splitContainer2.TabIndex = 0;
             // 
             // grbCategorias
@@ -110,10 +108,9 @@
             this.grbCategorias.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grbCategorias.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.grbCategorias.Location = new System.Drawing.Point(0, 0);
-            this.grbCategorias.Margin = new System.Windows.Forms.Padding(4);
             this.grbCategorias.Name = "grbCategorias";
-            this.grbCategorias.Padding = new System.Windows.Forms.Padding(25);
-            this.grbCategorias.Size = new System.Drawing.Size(942, 332);
+            this.grbCategorias.Padding = new System.Windows.Forms.Padding(19, 20, 19, 20);
+            this.grbCategorias.Size = new System.Drawing.Size(707, 269);
             this.grbCategorias.TabIndex = 0;
             this.grbCategorias.TabStop = false;
             this.grbCategorias.Text = "»   Categorías:   «";
@@ -123,11 +120,10 @@
             // 
             this.Dgv.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.Dgv.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.Dgv.Location = new System.Drawing.Point(25, 41);
-            this.Dgv.Margin = new System.Windows.Forms.Padding(4);
+            this.Dgv.Location = new System.Drawing.Point(19, 33);
             this.Dgv.Name = "Dgv";
             this.Dgv.RowHeadersWidth = 51;
-            this.Dgv.Size = new System.Drawing.Size(892, 266);
+            this.Dgv.Size = new System.Drawing.Size(669, 216);
             this.Dgv.TabIndex = 0;
             this.Dgv.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.Dgv_CellClick);
             this.Dgv.ColumnHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.Dgv_ColumnHeaderMouseClick);
@@ -147,10 +143,8 @@
             this.grbCategoria.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grbCategoria.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.grbCategoria.Location = new System.Drawing.Point(0, 0);
-            this.grbCategoria.Margin = new System.Windows.Forms.Padding(4);
             this.grbCategoria.Name = "grbCategoria";
-            this.grbCategoria.Padding = new System.Windows.Forms.Padding(4);
-            this.grbCategoria.Size = new System.Drawing.Size(942, 333);
+            this.grbCategoria.Size = new System.Drawing.Size(707, 271);
             this.grbCategoria.TabIndex = 0;
             this.grbCategoria.TabStop = false;
             this.grbCategoria.Text = "»   Categoría:   «";
@@ -159,10 +153,9 @@
             // btnOperacion
             // 
             this.btnOperacion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnOperacion.Location = new System.Drawing.Point(693, 298);
-            this.btnOperacion.Margin = new System.Windows.Forms.Padding(4);
+            this.btnOperacion.Location = new System.Drawing.Point(520, 242);
             this.btnOperacion.Name = "btnOperacion";
-            this.btnOperacion.Size = new System.Drawing.Size(213, 28);
+            this.btnOperacion.Size = new System.Drawing.Size(160, 23);
             this.btnOperacion.TabIndex = 9;
             this.btnOperacion.Text = "Registrar categoría";
             this.btnOperacion.UseVisualStyleBackColor = true;
@@ -172,10 +165,9 @@
             // btnCargar
             // 
             this.btnCargar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnCargar.Location = new System.Drawing.Point(693, 264);
-            this.btnCargar.Margin = new System.Windows.Forms.Padding(4);
+            this.btnCargar.Location = new System.Drawing.Point(520, 214);
             this.btnCargar.Name = "btnCargar";
-            this.btnCargar.Size = new System.Drawing.Size(213, 28);
+            this.btnCargar.Size = new System.Drawing.Size(160, 23);
             this.btnCargar.TabIndex = 8;
             this.btnCargar.Text = "Cargar imagen ...";
             this.btnCargar.UseVisualStyleBackColor = true;
@@ -184,15 +176,14 @@
             // 
             // picFoto
             // 
-            this.picFoto.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.picFoto.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.picFoto.BackgroundImage = global::NorthwindTradersV7EnCapasConSignalIR.Properties.Resources.Categorias;
             this.picFoto.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.picFoto.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.picFoto.Location = new System.Drawing.Point(245, 118);
-            this.picFoto.Margin = new System.Windows.Forms.Padding(4);
+            this.picFoto.Location = new System.Drawing.Point(184, 96);
             this.picFoto.Name = "picFoto";
-            this.picFoto.Size = new System.Drawing.Size(426, 207);
+            this.picFoto.Size = new System.Drawing.Size(320, 169);
             this.picFoto.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.picFoto.TabIndex = 7;
             this.picFoto.TabStop = false;
@@ -200,20 +191,18 @@
             // txtDescripcion
             // 
             this.txtDescripcion.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtDescripcion.Location = new System.Drawing.Point(245, 79);
-            this.txtDescripcion.Margin = new System.Windows.Forms.Padding(4);
+            this.txtDescripcion.Location = new System.Drawing.Point(184, 64);
             this.txtDescripcion.Name = "txtDescripcion";
-            this.txtDescripcion.Size = new System.Drawing.Size(681, 23);
+            this.txtDescripcion.Size = new System.Drawing.Size(512, 20);
             this.txtDescripcion.TabIndex = 6;
             // 
             // txtCategoria
             // 
             this.txtCategoria.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtCategoria.Location = new System.Drawing.Point(245, 49);
-            this.txtCategoria.Margin = new System.Windows.Forms.Padding(4);
+            this.txtCategoria.Location = new System.Drawing.Point(184, 40);
             this.txtCategoria.MaxLength = 15;
             this.txtCategoria.Name = "txtCategoria";
-            this.txtCategoria.Size = new System.Drawing.Size(265, 23);
+            this.txtCategoria.Size = new System.Drawing.Size(200, 20);
             this.txtCategoria.TabIndex = 5;
             // 
             // txtId
@@ -221,60 +210,54 @@
             this.txtId.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
             this.txtId.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtId.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtId.Location = new System.Drawing.Point(245, 20);
-            this.txtId.Margin = new System.Windows.Forms.Padding(4);
+            this.txtId.Location = new System.Drawing.Point(184, 16);
             this.txtId.Name = "txtId";
             this.txtId.ReadOnly = true;
-            this.txtId.Size = new System.Drawing.Size(132, 26);
+            this.txtId.Size = new System.Drawing.Size(100, 23);
             this.txtId.TabIndex = 4;
             // 
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(185, 113);
-            this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label11.Location = new System.Drawing.Point(139, 92);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(45, 17);
+            this.label11.Size = new System.Drawing.Size(36, 13);
             this.label11.TabIndex = 3;
             this.label11.Text = "Foto:";
             // 
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(129, 84);
-            this.label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label10.Location = new System.Drawing.Point(97, 68);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(98, 17);
+            this.label10.Size = new System.Drawing.Size(78, 13);
             this.label10.TabIndex = 2;
             this.label10.Text = "Descripción:";
             // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(144, 54);
-            this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label9.Location = new System.Drawing.Point(108, 44);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(83, 17);
+            this.label9.Size = new System.Drawing.Size(67, 13);
             this.label9.TabIndex = 1;
             this.label9.Text = "Categoría:";
             // 
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(204, 25);
-            this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label8.Location = new System.Drawing.Point(153, 20);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(26, 17);
+            this.label8.Size = new System.Drawing.Size(22, 13);
             this.label8.TabIndex = 0;
             this.label8.Text = "Id:";
             // 
             // btnLimpiar
             // 
             this.btnLimpiar.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnLimpiar.Location = new System.Drawing.Point(176, 364);
-            this.btnLimpiar.Margin = new System.Windows.Forms.Padding(4);
+            this.btnLimpiar.Location = new System.Drawing.Point(132, 296);
             this.btnLimpiar.Name = "btnLimpiar";
-            this.btnLimpiar.Size = new System.Drawing.Size(133, 28);
+            this.btnLimpiar.Size = new System.Drawing.Size(100, 23);
             this.btnLimpiar.TabIndex = 7;
             this.btnLimpiar.Text = "Limpiar";
             this.btnLimpiar.UseVisualStyleBackColor = true;
@@ -282,10 +265,9 @@
             // 
             // btnBuscar
             // 
-            this.btnBuscar.Location = new System.Drawing.Point(176, 305);
-            this.btnBuscar.Margin = new System.Windows.Forms.Padding(4);
+            this.btnBuscar.Location = new System.Drawing.Point(132, 248);
             this.btnBuscar.Name = "btnBuscar";
-            this.btnBuscar.Size = new System.Drawing.Size(133, 28);
+            this.btnBuscar.Size = new System.Drawing.Size(100, 23);
             this.btnBuscar.TabIndex = 6;
             this.btnBuscar.Text = "Buscar";
             this.btnBuscar.UseVisualStyleBackColor = true;
@@ -294,21 +276,19 @@
             // txtBCategoria
             // 
             this.txtBCategoria.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtBCategoria.Location = new System.Drawing.Point(117, 245);
-            this.txtBCategoria.Margin = new System.Windows.Forms.Padding(4);
+            this.txtBCategoria.Location = new System.Drawing.Point(88, 199);
             this.txtBCategoria.MaxLength = 15;
             this.txtBCategoria.Name = "txtBCategoria";
-            this.txtBCategoria.Size = new System.Drawing.Size(191, 23);
+            this.txtBCategoria.Size = new System.Drawing.Size(144, 20);
             this.txtBCategoria.TabIndex = 5;
             // 
             // txtBIdFin
             // 
             this.txtBIdFin.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtBIdFin.Location = new System.Drawing.Point(117, 165);
-            this.txtBIdFin.Margin = new System.Windows.Forms.Padding(4);
+            this.txtBIdFin.Location = new System.Drawing.Point(88, 134);
             this.txtBIdFin.MaxLength = 10;
             this.txtBIdFin.Name = "txtBIdFin";
-            this.txtBIdFin.Size = new System.Drawing.Size(132, 23);
+            this.txtBIdFin.Size = new System.Drawing.Size(100, 20);
             this.txtBIdFin.TabIndex = 4;
             this.txtBIdFin.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.txtBIdFin.Enter += new System.EventHandler(this.txtBId_Enter);
@@ -318,11 +298,10 @@
             // txtBIdIni
             // 
             this.txtBIdIni.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtBIdIni.Location = new System.Drawing.Point(117, 85);
-            this.txtBIdIni.Margin = new System.Windows.Forms.Padding(4);
+            this.txtBIdIni.Location = new System.Drawing.Point(88, 69);
             this.txtBIdIni.MaxLength = 10;
             this.txtBIdIni.Name = "txtBIdIni";
-            this.txtBIdIni.Size = new System.Drawing.Size(132, 23);
+            this.txtBIdIni.Size = new System.Drawing.Size(100, 20);
             this.txtBIdIni.TabIndex = 3;
             this.txtBIdIni.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.txtBIdIni.Enter += new System.EventHandler(this.txtBId_Enter);
@@ -336,20 +315,18 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(32, 209);
-            this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label7.Location = new System.Drawing.Point(24, 170);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(83, 17);
+            this.label7.Size = new System.Drawing.Size(67, 13);
             this.label7.TabIndex = 2;
             this.label7.Text = "Categoría:";
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(32, 129);
-            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label6.Location = new System.Drawing.Point(24, 105);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(62, 17);
+            this.label6.Size = new System.Drawing.Size(50, 13);
             this.label6.TabIndex = 1;
             this.label6.Text = "Id final:";
             // 
@@ -366,10 +343,8 @@
             this.grbBuscar.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grbBuscar.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.grbBuscar.Location = new System.Drawing.Point(0, 0);
-            this.grbBuscar.Margin = new System.Windows.Forms.Padding(4);
             this.grbBuscar.Name = "grbBuscar";
-            this.grbBuscar.Padding = new System.Windows.Forms.Padding(4);
-            this.grbBuscar.Size = new System.Drawing.Size(333, 670);
+            this.grbBuscar.Size = new System.Drawing.Size(249, 544);
             this.grbBuscar.TabIndex = 0;
             this.grbBuscar.TabStop = false;
             this.grbBuscar.Text = "»   Buscar una categoría:   «";
@@ -378,20 +353,18 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(32, 49);
-            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label5.Location = new System.Drawing.Point(24, 40);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(73, 17);
+            this.label5.Size = new System.Drawing.Size(59, 13);
             this.label5.TabIndex = 0;
             this.label5.Text = "Id inicial:";
             // 
             // splitContainer1
             // 
-            this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.splitContainer1.Location = new System.Drawing.Point(16, 87);
-            this.splitContainer1.Margin = new System.Windows.Forms.Padding(4);
+            this.splitContainer1.Location = new System.Drawing.Point(12, 71);
             this.splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
@@ -401,18 +374,16 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
-            this.splitContainer1.Size = new System.Drawing.Size(1280, 670);
-            this.splitContainer1.SplitterDistance = 333;
-            this.splitContainer1.SplitterWidth = 5;
+            this.splitContainer1.Size = new System.Drawing.Size(960, 544);
+            this.splitContainer1.SplitterDistance = 249;
             this.splitContainer1.TabIndex = 3;
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(21, 10);
-            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label4.Location = new System.Drawing.Point(16, 8);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(883, 16);
+            this.label4.Size = new System.Drawing.Size(701, 13);
             this.label4.TabIndex = 0;
             this.label4.Text = "Busque la categoría a eliminar y seleccionela en la lista que se muestra, no se p" +
     "ueden eliminar categorías que ya estan relacionados a un producto";
@@ -420,11 +391,10 @@
             // tbpEliminar
             // 
             this.tbpEliminar.Controls.Add(this.label4);
-            this.tbpEliminar.Location = new System.Drawing.Point(4, 25);
-            this.tbpEliminar.Margin = new System.Windows.Forms.Padding(4);
+            this.tbpEliminar.Location = new System.Drawing.Point(4, 22);
             this.tbpEliminar.Name = "tbpEliminar";
-            this.tbpEliminar.Padding = new System.Windows.Forms.Padding(4);
-            this.tbpEliminar.Size = new System.Drawing.Size(1272, 40);
+            this.tbpEliminar.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tbpEliminar.Size = new System.Drawing.Size(952, 30);
             this.tbpEliminar.TabIndex = 3;
             this.tbpEliminar.Text = "   Eliminar categoría   ";
             this.tbpEliminar.UseVisualStyleBackColor = true;
@@ -432,10 +402,9 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(21, 10);
-            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label3.Location = new System.Drawing.Point(16, 8);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(589, 16);
+            this.label3.Size = new System.Drawing.Size(466, 13);
             this.label3.TabIndex = 0;
             this.label3.Text = "Busque la categoría y seleccionela en la lista que se muestra para que pueda modi" +
     "ficar sus datos";
@@ -443,11 +412,10 @@
             // tbpModificar
             // 
             this.tbpModificar.Controls.Add(this.label3);
-            this.tbpModificar.Location = new System.Drawing.Point(4, 25);
-            this.tbpModificar.Margin = new System.Windows.Forms.Padding(4);
+            this.tbpModificar.Location = new System.Drawing.Point(4, 22);
             this.tbpModificar.Name = "tbpModificar";
-            this.tbpModificar.Padding = new System.Windows.Forms.Padding(4);
-            this.tbpModificar.Size = new System.Drawing.Size(1272, 40);
+            this.tbpModificar.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tbpModificar.Size = new System.Drawing.Size(952, 30);
             this.tbpModificar.TabIndex = 2;
             this.tbpModificar.Text = "   Modificar categoría   ";
             this.tbpModificar.UseVisualStyleBackColor = true;
@@ -455,21 +423,19 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(21, 10);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label2.Location = new System.Drawing.Point(16, 8);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(295, 16);
+            this.label2.Size = new System.Drawing.Size(233, 13);
             this.label2.TabIndex = 0;
             this.label2.Text = "Proporcione los datos de la categoría a registrar";
             // 
             // tbpRegistrar
             // 
             this.tbpRegistrar.Controls.Add(this.label2);
-            this.tbpRegistrar.Location = new System.Drawing.Point(4, 25);
-            this.tbpRegistrar.Margin = new System.Windows.Forms.Padding(4);
+            this.tbpRegistrar.Location = new System.Drawing.Point(4, 22);
             this.tbpRegistrar.Name = "tbpRegistrar";
-            this.tbpRegistrar.Padding = new System.Windows.Forms.Padding(4);
-            this.tbpRegistrar.Size = new System.Drawing.Size(1272, 40);
+            this.tbpRegistrar.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tbpRegistrar.Size = new System.Drawing.Size(952, 30);
             this.tbpRegistrar.TabIndex = 1;
             this.tbpRegistrar.Text = "   Registrar categoría   ";
             this.tbpRegistrar.UseVisualStyleBackColor = true;
@@ -477,10 +443,9 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(21, 10);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Location = new System.Drawing.Point(16, 8);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(485, 16);
+            this.label1.Size = new System.Drawing.Size(385, 13);
             this.label1.TabIndex = 0;
             this.label1.Text = "Busque la categoría y seleccionela en la lista que se muestra para ver su detalle" +
     "";
@@ -488,42 +453,39 @@
             // tbpConsultar
             // 
             this.tbpConsultar.Controls.Add(this.label1);
-            this.tbpConsultar.Location = new System.Drawing.Point(4, 25);
-            this.tbpConsultar.Margin = new System.Windows.Forms.Padding(4);
+            this.tbpConsultar.Location = new System.Drawing.Point(4, 22);
             this.tbpConsultar.Name = "tbpConsultar";
-            this.tbpConsultar.Padding = new System.Windows.Forms.Padding(4);
-            this.tbpConsultar.Size = new System.Drawing.Size(1272, 40);
+            this.tbpConsultar.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tbpConsultar.Size = new System.Drawing.Size(952, 30);
             this.tbpConsultar.TabIndex = 0;
             this.tbpConsultar.Text = "   Consultar categoría   ";
             this.tbpConsultar.UseVisualStyleBackColor = true;
             // 
             // tabcOperacion
             // 
-            this.tabcOperacion.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.tabcOperacion.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabcOperacion.Controls.Add(this.tbpConsultar);
             this.tabcOperacion.Controls.Add(this.tbpRegistrar);
             this.tabcOperacion.Controls.Add(this.tbpModificar);
             this.tabcOperacion.Controls.Add(this.tbpEliminar);
-            this.tabcOperacion.Location = new System.Drawing.Point(16, 8);
-            this.tabcOperacion.Margin = new System.Windows.Forms.Padding(4);
+            this.tabcOperacion.Location = new System.Drawing.Point(12, 6);
             this.tabcOperacion.Name = "tabcOperacion";
             this.tabcOperacion.SelectedIndex = 0;
-            this.tabcOperacion.Size = new System.Drawing.Size(1280, 69);
+            this.tabcOperacion.Size = new System.Drawing.Size(960, 56);
             this.tabcOperacion.TabIndex = 2;
             this.tabcOperacion.Selecting += new System.Windows.Forms.TabControlCancelEventHandler(this.tabcOperacion_Selecting);
             this.tabcOperacion.Selected += new System.Windows.Forms.TabControlEventHandler(this.tabcOperacion_Selected);
             // 
             // FrmCategoriasCrud
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1312, 764);
+            this.ClientSize = new System.Drawing.Size(984, 621);
             this.ControlBox = false;
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.tabcOperacion);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "FrmCategoriasCrud";
             this.Text = "» Mantenimiento de categorías «";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmCategoriasCrud_FormClosing);
