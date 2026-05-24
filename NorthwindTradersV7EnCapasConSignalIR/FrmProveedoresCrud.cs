@@ -690,12 +690,14 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             if (numRegs > 0)
                             {
                                 U.NotificacionInformation(idyNombre + Utils.ses);
-                                //await SignalRService
-                                //    .Instance
-                                //    .ProveedoresHub
-                                //    .Invoke(
-                                //        "NotificarProveedorActualizado", "DELETE",
-                                //        proveedor.SupplierID);
+                                // por algun motivo no se hace la notificacion a través de SignalR, aunque el procedimiento almacenado se ejecute correctamente y retorne el número de registros afectados, por lo que se fuerza la notificación desde el cliente 
+                                // ojo en esto difiere de los demas crud, ya busque pero no encuentro que pasa, el caso es que no se notifica a través de SignalR, aunque el procedimiento almacenado se ejecute correctamente y retorne el número de registros afectados, por lo que se fuerza la notificación desde el cliente
+                                await SignalRService
+                                    .Instance
+                                    .ProveedoresHub
+                                    .Invoke(
+                                        "NotificarProveedorActualizado", "DELETE",
+                                        proveedor.SupplierID);
                             }
                             else if (numRegs == -1)
                                 U.NotificacionError(idyNombre + Utils.nfefe);

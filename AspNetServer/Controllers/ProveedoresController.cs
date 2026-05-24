@@ -26,8 +26,10 @@ namespace AspNetServer.Controllers
             int numRegs = _proveedorBLL.Insertar(proveedor);
 
             if (numRegs > 0)
+            {
                 await ProveedorNotifier.Insertado(
                     proveedor.SupplierID);
+            }
 
             return Ok(new
             {
