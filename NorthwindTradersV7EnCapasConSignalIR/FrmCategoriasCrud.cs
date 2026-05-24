@@ -498,10 +498,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             string idyNombreCategoria = $"La categoría con Id: {txtId.Text} - Nombre de categoria: {txtCategoria.Text}:";
                             MDIPrincipal.ActualizarBarraDeEstado($"Se insertó 1 registro");
                             U.NotificacionInformation(idyNombreCategoria + Utils.srs);   
-                            //await SignalRService.Instance
-                            //    .CategoriasHub
-                            //    .Invoke("NotificarCategoriaActualizada", "INSERT", 
-                            //    resultado.categoria.CategoryID);
                             BorrarDatosCategoria();
                             CargarValoresOriginales();
                         }
@@ -561,10 +557,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             if (numRegs > 0)
                             {
                                 U.NotificacionInformation(idyNombreCategoria + Utils.sms);
-                                //await SignalRService.Instance
-                                //    .CategoriasHub
-                                //    .Invoke("NotificarCategoriaActualizada", "UPDATE",
-                                //    categoria.CategoryID);
                             }
                             else if (numRegs == -1)
                                 U.NotificacionError(idyNombreCategoria + Utils.nfmfe);
@@ -613,10 +605,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             if (numRegs > 0)
                             {
                                 U.NotificacionInformation(idyNombreCategoria + Utils.ses);
-                                //await SignalRService.Instance
-                                //    .CategoriasHub
-                                //    .Invoke("NotificarCategoriaActualizada", "DELETE",
-                                //    categoria.CategoryID);
                             }
                             else if (numRegs == -1)
                                 U.NotificacionError(idyNombreCategoria + Utils.nfefe);
