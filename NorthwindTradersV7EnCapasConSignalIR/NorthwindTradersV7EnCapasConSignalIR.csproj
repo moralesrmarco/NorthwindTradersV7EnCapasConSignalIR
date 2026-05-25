@@ -453,6 +453,7 @@
     <Compile Include="Services\ApiCategoriaService.cs" />
     <Compile Include="Services\ApiClienteService.cs" />
     <Compile Include="Services\ApiEmpleadoService.cs" />
+    <Compile Include="Services\ApiProductoService.cs" />
     <Compile Include="Services\ApiProveedorService.cs" />
     <Compile Include="Services\ApiService.cs" />
     <Compile Include="Services\AppShutdownService.cs" />

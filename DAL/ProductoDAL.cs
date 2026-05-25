@@ -233,7 +233,7 @@ namespace DAL
 
         public Producto ObtenerProductoPorId(int productId)
         {
-            Producto producto = new Producto();
+            Producto producto = null;
             try
             {
                 using (var con = new SqlConnection(_connectionString))
@@ -440,5 +440,48 @@ namespace DAL
             }
             return dtoProductoCostoEInventario;
         }
+
+        public int ObtenerProductoCategoriaId(int productoId)
+        {
+            int categoriaId = 0;
+            try
+            {
+                using (var con = new SqlConnection(_connectionString))
+                using (var cmd = new SqlCommand("SpProductoObtenerCategoriaId", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@ProductID", productoId);
+                    con.Open();
+                    categoriaId = cmd.ExecuteScalar() != DBNull.Value ? Convert.ToInt32(cmd.ExecuteScalar()) : 0;
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            return categoriaId;
+        }
+
+        public int ObtenerProductoProveedorId(int productoId)
+        {
+            int proveedorId = 0;
+            try
+            {
+                using (var con = new SqlConnection(_connectionString))
+                using (var cmd = new SqlCommand("SpProductoObtenerProveedorId", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@ProductID", productoId);
+                    con.Open();
+                    proveedorId = cmd.ExecuteScalar() != DBNull.Value ? Convert.ToInt32(cmd.ExecuteScalar()) : 0;
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            return proveedorId;
+        }
+
     }
 }

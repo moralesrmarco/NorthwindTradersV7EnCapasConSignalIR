@@ -9,46 +9,46 @@ using System.Web.Http;
 namespace AspNetServer.Controllers
 {
     [Authorize]
-    [RoutePrefix("api/proveedores")]
-    public class ProveedoresController : ApiController
+    [RoutePrefix("api/productos")]
+    public class ProductosController : ApiController
     {
-        private ProveedorBLL _proveedorBLL =
-            new ProveedorBLL(
+        private ProductoBLL _productoBLL =
+            new ProductoBLL(
                 ConfigurationManager
                 .ConnectionStrings["Northwind2ConnectionString"]
                 .ConnectionString);
 
         [HttpPost]
         [Route("insertar")]
-        [Permiso(3)]
-        public async Task<IHttpActionResult> Insertar(Proveedor proveedor)
+        [Permiso(5)]
+        public async Task<IHttpActionResult> Insertar(Producto producto)
         {
-            int numRegs = _proveedorBLL.Insertar(proveedor);
+            int numRegs = _productoBLL.Insertar(producto);
 
             if (numRegs > 0)
             {
-                await ProveedorNotifier.Insertado(
-                    proveedor.SupplierID);
+                await ProductoNotifier.Insertado(
+                    producto.ProductID);
             }
 
             return Ok(new
             {
                 NumRegs = numRegs,
-                Proveedor = proveedor
+                Producto = producto
             });
         }
 
         [HttpPut]
         [Route("actualizar")]
-        [Permiso(3)]
-        public async Task<IHttpActionResult> Actualizar(Proveedor proveedor)
+        [Permiso(5)]
+        public async Task<IHttpActionResult> Actualizar(Producto producto)
         {
-            int numRegs = _proveedorBLL.Actualizar(proveedor);
+            int numRegs = _productoBLL.Actualizar(producto);
 
             if (numRegs > 0)
             {
-                await ProveedorNotifier.Actualizado(
-                    proveedor.SupplierID);
+                await ProductoNotifier.Actualizado(
+                    producto.ProductID);
             }
 
             return Ok(numRegs);
@@ -56,7 +56,7 @@ namespace AspNetServer.Controllers
 
         [HttpDelete]
         [Route("eliminar/{id}")]
-        [Permiso(3)]
+        [Permiso(5)]
         public async Task<IHttpActionResult> Eliminar(
             int id,
             [FromUri] string rowVersion)
@@ -65,13 +65,13 @@ namespace AspNetServer.Controllers
                 Convert.FromBase64String(rowVersion);
 
             int numRegs =
-                _proveedorBLL.Eliminar(
+                _productoBLL.Eliminar(
                     id,
                     rowVersionBytes);
 
             if (numRegs > 0)
             {
-                await ProveedorNotifier.Eliminado(id);
+                await ProductoNotifier.Eliminado(id);
             }
 
             return Ok(numRegs);

@@ -113,7 +113,7 @@ namespace DAL
 
         public Proveedor ObtenerProveedorPorId(int supplierId)
         {
-            var proveedor = new Proveedor();
+            Proveedor proveedor = null;
             try
             {
                 using (var con = new SqlConnection(_connectionString))
@@ -126,6 +126,7 @@ namespace DAL
                     {
                         if (dr.Read())
                         {
+                            proveedor = new Proveedor();
                             proveedor.SupplierID = dr["SupplierID"] != DBNull.Value ? Convert.ToInt32(dr["SupplierID"]) : 0;
                             proveedor.CompanyName = dr["CompanyName"] != DBNull.Value ? dr["CompanyName"].ToString() : null;
                             proveedor.ContactName = dr["ContactName"] != DBNull.Value ? dr["ContactName"].ToString() : null;

@@ -31,5 +31,15 @@ namespace BLL.Services
         {
             return _productoDAL.ObtenerProductoCostoEInventario(productId);
         }
+
+        public int ObtenerProductoCategoriaId(int productoId)
+        {
+            return _productoDAL.ObtenerProductoCategoriaId(productoId);
+        }
+
+        public int ObtenerProductoProveedorId(int productoId)
+        {
+            return _productoDAL.ObtenerProductoProveedorId(productoId);
+        }
     }
 }

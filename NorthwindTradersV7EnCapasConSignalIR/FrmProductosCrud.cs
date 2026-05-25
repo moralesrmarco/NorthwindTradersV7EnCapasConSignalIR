@@ -2,7 +2,10 @@
 using BLL.Services;
 using Entities;
 using Entities.DTOs;
+using Infrastructure.Services;
+using Microsoft.AspNet.SignalR.Client;
 using NorthwindTradersV7EnCapasConSignalIR.Helpers;
+using NorthwindTradersV7EnCapasConSignalIR.Services;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -15,14 +18,18 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 {
     public partial class FrmProductosCrud : Form
     {
-        private bool EjecutarConfDgv = true;
-        internal Dictionary<string, object> valoresOriginales;
-
         string _connectionString = ConfigurationManager.ConnectionStrings["Northwind2ConnectionString"].ConnectionString;
         private ProductoBLL _productoBLL;
         private readonly CategoriaService _categoriaService;
         private readonly ProveedorService _proveedorService;
+        private readonly ProductoService _productoService;
+        private bool EjecutarConfDgv = true;
+        internal Dictionary<string, object> valoresOriginales;
+        private bool _realizandoBusqueda = false;
+        private bool _procesandoSignalR = false;
 
+        private IDisposable _productosSubscription;
+        
         public FrmProductosCrud()
         {
             InitializeComponent();
@@ -30,6 +37,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             _productoBLL = new ProductoBLL(_connectionString);
             _categoriaService = new CategoriaService(_connectionString);
             _proveedorService = new ProveedorService(_connectionString);
+            _productoService = new ProductoService(_connectionString);
         }
 
         private void GrbPaint(object sender, PaintEventArgs e) => Utils.GrbPaint(this, sender, e);
@@ -38,6 +46,9 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         internal void FrmProductosCrud_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (AppShutdownService.CerrandoPorLogout)
+                return;
+
             if (Utils.HayCambios(this, valoresOriginales, errorProvider1))
                 if (U.NotificacionQuestion(Utils.preguntaCerrar) == DialogResult.No)
                     e.Cancel = true;
@@ -59,6 +70,132 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             Utils.ConfDgv(Dgv);
             LlenarDgv(false);
             CargarValoresOriginales();
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            Action registrarEventos = () =>
+            {
+                _productosSubscription?.Dispose();
+
+                _productosSubscription =
+                    SignalRService.Instance.ProductosHub
+                    .On<string, int>(
+                        "productoActualizado",
+                        ProductoActualizadoHandler);
+            };
+
+            registrarEventos();
+
+            SignalRService.Instance
+                .RegistrarSuscripcion(registrarEventos);
+        }
+
+        private void ProductoActualizadoHandler(string accion, int productoId)
+        {
+            try
+            {
+                if (IsDisposed || !IsHandleCreated)
+                    return;
+
+                if (InvokeRequired)
+                {
+                    BeginInvoke(new Action(() =>
+                        ProductoActualizadoHandler(accion, productoId)));
+                    return;
+                }
+
+                if (_realizandoBusqueda)
+                    return;
+
+                if (_procesandoSignalR)
+                    return;
+
+                _procesandoSignalR = true;
+
+                // 🔥 1. SI ES DELETE → SOLO REFRESCAR LISTA Y SALIR
+                if (accion == "DELETE")
+                {
+                    LlenarDgv(false); // SOLO lista
+                    _procesandoSignalR = false;
+                    return;
+                }
+
+                // 🔥 2. PARA INSERT/UPDATE
+                LlenarDgv(false);
+                if (tabcOperacion.SelectedTab == tbpRegistrar ||
+                    tabcOperacion.SelectedTab == tbpEliminar)
+                {
+                    _procesandoSignalR = false;
+                    return;
+                }
+
+                if (!string.IsNullOrWhiteSpace(txtId.Text) &&
+                    int.TryParse(txtId.Text, out int productoActual))
+                {
+                    if (productoActual == productoId)
+                    {
+                        CargarProducto(productoId);
+                    }
+                }
+            }
+            finally
+            {
+                _procesandoSignalR = false;
+            }
+        }
+
+        protected override void OnFormClosed(
+            FormClosedEventArgs e)
+        {
+            try
+            {
+                _productosSubscription?.Dispose();
+            }
+            catch
+            {
+            }
+
+            base.OnFormClosed(e);
+        }
+
+        private bool CargarProducto(int productoId)
+        {
+            try
+            {
+                var producto =
+                    _productoBLL.ObtenerProductoPorId(productoId);
+                if (producto == null)
+                {
+                    U.NotificacionWarning(
+                        $"No se encontró el producto con Id: {productoId}." + Utils.erfep1);
+                    BorrarDatosProducto();
+                    DeshabilitarControles();
+                    btnOperacion.Enabled = false;
+                    CargarValoresOriginales();
+                    return false;
+                }
+                txtId.Text = producto.ProductID.ToString();
+                txtId.Tag = producto.RowVersion;
+                cboCategoria.SelectedValue = producto.Categoria?.CategoryID ?? 0;
+                cboProveedor.SelectedValue = producto.Proveedor?.SupplierID ?? 0;
+                txtProducto.Text = producto.ProductName ?? "";
+                txtCantidadxU.Text = producto.QuantityPerUnit ?? "";
+                nudPrecio.Value = producto.UnitPrice ?? 0m;
+                nudUInventario.Value = producto.UnitsInStock ?? 0;
+                nudUPedido.Value = producto.UnitsOnOrder ?? 0;
+                nudPPedido.Value = producto.ReorderLevel ?? 0;
+                chkbDescontinuado.Checked = producto.Discontinued;
+                CargarValoresOriginales();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                U.MsgCatchOue(ex);
+                return false;
+            }
         }
 
         private void DeshabilitarNuds()
@@ -98,11 +235,36 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-
+                bool tieneId = false;
+                int productId = 0;
+                string selectedValueCboCategoria = cboCategoria.SelectedValue?.ToString();
+                if (tabcOperacion.SelectedTab == tbpModificar) 
+                { 
+                    productId = 0;
+                    tieneId = int.TryParse(txtId.Text, out productId);
+                }
                 var dtCboCategoria = _categoriaService.ObtenerCategoriasCbo();
                 var dtBCboCategoria = dtCboCategoria.Copy();
                 ComboBoxHelper.LlenarCbo(cboCategoria, dtCboCategoria, "CategoryName", "CategoryID");
                 ComboBoxHelper.LlenarCbo(cboBCategoria, dtBCboCategoria, "CategoryName", "CategoryID");
+                if (tabcOperacion.SelectedTab == tbpModificar && tieneId)
+                {
+                    var categoriaId = _productoService.ObtenerProductoCategoriaId(productId);
+                    if (categoriaId != 0)
+                        cboCategoria.SelectedValue = categoriaId;
+                    else
+                    {
+                        if (selectedValueCboCategoria != null)
+                            cboCategoria.SelectedValue = selectedValueCboCategoria;
+                        else
+                            cboCategoria.SelectedIndex = 0;
+                    }
+                }
+                if ((tabcOperacion.SelectedTab == tbpRegistrar || tabcOperacion.SelectedTab == tbpEliminar || tabcOperacion.SelectedTab == tbpConsultar) && selectedValueCboCategoria != null)
+                {
+                    cboCategoria.SelectedValue = selectedValueCboCategoria;
+                }
+                CargarValoresOriginales();
             }
             catch (Exception ex)
             {
@@ -119,11 +281,35 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             try
             {
                 MDIPrincipal.ActualizarBarraDeEstado(Utils.clbdd);
-
+                bool tieneId = false;
+                int productId = 0;
+                string selectedValueCboProveedor = cboProveedor.SelectedValue?.ToString();
+                if (tabcOperacion.SelectedTab == tbpModificar)
+                {
+                    productId = 0;
+                    tieneId = int.TryParse(txtId.Text, out productId);
+                }
                 var dtCboProveedor = _proveedorService.ObtenerProveedoresCbo();
                 var dtBCboProveedor = dtCboProveedor.Copy();
                 ComboBoxHelper.LlenarCbo(cboProveedor, dtCboProveedor, "CompanyName", "SupplierId");
                 ComboBoxHelper.LlenarCbo(cboBProveedor, dtBCboProveedor, "CompanyName", "SupplierId");
+                if (tabcOperacion.SelectedTab == tbpModificar && tieneId)
+                {
+                    var proveedorId = _productoService.ObtenerProductoProveedorId(productId);
+                    if (proveedorId != 0)
+                        cboProveedor.SelectedValue = proveedorId;
+                    else
+                    {
+                        if (selectedValueCboProveedor != null)
+                            cboProveedor.SelectedValue = selectedValueCboProveedor;
+                        else
+                            cboProveedor.SelectedIndex = 0;
+                    }
+                }
+                if ((tabcOperacion.SelectedTab == tbpRegistrar || tabcOperacion.SelectedTab == tbpEliminar || tabcOperacion.SelectedTab == tbpConsultar) && selectedValueCboProveedor != null)
+                {
+                    cboProveedor.SelectedValue = selectedValueCboProveedor;
+                }
             }
             catch (Exception ex)
             {
@@ -175,6 +361,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     ConfDgv();
                     EjecutarConfDgv = false;
                 }
+                LlenarCombos();
                 if (selectorRealizaBusqueda)
                     MDIPrincipal.ActualizarBarraDeEstado($"Se encontraron {Dgv.RowCount} registro(s)");
                 else
@@ -230,6 +417,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 DeshabilitarControles();
             LlenarDgv(true);
             CargarValoresOriginales();
+            _realizandoBusqueda = true;
         }
 
         private void btnLimpiar_Click(object sender, EventArgs e)
@@ -241,6 +429,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 DeshabilitarControles();
             LlenarDgv(false);
             CargarValoresOriginales();
+            _realizandoBusqueda = false;
         }
 
         private void BorrarDatosProducto()
@@ -288,34 +477,28 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void Dgv_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0 || e.ColumnIndex < 0)
-                return;
+            // 🔹 Cuando viene desde un click real del DataGridView
+            if (e != null)
+            {
+                if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                    return;
+
+                DataGridViewRow dgvr = Dgv.Rows[e.RowIndex];
+
+                if (dgvr.Cells["ProductID"].Value == null)
+                    return;
+
+                txtId.Text = dgvr.Cells["ProductID"].Value.ToString();
+            }
             BorrarMensajesError();
             if (tabcOperacion.SelectedTab != tbpRegistrar)
             {
                 DeshabilitarControles();
-                DataGridViewRow dgvr = Dgv.CurrentRow;
-                txtId.Text = dgvr.Cells["ProductID"].Value.ToString();
-                Producto producto = new Producto();
                 try
                 {
-                    producto = _productoBLL.ObtenerProductoPorId(Convert.ToInt32(txtId.Text));
-                    if (producto != null)
+                    int productId = Convert.ToInt32(txtId.Text);
+                    if (!CargarProducto(productId))
                     {
-                        txtId.Tag = producto.RowVersion;
-                        cboCategoria.SelectedValue = producto.Categoria?.CategoryID ?? 0;
-                        cboProveedor.SelectedValue = producto.Proveedor?.SupplierID ?? 0;
-                        txtProducto.Text = producto.ProductName ?? "";
-                        txtCantidadxU.Text = producto.QuantityPerUnit ?? "";
-                        nudPrecio.Value = producto.UnitPrice ?? 0m;
-                        nudUInventario.Value = producto.UnitsInStock ?? 0;
-                        nudUPedido.Value = producto.UnitsOnOrder ?? 0;
-                        nudPPedido.Value = producto.ReorderLevel ?? 0;
-                        chkbDescontinuado.Checked = producto.Discontinued;
-                    }
-                    else
-                    {
-                        U.NotificacionWarning($"No se encontró el producto con Id: {txtId.Text}." + Utils.erfep);
                         ActualizaDgv();
                         return;
                     }
@@ -408,7 +591,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void nudBIdFin_ValueChanged(object sender, EventArgs e) => Utils.ValidarRango(sender, nudBIdIni, nudBIdFin);
 
-        private void btnOperacion_Click(object sender, EventArgs e)
+        private async void btnOperacion_Click(object sender, EventArgs e)
         {
             BorrarMensajesError();
             if (tabcOperacion.SelectedTab == tbpRegistrar)
@@ -440,26 +623,31 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             ReorderLevel = Convert.ToInt16(nudPPedido.Value),
                             Discontinued = chkbDescontinuado.Checked
                         };
-                        int numRegs = _productoBLL.Insertar(producto);
-                        MDIPrincipal.ActualizarBarraDeEstado($"Se insertaron {numRegs} registro(s)");
-                        string idNombreProducto = $"El producto con Id: {txtId.Text} - Nombre de producto: {txtProducto.Text}:";
-                        if (numRegs > 0)
+                        var resultado = await ApiProductoService.InsertarAsync(producto);
+                        if (resultado.ok)
                         {
-                            txtId.Text = producto.ProductID.ToString();
-                            idNombreProducto = $"El producto con Id: {txtId.Text} - Nombre de producto: {txtProducto.Text}:";
+                            txtId.Text = resultado.producto.ProductID.ToString();
+                            string idNombreProducto = $"El producto con Id: {txtId.Text} - Nombre de producto: {txtProducto.Text}:";
+                            MDIPrincipal.ActualizarBarraDeEstado($"Se insertó 1 registro");
                             U.NotificacionInformation(idNombreProducto + Utils.srs);
+                            BorrarDatosProducto();
+                            CargarValoresOriginales();
                         }
                         else
-                            U.NotificacionError(idNombreProducto + Utils.nfrs);
+                        {
+                            U.NotificacionError(resultado.mensaje);
+                        }
                     }
                     catch (Exception ex)
                     {
-                        U.MsgCatchOue(ex);
+                        U.NotificacionError("Error al insertar el producto: " + ex.Message);
+                    }
+                    finally
+                    {
+                        MDIPrincipal.ActualizarBarraDeEstado();
                     }
                     HabilitarControles();
                     btnOperacion.Enabled = true;
-                    LlenarCombos();
-                    ActualizaDgv();
                 }
             }
             else if (tabcOperacion.SelectedTab == tbpModificar)
@@ -499,24 +687,36 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             Discontinued = chkbDescontinuado.Checked,
                             RowVersion = (byte[])txtId.Tag
                         };
-                        int numRegs = _productoBLL.Actualizar(producto);
-                        MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
-                        string idNombreProducto = $"El producto con Id: {txtId.Text} - Nombre de producto: {txtProducto.Text}:";
-                        if (numRegs > 0)
-                            U.NotificacionInformation(idNombreProducto + Utils.sms);
-                        else if (numRegs == -1)
-                            U.NotificacionError(idNombreProducto + Utils.nfmfe);
-                        else if (numRegs == -2)
-                            U.NotificacionError(idNombreProducto + Utils.nfmfm);
+                        var resultado = await ApiProductoService.ActualizarAsync(producto);
+                        if (resultado.ok)
+                        { 
+                            int numRegs = resultado.numRegs;
+                            MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
+                            string idNombreProducto = $"El producto con Id: {txtId.Text} - Nombre de producto: {txtProducto.Text}:";
+                            if (numRegs > 0)
+                                U.NotificacionInformation(idNombreProducto + Utils.sms);
+                            else if (numRegs == -1)
+                                U.NotificacionError(idNombreProducto + Utils.nfmfe);
+                            else if (numRegs == -2)
+                                U.NotificacionError(idNombreProducto + Utils.nfmfm);
+                            else
+                                U.NotificacionError(idNombreProducto + Utils.nfmmd);
+                            BorrarDatosProducto();
+                            CargarValoresOriginales();
+                        }
                         else
-                            U.NotificacionError(idNombreProducto + Utils.nfmmd);
+                        {
+                            U.NotificacionError(resultado.mensaje);
+                        }
                     }
                     catch (Exception ex)
                     {
-                        U.MsgCatchOue(ex);
+                        U.NotificacionError("Error al modificar el producto: " + ex.Message);
                     }
-                    LlenarCombos();
-                    ActualizaDgv();
+                    finally
+                    {
+                        MDIPrincipal.ActualizarBarraDeEstado();
+                    }
                 }
             }
             else if (tabcOperacion.SelectedTab == tbpEliminar)
@@ -525,34 +725,49 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 {
                     MDIPrincipal.ActualizarBarraDeEstado(Utils.eliminandoRegistro);
                     btnOperacion.Enabled = false;
+                    Producto producto = new Producto
+                    {
+                        ProductID = int.Parse(txtId.Text),
+                        RowVersion = (byte[])txtId.Tag
+                    };
                     try
                     {
-                        Producto producto = new Producto
+                        var resultado = await ApiProductoService.EliminarAsync(producto.ProductID, producto.RowVersion);
+                        if (resultado.ok)
                         {
-                            ProductID = int.Parse(txtId.Text),
-                            RowVersion = (byte[])txtId.Tag
-                        };
-                        int numRegs = _productoBLL.Eliminar(producto.ProductID, producto.RowVersion);
-                        MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
-                        string idyNombre = $"El producto con Id: {txtId.Text} - Nombre de producto: {txtProducto.Text}:";
-                        if (numRegs > 0)
-                            U.NotificacionInformation(idyNombre + Utils.ses);
-                        else if (numRegs == -1)
-                            U.NotificacionError(idyNombre + Utils.nfefe);
-                        else if (numRegs == -2)
-                            U.NotificacionError(idyNombre + Utils.nfefm);
+                            int numRegs = resultado.numRegs;
+                            MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
+                            string idyNombre = $"El producto con Id: {txtId.Text} - Nombre de producto: {txtProducto.Text}:";
+                            if (numRegs > 0)
+                                U.NotificacionInformation(idyNombre + Utils.ses);
+                            else if (numRegs == -1)
+                                U.NotificacionError(idyNombre + Utils.nfefe);
+                            else if (numRegs == -2)
+                                U.NotificacionError(idyNombre + Utils.nfefm);
+                            else
+                                U.NotificacionError(idyNombre + Utils.nfemd);
+                            BorrarDatosProducto();
+                            CargarValoresOriginales();
+                        }
                         else
-                            U.NotificacionError(idyNombre + Utils.nfemd);
+                        {
+                            U.NotificacionError(resultado.mensaje);
+                        }
                     }
                     catch (Exception ex)
                     {
                         U.MsgCatchOue(ex);
                     }
-                    LlenarCombos();
-                    ActualizaDgv();
+                    finally
+                    {
+                        MDIPrincipal.ActualizarBarraDeEstado();
+                    }
+                }
+                else
+                { 
+                    btnOperacion.Enabled = false;
                 }
             }
-            CargarValoresOriginales();
         }
 
         private void ActualizaDgv() => btnLimpiar.PerformClick();

@@ -312,11 +312,14 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     cboReportaA.SelectedValue = selectedValueCboReportaA;
                 }
                 CargarValoresOriginales();
-                MDIPrincipal.ActualizarBarraDeEstado();
             }
             catch (Exception ex)
             {
                 U.MsgCatchOue(ex);
+            }
+            finally
+            {
+                MDIPrincipal.ActualizarBarraDeEstado();
             }
         }
 
