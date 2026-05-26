@@ -2,7 +2,10 @@
 using BLL.Services;
 using Entities;
 using Entities.DTOs;
+using Infrastructure.Services;
+using Microsoft.AspNet.SignalR.Client;
 using NorthwindTradersV7EnCapasConSignalIR.Helpers;
+using NorthwindTradersV7EnCapasConSignalIR.Services;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -34,6 +37,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         private short CantidadOld = 0;
         private short UInventarioOld = 0;
         private readonly DateTime FechaBaseMinDate = new DateTime(1753, 1, 1, 0, 0, 0);
+        private bool _realizandoBusqueda = false;
+        private bool _procesandoSignalR = false;
+
+        private IDisposable _ventasSubscription;
 
         public FrmVentasCrud()
         {
@@ -95,6 +102,9 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         internal void FrmVentasCrud_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (AppShutdownService.CerrandoPorLogout)
+                return;
+
             if (Utils.HayCambios(this, valoresOriginales, errorProvider1))
                 if (U.NotificacionQuestion(Utils.preguntaCerrar) == DialogResult.No)
                     e.Cancel = true;
@@ -136,6 +146,80 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             grbVenta.Text = "»   Consulta de ventas:   «";
             controlDetalleDeLaVenta.DgvDetalle.AutoGenerateColumns = false;
             controlDetalleDeLaVenta.DgvDetalle.Columns["Modificar"].Visible = false; // No se va a ocupar en este formulario, se quedará para que no cause errores
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            Action registrarEventos = () =>
+            {
+                _ventasSubscription?.Dispose();
+
+                _ventasSubscription =
+                    SignalRService.Instance.VentasHub
+                    .On<string, int>(
+                        "ventaActualizada",
+                        VentaActualizadaHandler);
+            };
+
+            registrarEventos();
+
+            SignalRService.Instance
+                .RegistrarSuscripcion(registrarEventos);
+        }
+
+        /* 
+        En C# puedes usar nombres como _ y __ para indicar que los parámetros existen porque la firma los requiere, pero realmente no los vas a utilizar.
+        Eso comunica claramente:
+        el evento sigue enviando parámetros,
+        SignalR los necesita,
+        pero tu lógica ya no los utiliza.
+        Es una práctica válida y bastante común cuando un delegado obliga a recibir parámetros que no necesitas.
+        */
+        private void VentaActualizadaHandler(string _, int __)
+        {
+            try
+            {
+                if (IsDisposed || !IsHandleCreated)
+                    return;
+
+                if (InvokeRequired)
+                {
+                    BeginInvoke(new Action(() =>
+                        VentaActualizadaHandler(_, __)));
+                    return;
+                }
+
+                if (_realizandoBusqueda)
+                    return;
+
+                if (_procesandoSignalR)
+                    return;
+
+                _procesandoSignalR = true;
+
+                LlenarDgvVentas(false);
+
+            }
+            finally
+            {
+                _procesandoSignalR = false;
+            }
+        }
+
+        protected override void OnFormClosed(
+            FormClosedEventArgs e)
+        {
+            try
+            {
+                _ventasSubscription?.Dispose();
+            }
+            catch
+            {
+            }
+
+            base.OnFormClosed(e);
         }
 
         private void InicializarDtps()
@@ -483,6 +567,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             if (tabcOperacion.SelectedTab != tabpRegistrar)
                 DeshabilitarControles();
             LlenarDgvVentas(false);
+            _realizandoBusqueda = false;
+            CargarValoresOriginales();
             tableLayoutPanel1.Focus();
         }
 
@@ -494,6 +580,8 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             if (tabcOperacion.SelectedTab != tabpRegistrar)
                 DeshabilitarControles();
             LlenarDgvVentas(true);
+            _realizandoBusqueda = true;
+            CargarValoresOriginales();
             tableLayoutPanel1.Focus();
         }
 
@@ -954,14 +1042,25 @@ namespace NorthwindTradersV7EnCapasConSignalIR
 
         private void dgvVentas_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0 || e.ColumnIndex < 0)
-                return;
+            // 🔹 Cuando viene desde un click real del DataGridView
+            if (e != null)
+            {
+                if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                    return;
+
+                DataGridViewRow dgvr = dgvVentas.Rows[e.RowIndex];
+
+                if (dgvr.Cells["OrderID"].Value == null)
+                    return;
+
+                txtId.Text = dgvr.Cells["OrderID"].Value.ToString();
+            }
+            BorrarMensajesError();
             btnNota.Enabled = false;
             if (tabcOperacion.SelectedTab != tabpRegistrar)
             {
                 BorrarDatosVenta();
                 BorrarDatosDetalleVenta();
-                BorrarMensajesError();
                 DataGridViewRow dgvr = dgvVentas.CurrentRow;
                 txtId.Text = dgvr.Cells["OrderId"].Value.ToString();
                 // se tiene que definir aqui para verificar la concurrencia porque como lo venia haciendo habia un lapso de tiempo que podia cambiar el registro, se tiene que comparar contra lo que esta definido en el dgvVentas
@@ -1013,7 +1112,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                 if (venta != null)
                 {
                     txtId.Text = venta.OrderID.ToString();
-                    txtId.Tag = venta.RowVersionString;
+                    txtId.Tag = venta.RowVersionStr;
                     cboCliente.SelectedIndexChanged -= new EventHandler(cboCliente_SelectedIndexChanged);
                     cboCliente.SelectedValue = venta.Cliente.CustomerID;
                     cboCliente.SelectedIndexChanged += new EventHandler(cboCliente_SelectedIndexChanged);
@@ -1320,7 +1419,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             }
         }
 
-        private void btnGenerar_Click(object sender, EventArgs e)
+        private async void btnGenerar_Click(object sender, EventArgs e)
         {
             int numRegs = 0;
             BorrarMensajesError();
@@ -1376,34 +1475,58 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             };
                             venta.VentaDetalles.Add(ventaDetalles);
                         }
-                        numRegs = _ventaBLL.InsertarVentaCompleta(venta, out int orderId, out byte[] rowVersion);
-                        txtId.Text = orderId.ToString();
-                        venta.RowVersion = rowVersion;
-                        txtId.Tag = venta.RowVersionStr;
-                        MDIPrincipal.ActualizarBarraDeEstado($"Se insertaron 1 registro en ventas y {venta.VentaDetalles.Count} registro(s) en el detalle de ventas");
-                        string paraNotificacion = $"La venta con Id: {txtId.Text} del Cliente: {cboCliente.Text}:";
-                        if (numRegs > 0)
+                        var resultado = await ApiVentaService.InsertarAsync(venta);
+                        if (resultado.ok)
                         {
+                            txtId.Text = resultado.venta.OrderID.ToString();
+                            txtId.Tag = resultado.venta.RowVersionStr;
                             MDIPrincipal.ActualizarBarraDeEstado($"Se insertaron 1 registro en ventas y {venta.VentaDetalles.Count} registro(s) en el detalle de ventas");
+                            string paraNotificacion = $"La venta con Id: {txtId.Text} del Cliente: {cboCliente.Text}:";
                             U.NotificacionInformation(paraNotificacion + Utils.srs);
                             VentaGenerada = true;
                             numDetalle = 1;
                             btnNota.Enabled = true;
-                            BorrarDatosBusqueda();
+                            //BorrarDatosBusqueda();
                             LlenarDgvVentas(false);
                             controlDetalleDeLaVenta.DgvDetalle.Rows.Clear();
                             LlenarDatosDetalleVenta(Convert.ToInt32(txtId.Text));
-                            controlAgregarProducto.CboCategoria.Enabled = true;
+                            controlAgregarProducto.CboCategoria.Enabled = false;
                             OcultarCols();
                             grbVenta.Focus();
+
                         }
                         else
-                            U.NotificacionError(paraNotificacion + Utils.nfrs);
+                        {
+                            U.NotificacionError(resultado.mensaje + Utils.nfrs);
+                        }
+                        //numRegs = _ventaBLL.InsertarVentaCompleta(venta, out int orderId, out byte[] rowVersion);
+                        //txtId.Text = orderId.ToString();
+                        //venta.RowVersion = rowVersion;
+                        //txtId.Tag = venta.RowVersionStr;
+                        //MDIPrincipal.ActualizarBarraDeEstado($"Se insertaron 1 registro en ventas y {venta.VentaDetalles.Count} registro(s) en el detalle de ventas");
+                        //string paraNotificacion = $"La venta con Id: {txtId.Text} del Cliente: {cboCliente.Text}:";
+                        //if (numRegs > 0)
+                        //{
+                        //    MDIPrincipal.ActualizarBarraDeEstado($"Se insertaron 1 registro en ventas y {venta.VentaDetalles.Count} registro(s) en el detalle de ventas");
+                        //    U.NotificacionInformation(paraNotificacion + Utils.srs);
+                        //    VentaGenerada = true;
+                        //    numDetalle = 1;
+                        //    btnNota.Enabled = true;
+                        //    BorrarDatosBusqueda();
+                        //    LlenarDgvVentas(false);
+                        //    controlDetalleDeLaVenta.DgvDetalle.Rows.Clear();
+                        //    LlenarDatosDetalleVenta(Convert.ToInt32(txtId.Text));
+                        //    controlAgregarProducto.CboCategoria.Enabled = true;
+                        //    OcultarCols();
+                        //    grbVenta.Focus();
+                        //}
+                        //else
+                        //    U.NotificacionError(paraNotificacion + Utils.nfrs);
                     }
                 }
                 catch (Exception ex)
                 {
-                    U.MsgCatchOue(ex);
+                    U.NotificacionError(ex.Message);
                     HabilitarControles();
                     dtpRequerido.Enabled = dtpEnvio.Enabled = true;
                     HabilitarControlesProducto();

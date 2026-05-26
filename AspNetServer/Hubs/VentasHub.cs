@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace AspNetServer.Hubs
 {
     [Authorize]
-    public class ProveedoresHub : Hub
+    public class VentasHub : Hub
     {
         public override Task OnConnected()
         {
@@ -28,7 +28,7 @@ namespace AspNetServer.Hubs
                     return p;
                 });
 
-            if (!permisos.Contains(3))
+            if (!permisos.Contains(6))
             {
                 throw new HubException("Sin permisos");
             }

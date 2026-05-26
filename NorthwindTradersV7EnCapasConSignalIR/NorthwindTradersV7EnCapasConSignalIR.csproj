@@ -542,6 +542,7 @@
     <Compile Include="Services\ApiProductoService.cs" />
     <Compile Include="Services\ApiProveedorService.cs" />
     <Compile Include="Services\ApiService.cs" />
+    <Compile Include="Services\ApiVentaService.cs" />
     <Compile Include="Services\AppShutdownService.cs" />
     <Compile Include="Services\HttpClientProvider.cs" />
     <Compile Include="Services\SessionService.cs" />

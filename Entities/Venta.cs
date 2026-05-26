@@ -24,18 +24,40 @@ namespace Entities
         public string ShipPostalCode { get; set; }
         public string ShipCountry { get; set; }
         public byte[] RowVersion { get; set; }
-        // para manejar el RowVersion en el DataGridView
-        public string RowVersionStr 
-        { 
-            get => RowVersionString;  
-        }
-        // Propiedad auxiliar para que no tenga conflicto el DataGridView
-        public string RowVersionString
+
+        public string RowVersionStr
         {
-            get => RowVersion != null
-                ? BitConverter.ToInt64(RowVersion, 0).ToString()
-                : string.Empty;
+            get
+            {
+                if (RowVersion == null || RowVersion.Length < 8)
+                    return string.Empty;
+
+                return BitConverter.ToInt64(RowVersion, 0).ToString();
+            }
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    RowVersion = null;
+                    return;
+                }
+
+                RowVersion = BitConverter.GetBytes(long.Parse(value));
+            }
         }
+
+        //// para manejar el RowVersion en el DataGridView
+        //public string RowVersionStr 
+        //{ 
+        //    get => RowVersionString;  
+        //}
+        //// Propiedad auxiliar para que no tenga conflicto el DataGridView
+        //public string RowVersionString
+        //{
+        //    get => RowVersion != null
+        //        ? BitConverter.ToInt64(RowVersion, 0).ToString()
+        //        : string.Empty;
+        //}
 
         // del diagrama entidad-relación podemos ver que
         // una venta tiene muchos detalles de venta asociados

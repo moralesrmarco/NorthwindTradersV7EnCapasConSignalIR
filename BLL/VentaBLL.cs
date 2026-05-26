@@ -47,7 +47,7 @@ namespace BLL
                 EmployeeName = v.Empleado.NameByLastName,
                 ShipperCompanyName = v.Transportista.CompanyName,
                 ShipName = v.ShipName,
-                RowVersionStr = v.RowVersionString
+                RowVersionStr = v.RowVersionStr
             }).ToList();
             return ventas;
         }

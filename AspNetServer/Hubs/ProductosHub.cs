@@ -35,14 +35,5 @@ namespace AspNetServer.Hubs
 
             return base.OnConnected();
         }
-
-        public void NotificarProductoActualizado(
-            string accion,
-            int productoId)
-        {
-            Clients.All.productoActualizado(
-                accion,
-                productoId);
-        }
     }
 }

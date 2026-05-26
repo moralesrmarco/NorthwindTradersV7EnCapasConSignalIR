@@ -35,14 +35,5 @@ namespace AspNetServer.Hubs
 
             return base.OnConnected();
         }
-
-        public void NotificarCategoriaActualizada(
-            string accion,
-            int categoriaId)
-        {
-            Clients.All.categoriaActualizada(
-                accion,
-                categoriaId);
-        }
     }
 }
