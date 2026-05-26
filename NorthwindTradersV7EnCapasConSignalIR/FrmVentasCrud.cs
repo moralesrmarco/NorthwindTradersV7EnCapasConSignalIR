@@ -1486,8 +1486,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             VentaGenerada = true;
                             numDetalle = 1;
                             btnNota.Enabled = true;
-                            //BorrarDatosBusqueda();
-                            LlenarDgvVentas(false);
+                            //LlenarDgvVentas(false);
                             controlDetalleDeLaVenta.DgvDetalle.Rows.Clear();
                             LlenarDatosDetalleVenta(Convert.ToInt32(txtId.Text));
                             controlAgregarProducto.CboCategoria.Enabled = false;
@@ -1497,36 +1496,13 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         }
                         else
                         {
-                            U.NotificacionError(resultado.mensaje + Utils.nfrs);
+                            U.NotificacionError(Utils.nfrs + "\n" + resultado.mensaje);
                         }
-                        //numRegs = _ventaBLL.InsertarVentaCompleta(venta, out int orderId, out byte[] rowVersion);
-                        //txtId.Text = orderId.ToString();
-                        //venta.RowVersion = rowVersion;
-                        //txtId.Tag = venta.RowVersionStr;
-                        //MDIPrincipal.ActualizarBarraDeEstado($"Se insertaron 1 registro en ventas y {venta.VentaDetalles.Count} registro(s) en el detalle de ventas");
-                        //string paraNotificacion = $"La venta con Id: {txtId.Text} del Cliente: {cboCliente.Text}:";
-                        //if (numRegs > 0)
-                        //{
-                        //    MDIPrincipal.ActualizarBarraDeEstado($"Se insertaron 1 registro en ventas y {venta.VentaDetalles.Count} registro(s) en el detalle de ventas");
-                        //    U.NotificacionInformation(paraNotificacion + Utils.srs);
-                        //    VentaGenerada = true;
-                        //    numDetalle = 1;
-                        //    btnNota.Enabled = true;
-                        //    BorrarDatosBusqueda();
-                        //    LlenarDgvVentas(false);
-                        //    controlDetalleDeLaVenta.DgvDetalle.Rows.Clear();
-                        //    LlenarDatosDetalleVenta(Convert.ToInt32(txtId.Text));
-                        //    controlAgregarProducto.CboCategoria.Enabled = true;
-                        //    OcultarCols();
-                        //    grbVenta.Focus();
-                        //}
-                        //else
-                        //    U.NotificacionError(paraNotificacion + Utils.nfrs);
                     }
                 }
                 catch (Exception ex)
                 {
-                    U.NotificacionError(ex.Message);
+                    U.NotificacionError("Error al insertar la venta: " + Utils.nfrs + "\n" + ex.Message);
                     HabilitarControles();
                     dtpRequerido.Enabled = dtpEnvio.Enabled = true;
                     HabilitarControlesProducto();
@@ -1535,6 +1511,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             }
             else if (tabcOperacion.SelectedTab == tabpModificar)
             {
+                // Verificar si hubo cambios en el formulario
+                if (!Utils.HayCambios(this, valoresOriginales))
+                {
+                    U.NotificacionWarning(Utils.ndc);
+                    return; // Salir sin hacer UPDATE
+                }
                 try
                 {
                     if (!ValidarControlesVenta())
@@ -1567,48 +1549,61 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         venta.ShipPostalCode = txtCP.Text.Trim();
                         venta.ShipCountry = txtPais.Text.Trim();
                         venta.Freight = nudFlete.Value;
-                        venta.RowVersion = RowVersionHelper.RowVersionObjToByteArray(txtId.Tag);
-                        numRegs = _ventaBLL.Actualizar(venta);
-                        txtId.Tag = venta.RowVersionStr; // se tiene que actualizar por la nota de remision no detecte un cambio
-                        MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
-                        string idVentaCliente = $"La venta con Id: {venta.OrderID} - Cliente: {cboCliente.Text}:";
-
-                        if (numRegs > 0)
+                        //venta.RowVersion = RowVersionHelper.RowVersionObjToByteArray(txtId.Tag);
+                        venta.RowVersionStr = txtId.Tag?.ToString();
+                        var resultado = await ApiVentaService.ActualizarAsync(venta);
+                        if (resultado.ok)
                         {
-                            LlenarDgvVentas(false);
-                            U.NotificacionInformation(idVentaCliente + Utils.sms);
-                            VentaGenerada = true;
-                            btnNota.Enabled = true;
-                        }
-                        else if (numRegs == -1)
-                        {
-                            LlenarDgvVentas(false);
-                            U.NotificacionError(idVentaCliente + Utils.nfmfe);
-                            BorrarDatosVenta();
-                            BorrarDatosDetalleVenta();
-                        }
-                        else if (numRegs == -2)
-                        {
-                            int orderId = string.IsNullOrEmpty(txtId.Text) ? 0 : Convert.ToInt32(txtId.Text);
-                            LlenarDgvVentas(false);
-                            U.NotificacionError(idVentaCliente + Utils.nfmfm);
-                            BorrarDatosVenta();
-                            BorrarDatosDetalleVenta();
-                            LlenarDatosVenta(ref orderId);
-                            LlenarDatosDetalleVenta(orderId);
-                            DeshabilitarTodosControles();
+                            numRegs = resultado.numRegs;
+                            txtId.Tag = venta.RowVersionStr; // se tiene que actualizar por la nota de remision no detecte un cambio
+                            MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
+                            string idVentaCliente = $"La venta con Id: {venta.OrderID} - Cliente: {cboCliente.Text}:";
+                            if (numRegs > 0)
+                            {
+                                //LlenarDgvVentas(false);
+                                U.NotificacionInformation(idVentaCliente + Utils.sms);
+                                VentaGenerada = true;
+                                btnNota.Enabled = true;
+                            }
+                            else if (numRegs == -1)
+                            {
+                                //LlenarDgvVentas(false);
+                                U.NotificacionError(idVentaCliente + Utils.nfmfe);
+                                BorrarDatosVenta();
+                                BorrarDatosDetalleVenta();
+                            }
+                            else if (numRegs == -2)
+                            {
+                                int orderId = string.IsNullOrEmpty(txtId.Text) ? 0 : Convert.ToInt32(txtId.Text);
+                                //LlenarDgvVentas(false);
+                                U.NotificacionError(idVentaCliente + Utils.nfmfm);
+                                BorrarDatosVenta();
+                                BorrarDatosDetalleVenta();
+                                LlenarDatosVenta(ref orderId);
+                                LlenarDatosDetalleVenta(orderId);
+                                DeshabilitarTodosControles();
+                            }
+                            else
+                            {
+                                U.NotificacionError(idVentaCliente + Utils.nfmmd);
+                                BorrarDatosVenta();
+                                BorrarDatosDetalleVenta();
+                            }
+                            CargarValoresOriginales();
                         }
                         else
                         {
-                            U.NotificacionError(idVentaCliente + Utils.nfmmd);
-                            BorrarDatosVenta();
-                            BorrarDatosDetalleVenta();
+                            U.NotificacionError(Utils.nfmmd + "\n" + resultado.mensaje);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    U.MsgCatchOue(ex);
+                    U.NotificacionError("Error al modificar la venta: " + Utils.nfmmd + "\n" + ex.Message);
+                }
+                finally
+                {
+                    MDIPrincipal.ActualizarBarraDeEstado();
                 }
             }
             else if (tabcOperacion.SelectedTab == tabpEliminar)
@@ -1655,7 +1650,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     btnGenerar.Enabled = false;
                 }
             }
-            CargarValoresOriginales();
+            //CargarValoresOriginales();
         }
 
         private void tabcOperacion_Selecting(object sender, TabControlCancelEventArgs e)
