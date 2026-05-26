@@ -9,6 +9,7 @@ using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Utilities;
 
@@ -730,5 +731,9 @@ namespace NorthwindTradersV7EnCapasConSignalIR
             await U.AbrirFormularioAsync(TabControlPrincipal, new FrmTableroControlVendedores(), "» Tablero de control para los vendedores «");
         }
 
+        private async void mantenimientoDeVentasToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmVentasCrud(), "» Mantenimiento de ventas «");
+        }
     }
 }
