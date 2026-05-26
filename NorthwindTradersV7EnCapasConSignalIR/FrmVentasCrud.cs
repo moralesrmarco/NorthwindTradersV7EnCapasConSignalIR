@@ -1486,7 +1486,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             VentaGenerada = true;
                             numDetalle = 1;
                             btnNota.Enabled = true;
-                            //LlenarDgvVentas(false);
                             controlDetalleDeLaVenta.DgvDetalle.Rows.Clear();
                             LlenarDatosDetalleVenta(Convert.ToInt32(txtId.Text));
                             controlAgregarProducto.CboCategoria.Enabled = false;
@@ -1549,7 +1548,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         venta.ShipPostalCode = txtCP.Text.Trim();
                         venta.ShipCountry = txtPais.Text.Trim();
                         venta.Freight = nudFlete.Value;
-                        //venta.RowVersion = RowVersionHelper.RowVersionObjToByteArray(txtId.Tag);
                         venta.RowVersionStr = txtId.Tag?.ToString();
                         var resultado = await ApiVentaService.ActualizarAsync(venta);
                         if (resultado.ok)
@@ -1560,14 +1558,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             string idVentaCliente = $"La venta con Id: {venta.OrderID} - Cliente: {cboCliente.Text}:";
                             if (numRegs > 0)
                             {
-                                //LlenarDgvVentas(false);
                                 U.NotificacionInformation(idVentaCliente + Utils.sms);
                                 VentaGenerada = true;
                                 btnNota.Enabled = true;
                             }
                             else if (numRegs == -1)
                             {
-                                //LlenarDgvVentas(false);
                                 U.NotificacionError(idVentaCliente + Utils.nfmfe);
                                 BorrarDatosVenta();
                                 BorrarDatosDetalleVenta();
@@ -1575,7 +1571,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             else if (numRegs == -2)
                             {
                                 int orderId = string.IsNullOrEmpty(txtId.Text) ? 0 : Convert.ToInt32(txtId.Text);
-                                //LlenarDgvVentas(false);
                                 U.NotificacionError(idVentaCliente + Utils.nfmfm);
                                 BorrarDatosVenta();
                                 BorrarDatosDetalleVenta();
@@ -1650,7 +1645,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     btnGenerar.Enabled = false;
                 }
             }
-            //CargarValoresOriginales();
         }
 
         private void tabcOperacion_Selecting(object sender, TabControlCancelEventArgs e)
