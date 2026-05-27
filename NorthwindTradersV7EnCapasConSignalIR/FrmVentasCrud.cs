@@ -1553,7 +1553,11 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         if (resultado.ok)
                         {
                             numRegs = resultado.numRegs;
-                            txtId.Tag = venta.RowVersionStr; // se tiene que actualizar por la nota de remision no detecte un cambio
+                            if (resultado.venta != null)
+                            {
+                                txtId.Tag =
+                                    resultado.venta.RowVersionStr;// se tiene que actualizar por la nota de remision no detecte un cambio
+                            }
                             MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                             string idVentaCliente = $"La venta con Id: {venta.OrderID} - Cliente: {cboCliente.Text}:";
                             if (numRegs > 0)
@@ -1611,31 +1615,46 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     {
                         Venta venta = new Venta();
                         venta.OrderID = int.Parse(txtId.Text);
-                        venta.RowVersion = RowVersionHelper.RowVersionObjToByteArray(txtId.Tag);
-                        numRegs = _ventaBLL.Eliminar(venta, out string productoExcede);
-                        string idVentaCliente = $"La venta con Id: {txtId.Text} - Cliente: {cboCliente.Text}:";
-                        if (numRegs > 0)
-                            U.NotificacionInformation(idVentaCliente + Utils.ses);
-                        else if (numRegs == -1)
-                            U.NotificacionError(idVentaCliente + Utils.nfefe);
-                        else if (numRegs == -2)
-                            U.NotificacionError(idVentaCliente + Utils.nfefm);
-                        else if (numRegs == -7)
-                            U.NotificacionError(idVentaCliente + $"\n[red]No fue eliminada de la base de datos, el nuevo inventario del producto {productoExcede}, excedió el límite máximo que se puede almacenar en la base de datos (32,767 unidades)"); // Stock excedió el máximo permitido
-                        else if (numRegs == -8)
-                            U.NotificacionError(idVentaCliente + $"\n[red]No fue eliminada de la base de datos, el nuevo inventario del producto {productoExcede}, sería invalido (negativo)"); // stock negativo, este caso nunca ocurre porque la base de datos no lo permite con un check constraint
+                        venta.RowVersionStr = txtId.Tag?.ToString();
+                        var resultado = await ApiVentaService.EliminarAsync(venta.OrderID, venta.RowVersion);
+                        if (resultado.ok)
+                        {
+                            string productoExcede = resultado.productoExcede;
+                            numRegs = resultado.numRegs;
+                            MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registro(s) de ventas y detalle de ventas");
+                            string idVentaCliente = $"La venta con Id: {txtId.Text} - Cliente: {cboCliente.Text}:";
+                            if (numRegs > 0)
+                                U.NotificacionInformation(idVentaCliente + Utils.ses);
+                            else if (numRegs == -1)
+                                U.NotificacionError(idVentaCliente + Utils.nfefe);
+                            else if (numRegs == -2)
+                                U.NotificacionError(idVentaCliente + Utils.nfefm);
+                            else if (numRegs == -7)
+                                U.NotificacionError(idVentaCliente + $"\n[red]No fue eliminada de la base de datos, el nuevo inventario del producto {productoExcede}, excedió el límite máximo que se puede almacenar en la base de datos (32,767 unidades)"); // Stock excedió el máximo permitido
+                            else if (numRegs == -8)
+                                U.NotificacionError(idVentaCliente + $"\n[red]No fue eliminada de la base de datos, el nuevo inventario del producto {productoExcede}, sería invalido (negativo)"); // stock negativo, este caso nunca ocurre porque la base de datos no lo permite con un check constraint
+                            else
+                                U.NotificacionError(idVentaCliente + Utils.nfemd);
+                            if (numRegs >= -8)
+                            {
+                                LlenarDgvVentas(false);
+                                BorrarDatosVenta();
+                                BorrarDatosDetalleVenta();
+                            }
+                            CargarValoresOriginales();
+                        }
                         else
-                            U.NotificacionError(idVentaCliente + Utils.nfemd);
+                        {
+                            U.NotificacionError(Utils.nfemd + "\n" + resultado.mensaje);
+                        }
                     }
                     catch (Exception ex)
                     {
-                        U.MsgCatchOue(ex);
+                        U.NotificacionError("Error al eliminar la venta: " + Utils.nfemd + "\n" + ex.Message);
                     }
-                    if (numRegs >= -8)
+                    finally
                     {
-                        LlenarDgvVentas(false);
-                        BorrarDatosVenta();
-                        BorrarDatosDetalleVenta();
+                        MDIPrincipal.ActualizarBarraDeEstado();
                     }
                 }
                 else

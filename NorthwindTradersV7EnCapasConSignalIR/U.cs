@@ -104,22 +104,48 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     break;
             }
 
-            //using (var frm = new FrmNotificacion(mensaje, icono, colorTexto, modo))
-            //{
-            //    return frm.ShowDialog();
-            //}
+            Form mainForm = Application.OpenForms[0];
 
-            using (var frm = new FrmNotificacion(mensaje, icono, colorTexto, modo))
+            if (mainForm.InvokeRequired)
             {
-                // 🔥 NUEVA FORMA ROBUSTA DE OBTENER OWNER
+                return (DialogResult)mainForm.Invoke(
+                    new Func<DialogResult>(() =>
+                    {
+                        using (var frm = new FrmNotificacion(
+                            mensaje,
+                            icono,
+                            colorTexto,
+                            modo))
+                        {
+                            Form owner =
+                                Application.OpenForms
+                                    .Cast<Form>()
+                                    .FirstOrDefault(f =>
+                                        f.IsMdiContainer &&
+                                        !f.IsDisposed);
+
+                            if (owner != null)
+                                return frm.ShowDialog(owner);
+
+                            return frm.ShowDialog();
+                        }
+                    }));
+            }
+
+            using (var frm = new FrmNotificacion(
+                mensaje,
+                icono,
+                colorTexto,
+                modo))
+            {
                 Form owner =
-                    MDIPrincipal.Instance ??
                     Application.OpenForms
                         .Cast<Form>()
-                        .FirstOrDefault(f => f.IsMdiContainer);
+                        .FirstOrDefault(f =>
+                            f.IsMdiContainer &&
+                            !f.IsDisposed);
 
-                // 🔥 SEGURIDAD EXTRA
-                if (owner != null && !owner.IsDisposed)
+                if (owner != null)
                     return frm.ShowDialog(owner);
 
                 return frm.ShowDialog();

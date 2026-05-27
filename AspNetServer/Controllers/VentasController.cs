@@ -1,6 +1,7 @@
 ﻿using AspNetServer.Seguridad;
 using BLL;
 using Entities;
+using System;
 using System.Configuration;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -55,30 +56,38 @@ namespace AspNetServer.Controllers
                     venta.OrderID);
             }
 
-            return Ok(numRegs);
+            return Ok(new
+            {
+                numRegs = numRegs,
+                venta = venta
+            });
         }
 
-        //[HttpDelete]
-        //[Route("eliminar/{id}")]
-        //[Permiso(6)]
-        //public async Task<IHttpActionResult> Eliminar(
-        //    int id,
-        //    [FromUri] string rowVersion)
-        //{
-        //    var rowVersionBytes =
-        //        Convert.FromBase64String(rowVersion);
+        [HttpDelete]
+        [Route("eliminar/{id}")]
+        [Permiso(6)]
+        public async Task<IHttpActionResult> Eliminar(
+            int id,
+            [FromUri] string rowVersion)
+        {
+            var venta = new Venta
+            {
+                OrderID = id,
+                RowVersion = Convert.FromBase64String(rowVersion)
+            };
 
-        //    int numRegs =
-        //        _ventaBLL.Eliminar(
-        //            id,
-        //            rowVersionBytes);
+            int numRegs = _ventaBLL.Eliminar(venta, out string productoExcede);
 
-        //    if (numRegs > 0)
-        //    {
-        //        await ProductoNotifier.Eliminado(id);
-        //    }
+            if (numRegs > 0)
+            {
+                await VentaNotifier.Eliminado(id);
+            }
 
-        //    return Ok(numRegs);
-        //}
+            return Ok(new
+            {
+                numRegs = numRegs,
+                productoExcede = productoExcede
+            });
+        }
     }
 }

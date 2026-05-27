@@ -53,7 +53,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
             );
         }
 
-        public static async Task<(bool ok, string mensaje, int numRegs)>
+        public static async Task<(bool ok, string mensaje, int numRegs, Venta venta)>
             ActualizarAsync(Venta venta)
         {
             var response = await ApiService.PutAsync(
@@ -61,10 +61,21 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
                 venta);
             if (response.IsSuccessStatusCode)
             {
-                int numRegs =
-                    await response.Content.ReadAsAsync<int>();
+                    var resultado =
+                        await response.Content.ReadAsAsync<dynamic>();
+    
+                    int numRegs = resultado.numRegs;
 
-                return (true, "", numRegs);
+                   var ventaActualizada =
+                        JsonConvert.DeserializeObject<Venta>(
+                            resultado.venta.ToString());
+
+                return (
+                        true,
+                        "",
+                        numRegs,
+                        ventaActualizada
+                    );
             }
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -75,10 +86,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
             string mensaje =
                 await response.Content.ReadAsStringAsync();
 
-            return (false, mensaje, 0);
+            return (false, mensaje, 0, null);
         }
 
-        public static async Task<(bool ok, string mensaje, int numRegs)>
+        public static async Task<(bool ok, string mensaje, int numRegs, string productoExcede)>
             EliminarAsync(int ventaId, byte[] rowVersion)
         {
             string rowVersionBase64 =
@@ -92,10 +103,15 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
 
             if (response.IsSuccessStatusCode)
             {
-                int numRegs =
-                    await response.Content.ReadAsAsync<int>();
+                var resultado =
+                    await response.Content.ReadAsAsync<dynamic>();
 
-                return (true, "", numRegs);
+                return (
+                            true,
+                            "",
+                            (int)resultado.numRegs,
+                            (string)resultado.productoExcede
+                        );
             }
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -106,7 +122,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
             string mensaje =
                 await response.Content.ReadAsStringAsync();
 
-            return (false, mensaje, 0);
+            return (
+                        false,
+                        mensaje,
+                        0,
+                        ""
+                   );
         }
     }
 }
