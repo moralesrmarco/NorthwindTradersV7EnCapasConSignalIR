@@ -525,6 +525,18 @@
     <Compile Include="FrmVentasCrud.Designer.cs">
       <DependentUpon>FrmVentasCrud.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrmVentasDetalleCrud.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmVentasDetalleCrud.Designer.cs">
+      <DependentUpon>FrmVentasDetalleCrud.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmVentasDetalleModificar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmVentasDetalleModificar.Designer.cs">
+      <DependentUpon>FrmVentasDetalleModificar.cs</DependentUpon>
+    </Compile>
     <Compile Include="Helpers\CerrarAppHelper.cs" />
     <Compile Include="Helpers\ComboBoxHelper.cs" />
     <Compile Include="Helpers\ReporteServicePdfHelper.cs" />
@@ -715,6 +727,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FrmVentasCrud.resx">
       <DependentUpon>FrmVentasCrud.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmVentasDetalleCrud.resx">
+      <DependentUpon>FrmVentasDetalleCrud.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmVentasDetalleModificar.resx">
+      <DependentUpon>FrmVentasDetalleModificar.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MDIPrincipal.resx">
       <DependentUpon>MDIPrincipal.cs</DependentUpon>

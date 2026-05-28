@@ -274,6 +274,7 @@ namespace Infrastructure.Services
             if (!_subscriptions.Contains(accion))
                 _subscriptions.Add(accion);
         }
+
         public void Configurar(string urlBase, string accessToken)
         {
             if (string.IsNullOrWhiteSpace(urlBase))

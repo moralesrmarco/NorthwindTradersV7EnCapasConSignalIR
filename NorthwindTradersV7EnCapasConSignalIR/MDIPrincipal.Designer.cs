@@ -110,6 +110,11 @@
             this.reporteDeProductosPorProveedorConDetalleDelProveedorToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.reporteDeCategoríasConProductosToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.ventasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mantenimientoDeVentasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mantenimientoDeDetalleDeVentasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mantenimientoDeVentasV2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.consultasToolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
+            this.reportesToolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
             this.gráficasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.consultasToolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
             this.ventasMensualesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -171,11 +176,6 @@
             this.toolStripStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.TabControlPrincipal = new NorthwindTradersV7EnCapasConSignalIR.ControlCustomTab();
-            this.mantenimientoDeVentasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mantenimientoDeDetalleDeVentasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mantenimientoDeVentasV2ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.consultasToolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
-            this.reportesToolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.toolStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
@@ -856,6 +856,38 @@
             this.ventasToolStripMenuItem.Size = new System.Drawing.Size(66, 24);
             this.ventasToolStripMenuItem.Text = "Ventas";
             // 
+            // mantenimientoDeVentasToolStripMenuItem
+            // 
+            this.mantenimientoDeVentasToolStripMenuItem.Name = "mantenimientoDeVentasToolStripMenuItem";
+            this.mantenimientoDeVentasToolStripMenuItem.Size = new System.Drawing.Size(331, 26);
+            this.mantenimientoDeVentasToolStripMenuItem.Text = "Mantenimiento de ventas";
+            this.mantenimientoDeVentasToolStripMenuItem.Click += new System.EventHandler(this.mantenimientoDeVentasToolStripMenuItem_Click);
+            // 
+            // mantenimientoDeDetalleDeVentasToolStripMenuItem
+            // 
+            this.mantenimientoDeDetalleDeVentasToolStripMenuItem.Name = "mantenimientoDeDetalleDeVentasToolStripMenuItem";
+            this.mantenimientoDeDetalleDeVentasToolStripMenuItem.Size = new System.Drawing.Size(331, 26);
+            this.mantenimientoDeDetalleDeVentasToolStripMenuItem.Text = "Mantenimiento de detalle de ventas";
+            this.mantenimientoDeDetalleDeVentasToolStripMenuItem.Click += new System.EventHandler(this.mantenimientoDeDetalleDeVentasToolStripMenuItem_Click);
+            // 
+            // mantenimientoDeVentasV2ToolStripMenuItem
+            // 
+            this.mantenimientoDeVentasV2ToolStripMenuItem.Name = "mantenimientoDeVentasV2ToolStripMenuItem";
+            this.mantenimientoDeVentasV2ToolStripMenuItem.Size = new System.Drawing.Size(331, 26);
+            this.mantenimientoDeVentasV2ToolStripMenuItem.Text = "Mantenimiento de ventas V2";
+            // 
+            // consultasToolStripMenuItem5
+            // 
+            this.consultasToolStripMenuItem5.Name = "consultasToolStripMenuItem5";
+            this.consultasToolStripMenuItem5.Size = new System.Drawing.Size(331, 26);
+            this.consultasToolStripMenuItem5.Text = "Consultas";
+            // 
+            // reportesToolStripMenuItem6
+            // 
+            this.reportesToolStripMenuItem6.Name = "reportesToolStripMenuItem6";
+            this.reportesToolStripMenuItem6.Size = new System.Drawing.Size(331, 26);
+            this.reportesToolStripMenuItem6.Text = "Reportes";
+            // 
             // gráficasToolStripMenuItem
             // 
             this.gráficasToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -1347,37 +1379,6 @@
             this.TabControlPrincipal.Size = new System.Drawing.Size(1845, 486);
             this.TabControlPrincipal.TabIndex = 4;
             this.TabControlPrincipal.SelectedIndexChanged += new System.EventHandler(this.TabControlPrincipal_SelectedIndexChanged);
-            // 
-            // mantenimientoDeVentasToolStripMenuItem
-            // 
-            this.mantenimientoDeVentasToolStripMenuItem.Name = "mantenimientoDeVentasToolStripMenuItem";
-            this.mantenimientoDeVentasToolStripMenuItem.Size = new System.Drawing.Size(331, 26);
-            this.mantenimientoDeVentasToolStripMenuItem.Text = "Mantenimiento de ventas";
-            this.mantenimientoDeVentasToolStripMenuItem.Click += new System.EventHandler(this.mantenimientoDeVentasToolStripMenuItem_Click);
-            // 
-            // mantenimientoDeDetalleDeVentasToolStripMenuItem
-            // 
-            this.mantenimientoDeDetalleDeVentasToolStripMenuItem.Name = "mantenimientoDeDetalleDeVentasToolStripMenuItem";
-            this.mantenimientoDeDetalleDeVentasToolStripMenuItem.Size = new System.Drawing.Size(331, 26);
-            this.mantenimientoDeDetalleDeVentasToolStripMenuItem.Text = "Mantenimiento de detalle de ventas";
-            // 
-            // mantenimientoDeVentasV2ToolStripMenuItem
-            // 
-            this.mantenimientoDeVentasV2ToolStripMenuItem.Name = "mantenimientoDeVentasV2ToolStripMenuItem";
-            this.mantenimientoDeVentasV2ToolStripMenuItem.Size = new System.Drawing.Size(331, 26);
-            this.mantenimientoDeVentasV2ToolStripMenuItem.Text = "Mantenimiento de ventas V2";
-            // 
-            // consultasToolStripMenuItem5
-            // 
-            this.consultasToolStripMenuItem5.Name = "consultasToolStripMenuItem5";
-            this.consultasToolStripMenuItem5.Size = new System.Drawing.Size(331, 26);
-            this.consultasToolStripMenuItem5.Text = "Consultas";
-            // 
-            // reportesToolStripMenuItem6
-            // 
-            this.reportesToolStripMenuItem6.Name = "reportesToolStripMenuItem6";
-            this.reportesToolStripMenuItem6.Size = new System.Drawing.Size(331, 26);
-            this.reportesToolStripMenuItem6.Text = "Reportes";
             // 
             // MDIPrincipal
             // 

@@ -46,19 +46,6 @@ namespace Entities
             }
         }
 
-        //// para manejar el RowVersion en el DataGridView
-        //public string RowVersionStr 
-        //{ 
-        //    get => RowVersionString;  
-        //}
-        //// Propiedad auxiliar para que no tenga conflicto el DataGridView
-        //public string RowVersionString
-        //{
-        //    get => RowVersion != null
-        //        ? BitConverter.ToInt64(RowVersion, 0).ToString()
-        //        : string.Empty;
-        //}
-
         // del diagrama entidad-relación podemos ver que
         // una venta tiene muchos detalles de venta asociados
         public List<VentaDetalle> VentaDetalles { get; set; } = new List<VentaDetalle>();

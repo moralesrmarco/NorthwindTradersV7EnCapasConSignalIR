@@ -1491,7 +1491,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             controlAgregarProducto.CboCategoria.Enabled = false;
                             OcultarCols();
                             grbVenta.Focus();
-
                         }
                         else
                         {
@@ -1662,6 +1661,7 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     BorrarDatosVenta();
                     BorrarDatosDetalleVenta();
                     btnGenerar.Enabled = false;
+                    CargarValoresOriginales();
                 }
             }
         }
