@@ -875,6 +875,7 @@
             this.mantenimientoDeVentasV2ToolStripMenuItem.Name = "mantenimientoDeVentasV2ToolStripMenuItem";
             this.mantenimientoDeVentasV2ToolStripMenuItem.Size = new System.Drawing.Size(331, 26);
             this.mantenimientoDeVentasV2ToolStripMenuItem.Text = "Mantenimiento de ventas V2";
+            this.mantenimientoDeVentasV2ToolStripMenuItem.Click += new System.EventHandler(this.mantenimientoDeVentasV2ToolStripMenuItem_Click);
             // 
             // consultasToolStripMenuItem5
             // 

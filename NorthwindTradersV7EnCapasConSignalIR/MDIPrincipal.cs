@@ -740,5 +740,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         {
             await U.AbrirFormularioAsync(TabControlPrincipal, new FrmVentasDetalleCrud(), "» Mantenimiento de detalle de ventas «");
         }
+
+        private async void mantenimientoDeVentasV2ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmVentasCrudV2(), "» Mantenimiento de ventas Ver. 2 «");
+        }
     }
 }
