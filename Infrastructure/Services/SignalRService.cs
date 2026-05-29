@@ -32,6 +32,7 @@ namespace Infrastructure.Services
         public IHubProxy CategoriasHub { get; private set; }
         public IHubProxy ProductosHub { get; private set; }
         public IHubProxy VentasHub { get; private set; }
+        public IHubProxy UsuariosHub { get; private set; }
 
         private readonly List<Action> _subscriptions =
             new List<Action>();
@@ -115,6 +116,8 @@ namespace Infrastructure.Services
                     _connection.CreateHubProxy("ProductosHub");
                 VentasHub =
                     _connection.CreateHubProxy("VentasHub");
+                UsuariosHub =
+                    _connection.CreateHubProxy("UsuariosHub");
 
                 // registrar nuevamente las suscripciones
                 foreach (var sub in _subscriptions)
@@ -157,6 +160,7 @@ namespace Infrastructure.Services
                 CategoriasHub = null;
                 ProductosHub = null;
                 VentasHub = null;
+                UsuariosHub = null;
 
                 _cerrandoManual = false;
             }
@@ -258,6 +262,7 @@ namespace Infrastructure.Services
                 CategoriasHub = null;
                 ProductosHub = null;
                 VentasHub = null;
+                UsuariosHub = null;
 
                 await ConectarAsync();
 

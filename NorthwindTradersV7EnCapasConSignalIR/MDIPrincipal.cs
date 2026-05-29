@@ -754,5 +754,15 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         {
             await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptVentasPorDiferentesCriterios(), "» Reporte de ventas por diferentes criterios «");
         }
+
+        private async void mantenimientoDeUsuariosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmUsuariosCrud(), "» Mantenimiento de usuarios «");
+        }
+
+        private async void mantenimientoDePermisosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmPermisosCrud(), "» Mantenimiento de permisos «");
+        }
     }
 }

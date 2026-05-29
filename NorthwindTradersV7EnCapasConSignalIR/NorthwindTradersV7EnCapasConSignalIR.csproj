@@ -333,6 +333,12 @@
     <Compile Include="FrmNotificacion.Designer.cs">
       <DependentUpon>FrmNotificacion.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrmPermisosCrud.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmPermisosCrud.Designer.cs">
+      <DependentUpon>FrmPermisosCrud.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmProductosConsultaAlfabetica.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -531,6 +537,12 @@
     <Compile Include="FrmTableroControlVendedores.Designer.cs">
       <DependentUpon>FrmTableroControlVendedores.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrmUsuariosCrud.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmUsuariosCrud.Designer.cs">
+      <DependentUpon>FrmUsuariosCrud.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmVentasCrud.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -578,6 +590,7 @@
     <Compile Include="Services\ApiProductoService.cs" />
     <Compile Include="Services\ApiProveedorService.cs" />
     <Compile Include="Services\ApiService.cs" />
+    <Compile Include="Services\ApiUsuarioService.cs" />
     <Compile Include="Services\ApiVentaService.cs" />
     <Compile Include="Services\AppShutdownService.cs" />
     <Compile Include="Services\HttpClientProvider.cs" />
@@ -655,6 +668,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FrmNotificacion.resx">
       <DependentUpon>FrmNotificacion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmPermisosCrud.resx">
+      <DependentUpon>FrmPermisosCrud.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FrmProductosConsultaAlfabetica.resx">
       <DependentUpon>FrmProductosConsultaAlfabetica.cs</DependentUpon>
@@ -754,6 +770,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FrmTableroControlVendedores.resx">
       <DependentUpon>FrmTableroControlVendedores.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmUsuariosCrud.resx">
+      <DependentUpon>FrmUsuariosCrud.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FrmVentasCrud.resx">
       <DependentUpon>FrmVentasCrud.cs</DependentUpon>

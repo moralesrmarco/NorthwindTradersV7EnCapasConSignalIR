@@ -20,9 +20,23 @@ namespace Entities
 
         public string RowVersionStr
         {
-            get => RowVersion != null
-                ? BitConverter.ToInt64(RowVersion, 0).ToString()
-                : string.Empty;
+            get
+            {
+                if (RowVersion == null || RowVersion.Length < 8)
+                    return string.Empty;
+
+                return BitConverter.ToInt64(RowVersion, 0).ToString();
+            }
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    RowVersion = null;
+                    return;
+                }
+
+                RowVersion = BitConverter.GetBytes(long.Parse(value));
+            }
         }
 
         public string NombreCompleto => $"{Paterno} {Materno} {Nombres}".Trim();

@@ -279,6 +279,7 @@
     <Compile Include="Controllers\EmpleadosController.cs" />
     <Compile Include="Controllers\ProductosController.cs" />
     <Compile Include="Controllers\ProveedoresController.cs" />
+    <Compile Include="Controllers\UsuariosController.cs" />
     <Compile Include="Controllers\VentasController.cs" />
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
@@ -296,6 +297,7 @@
     <Compile Include="Hubs\EmpleadosHub.cs" />
     <Compile Include="Hubs\ProductosHub.cs" />
     <Compile Include="Hubs\ProveedoresHub.cs" />
+    <Compile Include="Hubs\UsuariosHub.cs" />
     <Compile Include="Hubs\VentasHub.cs" />
     <Compile Include="Models\RefreshRequest.cs" />
     <Compile Include="Notifications\CategoriaNotifier.cs" />
@@ -303,6 +305,7 @@
     <Compile Include="Notifications\EmpleadoNotifier.cs" />
     <Compile Include="Notifications\ProductoNotifier.cs" />
     <Compile Include="Notifications\ProveedorNotifier.cs" />
+    <Compile Include="Notifications\UsuarioNotifier.cs" />
     <Compile Include="Notifications\VentaNotifier.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Seguridad\PermisoAttribute.cs" />

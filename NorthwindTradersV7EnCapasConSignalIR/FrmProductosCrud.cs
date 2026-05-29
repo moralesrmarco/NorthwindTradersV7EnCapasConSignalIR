@@ -691,10 +691,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         if (resultado.ok)
                         { 
                             int numRegs = resultado.numRegs;
-                            MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                             string idNombreProducto = $"El producto con Id: {txtId.Text} - Nombre de producto: {txtProducto.Text}:";
                             if (numRegs > 0)
+                            {
+                                MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                                 U.NotificacionInformation(idNombreProducto + Utils.sms);
+                            }
                             else if (numRegs == -1)
                                 U.NotificacionError(idNombreProducto + Utils.nfmfe);
                             else if (numRegs == -2)
@@ -736,10 +738,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         if (resultado.ok)
                         {
                             int numRegs = resultado.numRegs;
-                            MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                             string idyNombre = $"El producto con Id: {txtId.Text} - Nombre de producto: {txtProducto.Text}:";
                             if (numRegs > 0)
+                            {
+                                MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                                 U.NotificacionInformation(idyNombre + Utils.ses);
+                            }
                             else if (numRegs == -1)
                                 U.NotificacionError(idyNombre + Utils.nfefe);
                             else if (numRegs == -2)
