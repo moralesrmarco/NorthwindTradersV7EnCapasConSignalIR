@@ -9,7 +9,6 @@ using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Utilities;
 
@@ -744,6 +743,16 @@ namespace NorthwindTradersV7EnCapasConSignalIR
         private async void mantenimientoDeVentasV2ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             await U.AbrirFormularioAsync(TabControlPrincipal, new FrmVentasCrudV2(), "» Mantenimiento de ventas Ver. 2 «");
+        }
+
+        private async void reporteDeVentasPorRangoDeFechaDeVentaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptVentasPorRangoFechaVenta(), "» Reporte de ventas por rango de fecha de venta «");
+        }
+
+        private async void reporteDeVentasPorDiferentesCriteriosToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            await U.AbrirFormularioAsync(TabControlPrincipal, new FrmRptVentasPorDiferentesCriterios(), "» Reporte de ventas por diferentes criterios «");
         }
     }
 }

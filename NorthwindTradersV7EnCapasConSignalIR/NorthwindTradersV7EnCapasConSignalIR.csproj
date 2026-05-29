@@ -507,6 +507,18 @@
     <Compile Include="FrmRptTopProductosMasVendidos.Designer.cs">
       <DependentUpon>FrmRptTopProductosMasVendidos.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrmRptVentasPorDiferentesCriterios.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmRptVentasPorDiferentesCriterios.Designer.cs">
+      <DependentUpon>FrmRptVentasPorDiferentesCriterios.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FrmRptVentasPorRangoFechaVenta.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrmRptVentasPorRangoFechaVenta.Designer.cs">
+      <DependentUpon>FrmRptVentasPorRangoFechaVenta.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrmTableroControlAltaDireccion.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -731,6 +743,12 @@
     <EmbeddedResource Include="FrmRptTopProductosMasVendidos.resx">
       <DependentUpon>FrmRptTopProductosMasVendidos.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FrmRptVentasPorDiferentesCriterios.resx">
+      <DependentUpon>FrmRptVentasPorDiferentesCriterios.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrmRptVentasPorRangoFechaVenta.resx">
+      <DependentUpon>FrmRptVentasPorRangoFechaVenta.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FrmTableroControlAltaDireccion.resx">
       <DependentUpon>FrmTableroControlAltaDireccion.cs</DependentUpon>
     </EmbeddedResource>
@@ -782,10 +800,13 @@
     <EmbeddedResource Include="RptGraficaVentasMensualesPorVendedorPorAnioBarras.rdlc" />
     <EmbeddedResource Include="RptGraficaVentasMensualesPorVendedorPorAnioBarras2.rdlc" />
     <EmbeddedResource Include="RptNotaRemision9.rdlc" />
+    <EmbeddedResource Include="RptOrderDetailsVentaPorRangoFechaVenta.rdlc" />
     <EmbeddedResource Include="RptProdPorProvConDetProv.rdlc" />
     <EmbeddedResource Include="RptProductos.rdlc" />
     <EmbeddedResource Include="RptProductosPorProveedor.rdlc" />
     <EmbeddedResource Include="RptProveedores.rdlc" />
+    <EmbeddedResource Include="RptVentasPorDiferentesCriterios.rdlc" />
+    <EmbeddedResource Include="RptVentasPorRangoFechaVenta.rdlc" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

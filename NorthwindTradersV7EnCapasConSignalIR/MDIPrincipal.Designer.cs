@@ -176,6 +176,8 @@
             this.toolStripStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.TabControlPrincipal = new NorthwindTradersV7EnCapasConSignalIR.ControlCustomTab();
+            this.reporteDeVentasPorRangoDeFechaDeVentaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.reporteDeVentasPorDiferentesCriteriosToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.toolStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
@@ -885,6 +887,9 @@
             // 
             // reportesToolStripMenuItem6
             // 
+            this.reportesToolStripMenuItem6.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.reporteDeVentasPorRangoDeFechaDeVentaToolStripMenuItem,
+            this.reporteDeVentasPorDiferentesCriteriosToolStripMenuItem});
             this.reportesToolStripMenuItem6.Name = "reportesToolStripMenuItem6";
             this.reportesToolStripMenuItem6.Size = new System.Drawing.Size(331, 26);
             this.reportesToolStripMenuItem6.Text = "Reportes";
@@ -1381,6 +1386,20 @@
             this.TabControlPrincipal.TabIndex = 4;
             this.TabControlPrincipal.SelectedIndexChanged += new System.EventHandler(this.TabControlPrincipal_SelectedIndexChanged);
             // 
+            // reporteDeVentasPorRangoDeFechaDeVentaToolStripMenuItem
+            // 
+            this.reporteDeVentasPorRangoDeFechaDeVentaToolStripMenuItem.Name = "reporteDeVentasPorRangoDeFechaDeVentaToolStripMenuItem";
+            this.reporteDeVentasPorRangoDeFechaDeVentaToolStripMenuItem.Size = new System.Drawing.Size(404, 26);
+            this.reporteDeVentasPorRangoDeFechaDeVentaToolStripMenuItem.Text = "Reporte de ventas por rango de fecha de venta";
+            this.reporteDeVentasPorRangoDeFechaDeVentaToolStripMenuItem.Click += new System.EventHandler(this.reporteDeVentasPorRangoDeFechaDeVentaToolStripMenuItem_Click);
+            // 
+            // reporteDeVentasPorDiferentesCriteriosToolStripMenuItem
+            // 
+            this.reporteDeVentasPorDiferentesCriteriosToolStripMenuItem.Name = "reporteDeVentasPorDiferentesCriteriosToolStripMenuItem";
+            this.reporteDeVentasPorDiferentesCriteriosToolStripMenuItem.Size = new System.Drawing.Size(404, 26);
+            this.reporteDeVentasPorDiferentesCriteriosToolStripMenuItem.Text = "Reporte de ventas por diferentes criterios";
+            this.reporteDeVentasPorDiferentesCriteriosToolStripMenuItem.Click += new System.EventHandler(this.reporteDeVentasPorDiferentesCriteriosToolStripMenuItem_Click);
+            // 
             // MDIPrincipal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -1558,6 +1577,8 @@
         private System.Windows.Forms.ToolStripMenuItem mantenimientoDeVentasV2ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem consultasToolStripMenuItem5;
         private System.Windows.Forms.ToolStripMenuItem reportesToolStripMenuItem6;
+        private System.Windows.Forms.ToolStripMenuItem reporteDeVentasPorRangoDeFechaDeVentaToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem reporteDeVentasPorDiferentesCriteriosToolStripMenuItem;
     }
 }
 
