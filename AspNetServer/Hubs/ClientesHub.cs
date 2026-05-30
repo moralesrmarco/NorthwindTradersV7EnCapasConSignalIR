@@ -16,7 +16,7 @@ namespace AspNetServer.Hubs
             if (identity == null ||
                 !identity.IsAuthenticated)
             {
-                throw new HubException("No autorizado");
+                return base.OnConnected();
             }
 
             var permisos =
@@ -31,7 +31,14 @@ namespace AspNetServer.Hubs
             // Cambia el permiso según tu lógica
             if (!permisos.Contains(2))
             {
-                throw new HubException("Sin permisos");
+                return base.OnConnected();
+            }
+
+            try
+            {
+            }
+            catch
+            {
             }
 
             return base.OnConnected();

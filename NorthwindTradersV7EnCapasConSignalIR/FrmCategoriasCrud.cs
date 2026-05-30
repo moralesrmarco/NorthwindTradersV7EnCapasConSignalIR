@@ -551,10 +551,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         if (resultado.ok)
                         {
                             int numRegs = resultado.numRegs;
-                            MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                             string idyNombreCategoria = $"La categoría con Id: {txtId.Text} - Nombre de categoría: {txtCategoria.Text}:";
                             if (numRegs > 0)
                             {
+                                MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                                 U.NotificacionInformation(idyNombreCategoria + Utils.sms);
                             }
                             else if (numRegs == -1)
@@ -599,10 +599,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         if (resultado.ok)
                         {
                             int numRegs = resultado.numRegs;
-                            MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                             string idyNombreCategoria = $"La categoría con Id: {txtId.Text} - Nombre de categoría: {txtCategoria.Text}:";
                             if (numRegs > 0)
                             {
+                                MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                                 U.NotificacionInformation(idyNombreCategoria + Utils.ses);
                             }
                             else if (numRegs == -1)

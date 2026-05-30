@@ -1311,10 +1311,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                                 { 
                                     txtId.Tag = resultado.venta.RowVersionStr; // se tiene que actualizar por la nota de remision no detecte un cambio
                                 }
-                                MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                                 string idVentaCliente = $"La venta con Id: {venta.OrderID} - Cliente: {cboCliente.Text}:";
                                 if (numRegs > 0)
                                 {
+                                    MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                                     VentaGenerada = true;
                                 }
                                 else if (numRegs == -1)
@@ -1888,10 +1888,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             {
                                 txtId.Tag = resultado.venta.RowVersionStr;// se tiene que actualizar por la nota de remision no detecte un cambio
                             }
-                            MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                             string idVentaCliente = $"La venta con Id: {venta.OrderID} - Cliente: {cboCliente.Text}:";
                             if (numRegs > 0)
                             {
+                                MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                                 U.NotificacionInformation(idVentaCliente + Utils.sms);
                                 VentaGenerada = true;
                                 btnNota.Enabled = true;
@@ -1951,10 +1951,12 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         {
                             string productoExcede = resultado.productoExcede;
                             numRegs = resultado.numRegs;
-                            MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registro(s) de ventas y detalle de ventas");
                             string idVentaCliente = $"La venta con Id: {txtId.Text} - Cliente: {cboCliente.Text}:";
                             if (numRegs > 0)
+                            {
+                                MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registro(s) de ventas y detalle de ventas");
                                 U.NotificacionInformation(idVentaCliente + Utils.ses);
+                            }
                             else if (numRegs == -1)
                                 U.NotificacionError(idVentaCliente + Utils.nfefe);
                             else if (numRegs == -2)

@@ -787,14 +787,13 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         {
                             int numRegs = resultado.numRegs;
 
-                            MDIPrincipal.ActualizarBarraDeEstado(
-                                $"Se actualizó {(numRegs < 0 ? 0 : numRegs)} registro");
-
                             string idyNombre =
                                 $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
 
                             if (numRegs > 0)
                             { 
+                                MDIPrincipal.ActualizarBarraDeEstado(
+                                    $"Se actualizó {(numRegs < 0 ? 0 : numRegs)} registro");
                                 U.NotificacionInformation(idyNombre + Utils.sms);
                             }
                             else if (numRegs == -1)
@@ -842,14 +841,13 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         {
                             int numRegs = resultado.numRegs;
 
-                            MDIPrincipal.ActualizarBarraDeEstado(
-                                $"Se eliminó {(numRegs < 0 ? 0 : numRegs)} registro");
-
                             string idyNombre =
                                 $"El empleado con Id: {txtId.Text} - Nombre: {txtNombres.Text} {txtApellidos.Text}:";
 
                             if (numRegs > 0)
                             {
+                                MDIPrincipal.ActualizarBarraDeEstado(
+                                    $"Se eliminó {(numRegs < 0 ? 0 : numRegs)} registro");
                                 U.NotificacionInformation(idyNombre + Utils.ses);
                             }
                             else if (numRegs == -1)

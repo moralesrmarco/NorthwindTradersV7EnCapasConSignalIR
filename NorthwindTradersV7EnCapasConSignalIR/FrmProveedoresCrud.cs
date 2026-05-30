@@ -573,12 +573,6 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                             MDIPrincipal.ActualizarBarraDeEstado($"Se insertó 1 registro");
                             U.NotificacionInformation(idyNombreCompania +
                                 Utils.srs);
-                            //await SignalRService
-                            //    .Instance
-                            //    .ProveedoresHub
-                            //    .Invoke(
-                            //        "NotificarProveedorActualizado", "INSERT",
-                            //        resultado.proveedor.SupplierID);
                             BorrarDatosProveedor();
                             CargarValoresOriginales();
                         }
@@ -633,17 +627,11 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         if (resultado.ok)
                         {
                             int numRegs = resultado.numRegs;
-                            MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                             string idyNombreCompania = $"El proveedor con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
                             if (numRegs > 0)
                             {
+                                MDIPrincipal.ActualizarBarraDeEstado($"Se actualizaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                                 U.NotificacionInformation(idyNombreCompania + Utils.sms);
-                                //await SignalRService
-                                //    .Instance
-                                //    .ProveedoresHub
-                                //    .Invoke(
-                                //        "NotificarProveedorActualizado", "UPDATE",
-                                //        proveedor.SupplierID);
                             }
                             else if (numRegs == -1)
                                 U.NotificacionError(idyNombreCompania + Utils.nfmfe);
@@ -685,19 +673,11 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         if (resultado.ok)
                         {
                             int numRegs = resultado.numRegs;
-                            MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                             string idyNombre = $"El proveedor con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
                             if (numRegs > 0)
                             {
+                                MDIPrincipal.ActualizarBarraDeEstado($"Se eliminaron {(numRegs < 0 ? 0 : numRegs)} registro(s)");
                                 U.NotificacionInformation(idyNombre + Utils.ses);
-                                // por algun motivo no se hace la notificacion a través de SignalR, aunque el procedimiento almacenado se ejecute correctamente y retorne el número de registros afectados, por lo que se fuerza la notificación desde el cliente 
-                                // ojo en esto difiere de los demas crud, ya busque pero no encuentro que pasa, el caso es que no se notifica a través de SignalR, aunque el procedimiento almacenado se ejecute correctamente y retorne el número de registros afectados, por lo que se fuerza la notificación desde el cliente
-                                await SignalRService
-                                    .Instance
-                                    .ProveedoresHub
-                                    .Invoke(
-                                        "NotificarProveedorActualizado", "DELETE",
-                                        proveedor.SupplierID);
                             }
                             else if (numRegs == -1)
                                 U.NotificacionError(idyNombre + Utils.nfefe);

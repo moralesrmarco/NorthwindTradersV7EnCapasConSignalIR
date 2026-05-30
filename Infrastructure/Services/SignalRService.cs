@@ -24,6 +24,7 @@ namespace Infrastructure.Services
         // CAMPOS
         // =========================
         private HubConnection _connection;
+        private HashSet<string> _hubsPermitidos;
 
         // aqui deben ir propiedades específicas para cada hub, para evitar tener que usar strings en el código cliente
         public IHubProxy EmpleadosHub { get; private set; }
@@ -95,6 +96,9 @@ namespace Infrastructure.Services
                 if (_connection.Headers.ContainsKey("Authorization"))
                     _connection.Headers.Remove("Authorization");
 
+                if (string.IsNullOrWhiteSpace(_accessToken))
+                    throw new InvalidOperationException("AccessToken vacío antes de conectar SignalR.");
+
                 // JWT / Bearer token
                 _connection.Headers.Add(
                     "Authorization",
@@ -104,20 +108,29 @@ namespace Infrastructure.Services
                 // CreateHubProxy(...)
                 // siempre antes de:
                 // Start()
-                EmpleadosHub =
-                    _connection.CreateHubProxy("EmpleadosHub");
-                ClientesHub =
-                    _connection.CreateHubProxy("ClientesHub");
-                ProveedoresHub =
-                    _connection.CreateHubProxy("ProveedoresHub");
-                CategoriasHub =
-                    _connection.CreateHubProxy("CategoriasHub");
-                ProductosHub =
-                    _connection.CreateHubProxy("ProductosHub");
-                VentasHub =
-                    _connection.CreateHubProxy("VentasHub");
-                UsuariosHub =
-                    _connection.CreateHubProxy("UsuariosHub");
+
+                //EmpleadosHub =
+                //    _connection.CreateHubProxy("EmpleadosHub");
+                //ClientesHub =
+                //    _connection.CreateHubProxy("ClientesHub");
+                //ProveedoresHub =
+                //    _connection.CreateHubProxy("ProveedoresHub");
+                //CategoriasHub =
+                //    _connection.CreateHubProxy("CategoriasHub");
+                //ProductosHub =
+                //    _connection.CreateHubProxy("ProductosHub");
+                //VentasHub =
+                //    _connection.CreateHubProxy("VentasHub");
+                //UsuariosHub =
+                //    _connection.CreateHubProxy("UsuariosHub");
+
+                TryCreate("EmpleadosHub", () => EmpleadosHub = _connection.CreateHubProxy("EmpleadosHub"));
+                TryCreate("ClientesHub", () => ClientesHub = _connection.CreateHubProxy("ClientesHub"));
+                TryCreate("ProveedoresHub", () => ProveedoresHub = _connection.CreateHubProxy("ProveedoresHub"));
+                TryCreate("CategoriasHub", () => CategoriasHub = _connection.CreateHubProxy("CategoriasHub"));
+                TryCreate("ProductosHub", () => ProductosHub = _connection.CreateHubProxy("ProductosHub"));
+                TryCreate("VentasHub", () => VentasHub = _connection.CreateHubProxy("VentasHub"));
+                TryCreate("UsuariosHub", () => UsuariosHub = _connection.CreateHubProxy("UsuariosHub"));
 
                 // registrar nuevamente las suscripciones
                 foreach (var sub in _subscriptions)
@@ -305,6 +318,17 @@ namespace Infrastructure.Services
         {
             if (_subscriptions.Contains(accion))
                 _subscriptions.Remove(accion);
+        }
+
+        public void ConfigurarHubsPermitidos(IEnumerable<string> hubs)
+        {
+            _hubsPermitidos = hubs != null ? new HashSet<string>(hubs, System.StringComparer.OrdinalIgnoreCase) : null;
+        }
+
+        void TryCreate(string hubName, Action assign)
+        {
+            if (_hubsPermitidos == null || _hubsPermitidos.Contains(hubName))
+                assign();
         }
     }
 }

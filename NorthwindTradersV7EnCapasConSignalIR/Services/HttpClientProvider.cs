@@ -21,25 +21,3 @@ namespace NorthwindTradersV7EnCapasConSignalIR.Services
         public static HttpClient Client => _client;
     }
 }
-
-//using System;
-//using System.Configuration;
-//using System.Net.Http;
-
-//namespace NorthwindTradersV7EnCapasConSignalIR.Services
-//{
-//    public static class HttpClientProvider
-//    {
-//        public static readonly HttpClient Client =
-//            new HttpClient();
-
-//        static HttpClientProvider()
-//        {
-//            Client = new HttpClient
-//            {
-//                BaseAddress = new Uri(
-//                    ConfigurationManager.AppSettings["UrlBaseSignalR"])
-//            };
-//        }
-//    }
-//}

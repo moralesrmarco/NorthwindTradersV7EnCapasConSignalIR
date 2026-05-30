@@ -98,6 +98,20 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                     UrlBaseSignalR,
                     SesionActual.AccessToken);
 
+                var hubs = new List<string>();
+                foreach (int permisoId in permisosUsuarioAutenticado)
+                {
+                    if (permisoId == 1) hubs.Add("EmpleadosHub");
+                    if (permisoId == 2) hubs.Add("ClientesHub");
+                    if (permisoId == 3) hubs.Add("ProveedoresHub");
+                    if (permisoId == 4) hubs.Add("CategoriasHub");
+                    if (permisoId == 5) hubs.Add("ProductosHub");
+                    if (permisoId == 6) hubs.Add("VentasHub");
+                    if (permisoId == 7) hubs.Add("UsuariosHub");
+                }
+
+                SignalRService.Instance.ConfigurarHubsPermitidos(hubs);
+
                 await SignalRService.Instance.ConectarAsync();
             }
             catch (Exception ex)

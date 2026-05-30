@@ -662,10 +662,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         if (resultado.ok)
                         {
                             int numRegs = resultado.numRegs;
-                            MDIPrincipal.ActualizarBarraDeEstado($"Se actualizó {(numRegs < 0 ? 0 : numRegs)} registro");
                             string idyNombreCompania = $"El cliente con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
                             if (numRegs > 0)
                             {
+                                MDIPrincipal.ActualizarBarraDeEstado($"Se actualizó {(numRegs < 0 ? 0 : numRegs)} registro");
                                 U.NotificacionInformation(idyNombreCompania + Utils.sms);
                             }
                             else if (numRegs == -1)
@@ -707,10 +707,10 @@ namespace NorthwindTradersV7EnCapasConSignalIR
                         if (resultado.ok)
                         {
                             int numRegs = resultado.numRegs;
-                            MDIPrincipal.ActualizarBarraDeEstado($"Se eliminó {(numRegs < 0 ? 0 : numRegs)} registro");
                             string idyNombreCompania = $"El cliente con Id: {txtId.Text} - Nombre de compañía: {txtCompañia.Text}:";
                             if (numRegs > 0)
                             {
+                                MDIPrincipal.ActualizarBarraDeEstado($"Se eliminó {(numRegs < 0 ? 0 : numRegs)} registro");
                                 U.NotificacionInformation(idyNombreCompania + Utils.ses);
                             }
                             else if (numRegs == -1)
